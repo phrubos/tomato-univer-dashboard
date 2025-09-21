@@ -296,6 +296,11 @@ const BreederChart: React.FC<BreederChartProps> = ({
         }
       }
     },
+    navigation: {
+      buttonOptions: {
+        enabled: true
+      }
+    },
     tooltip: {
       enabled: true,
       backgroundColor: 'rgba(0, 0, 0, 0.8)',

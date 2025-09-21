@@ -121,6 +121,11 @@ const ColumnChart: React.FC<ColumnChartProps> = ({
         }
       }
     },
+    navigation: {
+      buttonOptions: {
+        enabled: true
+      }
+    },
   };
 
   return (
