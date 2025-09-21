@@ -1,0 +1,364 @@
+{
+  "Munka1": [
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG11227*",
+      "M-I.": 1.75,
+      "M-II.": 6.65,
+      "Cs-I.": 1.63,
+      "Cs-II.": 1.98,
+      "L-I.": 2.28,
+      "L-II.": 1.84
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG8492",
+      "M-I.": 1.05,
+      "M-II.": 10.3,
+      "Cs-I.": 3.03,
+      "Cs-II.": 4.32,
+      "L-I.": 2.54,
+      "L-II.": 6.65
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG17219",
+      "M-I.": 3.97,
+      "M-II.": 7.23,
+      "Cs-I.": 3.27,
+      "Cs-II.": 9.1,
+      "L-I.": 1.84,
+      "L-II.": 18.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG1578",
+      "M-I.": 4.08,
+      "M-II.": 14.8,
+      "Cs-I.": 3.85,
+      "Cs-II.": 11.2,
+      "L-I.": 2.98,
+      "L-II.": 10.2
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG13577*",
+      "M-I.": 2.92,
+      "M-II.": 7.7,
+      "Cs-I.": 1.63,
+      "Cs-II.": 5.6,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00541*",
+      "M-I.": 2.8,
+      "M-II.": 2.68,
+      "Cs-I.": 3.27,
+      "Cs-II.": 3.5,
+      "L-I.": 3.5,
+      "L-II.": 9.71
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00530",
+      "M-I.": 3.62,
+      "M-II.": 6.07,
+      "Cs-I.": 1.87,
+      "Cs-II.": 2.92,
+      "L-I.": 3.33,
+      "L-II.": 7.7
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00544",
+      "M-I.": 10.4,
+      "M-II.": 10.9,
+      "Cs-I.": 2.22,
+      "Cs-II.": 1.98,
+      "L-I.": 2.19,
+      "L-II.": 3.41
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00539",
+      "M-I.": 0.0,
+      "M-II.": 0.0,
+      "Cs-I.": 0.0,
+      "Cs-II.": 0.0,
+      "L-I.": 3.41,
+      "L-II.": 20.7
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00339",
+      "M-I.": 4.55,
+      "M-II.": 5.25,
+      "Cs-I.": 1.87,
+      "Cs-II.": 6.07,
+      "L-I.": 1.49,
+      "L-II.": 2.36
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N4510",
+      "M-I.": 3.15,
+      "M-II.": 2.57,
+      "Cs-I.": 1.28,
+      "Cs-II.": 2.33,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00540*",
+      "M-I.": 2.57,
+      "M-II.": 3.97,
+      "Cs-I.": 0.0,
+      "Cs-II.": 0.0,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "WALLER",
+      "M-I.": 0.7,
+      "M-II.": 3.27,
+      "Cs-I.": 1.28,
+      "Cs-II.": 1.98,
+      "L-I.": 3.24,
+      "L-II.": 10.2
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2123*",
+      "M-I.": 2.33,
+      "M-II.": 2.8,
+      "Cs-I.": 2.57,
+      "Cs-II.": 2.8,
+      "L-I.": 1.93,
+      "L-II.": 3.68
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2239",
+      "M-I.": 3.27,
+      "M-II.": 8.75,
+      "Cs-I.": 3.27,
+      "Cs-II.": 2.33,
+      "L-I.": 2.45,
+      "L-II.": 16.8
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2249",
+      "M-I.": 2.68,
+      "M-II.": 1.4,
+      "Cs-I.": 3.27,
+      "Cs-II.": 2.68,
+      "L-I.": 3.68,
+      "L-II.": 11.6
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H1881",
+      "M-I.": 3.38,
+      "M-II.": 9.45,
+      "Cs-I.": 2.22,
+      "Cs-II.": 1.75,
+      "L-I.": 4.73,
+      "L-II.": 12.7
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2127",
+      "M-I.": 4.9,
+      "M-II.": 7.82,
+      "Cs-I.": 1.63,
+      "Cs-II.": 3.85,
+      "L-I.": 2.1,
+      "L-II.": 7.44
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG11227*",
+      "M-I.": 58.8,
+      "M-II.": 108.0,
+      "Cs-I.": 89.7,
+      "Cs-II.": 103.0,
+      "L-I.": 110.0,
+      "L-II.": 176.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG8492",
+      "M-I.": 62.2,
+      "M-II.": 70.6,
+      "Cs-I.": 96.3,
+      "Cs-II.": 103.0,
+      "L-I.": 158.0,
+      "L-II.": 173.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG17219",
+      "M-I.": 66.6,
+      "M-II.": 103.0,
+      "Cs-I.": 94.1,
+      "Cs-II.": 128.0,
+      "L-I.": 136.0,
+      "L-II.": 138.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG1578",
+      "M-I.": 61.7,
+      "M-II.": 118.0,
+      "Cs-I.": 113.0,
+      "Cs-II.": 142.0,
+      "L-I.": 145.0,
+      "L-II.": 173.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "UG13577*",
+      "M-I.": 66.4,
+      "M-II.": 65.5,
+      "Cs-I.": 102.0,
+      "Cs-II.": 123.0,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00541*",
+      "M-I.": 44.1,
+      "M-II.": 88.1,
+      "Cs-I.": 62.9,
+      "Cs-II.": 116.0,
+      "L-I.": 155.0,
+      "L-II.": 186.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00530",
+      "M-I.": 36.4,
+      "M-II.": 65.5,
+      "Cs-I.": 95.5,
+      "Cs-II.": 103.0,
+      "L-I.": 171.0,
+      "L-II.": 141.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00544",
+      "M-I.": 76.4,
+      "M-II.": 102.0,
+      "Cs-I.": 111.0,
+      "Cs-II.": 155.0,
+      "L-I.": 102.0,
+      "L-II.": 164.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00539",
+      "M-I.": 0.0,
+      "M-II.": 0.0,
+      "Cs-I.": 0.0,
+      "Cs-II.": 0.0,
+      "L-I.": 149.0,
+      "L-II.": 165.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00339",
+      "M-I.": 52.9,
+      "M-II.": 98.5,
+      "Cs-I.": 94.4,
+      "Cs-II.": 148.0,
+      "L-I.": 133.0,
+      "L-II.": 162.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N4510",
+      "M-I.": 44.9,
+      "M-II.": 81.7,
+      "Cs-I.": 57.8,
+      "Cs-II.": 111.0,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "N00540*",
+      "M-I.": 52.5,
+      "M-II.": 63.8,
+      "Cs-I.": 0.0,
+      "Cs-II.": 0.0,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "WALLER",
+      "M-I.": 41.7,
+      "M-II.": 76.7,
+      "Cs-I.": 109.0,
+      "Cs-II.": 121.0,
+      "L-I.": 145.0,
+      "L-II.": 129.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2123*",
+      "M-I.": 52.7,
+      "M-II.": 64.2,
+      "Cs-I.": 77.5,
+      "Cs-II.": 128.0,
+      "L-I.": 120.0,
+      "L-II.": 164.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2239",
+      "M-I.": 80.2,
+      "M-II.": 104.0,
+      "Cs-I.": 108.0,
+      "Cs-II.": 142.0,
+      "L-I.": 148.0,
+      "L-II.": 157.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2249",
+      "M-I.": 31.1,
+      "M-II.": 88.8,
+      "Cs-I.": 59.8,
+      "Cs-II.": 106.0,
+      "L-I.": 111.0,
+      "L-II.": 153.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H1881",
+      "M-I.": 64.6,
+      "M-II.": 116.0,
+      "Cs-I.": 111.0,
+      "Cs-II.": 130.0,
+      "L-I.": 135.0,
+      "L-II.": 135.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "fajta": "H2127",
+      "M-I.": 73.9,
+      "M-II.": 115.0,
+      "Cs-I.": 104.0,
+      "Cs-II.": 149.0,
+      "L-I.": 142.0,
+      "L-II.": 172.0
+    }
+  ]
+}
