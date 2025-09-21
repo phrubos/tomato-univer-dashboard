@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useId, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { ProcessedData } from '@/utils/dataProcessor';
+import { useTheme } from './ThemeProvider';
+import { useChartPanel } from '@/contexts/ChartPanelContext';
+import FullScreenChartModal from './FullScreenChartModal';
+import { Maximize2 } from 'lucide-react';
 
 interface BreederChartProps {
   title: string;
@@ -13,6 +17,96 @@ interface BreederChartProps {
   allVarietiesData?: ProcessedData[]; // Az összes fajta adatai a tooltip-hez
 }
 
+// Információs panel komponens a BreederChart-hoz
+const BreederDataInfoPanel: React.FC<{
+  selectedData: any | null;
+  hoverData: any | null;
+  varieties: ProcessedData[];
+  theme: string;
+  onClose: () => void;
+}> = ({ selectedData, hoverData, varieties, theme, onClose }) => {
+  // Ha van hover adat, azt mutatjuk, egyébként a kiválasztott adatot
+  const displayData = hoverData || selectedData;
+
+  if (!displayData) {
+    return null;
+  }
+
+  // Statisztikák számítása (0 értékeket kihagyva)
+  const nonZeroValues = displayData.allLocationData.filter((d: any) => d.value > 0).map((d: any) => d.value);
+  const avgValue = nonZeroValues.length > 0 ? nonZeroValues.reduce((sum: number, val: number) => sum + val, 0) / nonZeroValues.length : 0;
+
+  // Helyszín nevek mapping
+  const locationNames: { [key: string]: string } = {
+    'M-I': 'Mezőberény I.',
+    'M-II': 'Mezőberény II.',
+    'Cs-I': 'Csabacsűd I.',
+    'Cs-II': 'Csabacsűd II.',
+    'L-I': 'Lakitelek I.',
+    'L-II': 'Lakitelek II.'
+  };
+
+  return (
+    <div className="w-full max-w-sm bg-white/95 dark:bg-card/95 backdrop-blur-sm border border-gray-200 dark:border-border rounded-lg p-4 transition-all duration-300 shadow-lg">
+      {/* Fejléc - kompakt + bezárás gomb */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center flex-1 min-w-0">
+          <div
+            className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
+            style={{ backgroundColor: displayData.seriesColor }}
+          ></div>
+          <h3 className="text-sm font-semibold text-foreground truncate">{displayData.variety}</h3>
+        </div>
+        <button
+          onClick={onClose}
+          className="ml-2 p-1 hover:bg-gray-100 dark:hover:bg-muted rounded-full transition-colors duration-200 flex-shrink-0"
+          title="Bezárás"
+        >
+          <svg className="w-4 h-4 text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Helyszín adatok - kompakt lista */}
+      <div className="space-y-1 mb-3">
+        {displayData.allLocationData.map((data: any, index: number) => {
+          if (data.value === 0) return null; // 0 értékeket kihagyjuk
+
+          const isCurrentPoint = data.location === displayData.location;
+          return (
+            <div
+              key={index}
+              className={`flex justify-between items-center py-1 px-2 rounded text-xs ${
+                isCurrentPoint
+                  ? 'bg-primary/20 border border-primary/30 font-medium'
+                  : 'bg-gray-100 dark:bg-muted/30'
+              }`}
+            >
+              <span className={isCurrentPoint ? 'text-foreground' : 'text-gray-600 dark:text-muted-foreground'}>
+                {locationNames[data.location] || data.location}
+              </span>
+              <span className={isCurrentPoint ? 'text-foreground font-semibold' : 'text-foreground'}>
+                {data.value.toFixed(1)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Átlag - csak ha van nem-nulla érték */}
+      {avgValue > 0 && (
+        <div className="border-t border-gray-200 dark:border-border pt-2">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-gray-600 dark:text-muted-foreground">Átlag:</span>
+            <span className="font-semibold text-foreground">{avgValue.toFixed(1)}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const BreederChart: React.FC<BreederChartProps> = ({
   title,
   varieties,
@@ -21,6 +115,32 @@ const BreederChart: React.FC<BreederChartProps> = ({
   allVarietiesData = []
 }) => {
   const chartRef = React.useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+  const { setActiveChart, closePanel, isChartActive, selectedData } = useChartPanel();
+
+  // Egyedi azonosító generálása minden chart példányhoz
+  const chartId = useId();
+
+  // Ref a chart példányhoz
+  const chartInstanceRef = React.useRef<Highcharts.Chart | null>(null);
+
+  // Hover adat state - lokálisan kezeljük
+  const [hoverData, setHoverData] = React.useState<any | null>(null);
+
+  // Full-screen modal state
+  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
+
+  // Ref-ek a Highcharts eseménykezelőkhöz
+  const setHoverDataRef = React.useRef(setHoverData);
+  const isChartActiveRef = React.useRef(isChartActive);
+  const chartIdRef = React.useRef(chartId);
+
+  // Ref-ek frissítése
+  React.useEffect(() => {
+    setHoverDataRef.current = setHoverData;
+    isChartActiveRef.current = isChartActive;
+    chartIdRef.current = chartId;
+  }, [setHoverData, isChartActive, chartId]);
 
   // Modulok betöltése komponens betöltéskor (egyszerűsített)
   useEffect(() => {
@@ -30,6 +150,49 @@ const BreederChart: React.FC<BreederChartProps> = ({
       console.log('Highcharts initialized with export support');
     }
   }, []);
+
+  // Dinamikus színek a téma alapján - külön színek sötét és világos módhoz
+  const themeColors = useMemo(() => {
+    if (theme === 'dark') {
+      // SÖTÉT MÓD - Világos színek sötét háttéren
+      return {
+        background: 'transparent',
+        titleColor: '#f8fafc',           // Tiszta fehér címek
+        subtitleColor: '#cbd5e1',        // Világos szürke alcímek
+        labelColor: '#94a3b8',           // Közepes világos szürke labelek
+        gridLineColor: '#475569',        // Sötét szürke vonalak
+        lineColor: '#475569',            // Sötét szürke tengelyek
+        crosshairColor: 'rgba(248, 250, 252, 0.4)', // Világos crosshair
+        plotBandColor: 'rgba(248, 250, 252, 0.08)',
+        plotBandColorAlt: 'rgba(248, 250, 252, 0.15)',
+        tooltipBg: 'rgba(15, 23, 42, 0.95)',        // Sötét tooltip háttér
+        tooltipBorder: '#475569',                    // Sötét keret
+        tooltipText: '#f8fafc',                      // Világos tooltip szöveg
+        exportButtonBg: 'rgba(51, 65, 85, 0.9)',
+        exportButtonHover: 'rgba(71, 85, 105, 0.95)',
+        exportButtonStroke: '#f8fafc'
+      };
+    } else {
+      // VILÁGOS MÓD - Sötét színek világos háttéren
+      return {
+        background: 'transparent',
+        titleColor: '#0f172a',           // Mély sötét címek
+        subtitleColor: '#334155',        // Sötét szürke alcímek
+        labelColor: '#64748b',           // Közepes sötét szürke labelek
+        gridLineColor: '#e2e8f0',        // Világos szürke vonalak
+        lineColor: '#e2e8f0',            // Világos szürke tengelyek
+        crosshairColor: 'rgba(15, 23, 42, 0.4)',    // Sötét crosshair
+        plotBandColor: 'rgba(15, 23, 42, 0.06)',
+        plotBandColorAlt: 'rgba(15, 23, 42, 0.12)',
+        tooltipBg: 'rgba(255, 255, 255, 0.95)',     // Világos tooltip háttér
+        tooltipBorder: '#e2e8f0',                    // Világos keret
+        tooltipText: '#0f172a',                      // Sötét tooltip szöveg
+        exportButtonBg: 'rgba(248, 250, 252, 0.9)',
+        exportButtonHover: 'rgba(226, 232, 240, 0.95)',
+        exportButtonStroke: '#0f172a'
+      };
+    }
+  }, [theme]);
   // Színárnyalatok generálása a fajtákhoz
   const generateColorShades = (baseColor: string, count: number): string[] => {
     const colors: string[] = [];
@@ -64,21 +227,28 @@ const BreederChart: React.FC<BreederChartProps> = ({
     data: categories.map(location =>
       variety.locations[location as keyof typeof variety.locations]
     ),
-    color: colors[index]
+    color: colors[index],
+    events: {
+      legendItemClick: function() {
+        // Megakadályozzuk az alapértelmezett legend click viselkedést
+        return false;
+      }
+    }
   }));
 
   const options: Highcharts.Options = {
     chart: {
       type: 'column',
-      backgroundColor: 'transparent',
+      backgroundColor: themeColors.background,
       style: {
         fontFamily: 'var(--font-geist-sans)'
-      }
+      },
+      animation: false
     },
     title: {
       text: `${breederName}`,
       style: {
-        color: '#ffffff',
+        color: themeColors.titleColor,
         fontSize: '18px',
         fontWeight: '600'
       }
@@ -86,7 +256,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
     subtitle: {
       text: title,
       style: {
-        color: '#a1a1aa',
+        color: themeColors.subtitleColor,
         fontSize: '14px'
       }
     },
@@ -94,25 +264,25 @@ const BreederChart: React.FC<BreederChartProps> = ({
       categories: categories,
       labels: {
         style: {
-          color: '#a1a1aa'
+          color: themeColors.labelColor
         }
       },
-      lineColor: '#3f3f46',
-      tickColor: '#3f3f46',
+      lineColor: themeColors.lineColor,
+      tickColor: themeColors.lineColor,
       crosshair: {
         width: 1,
-        color: 'rgba(255, 255, 255, 0.3)',
+        color: themeColors.crosshairColor,
         dashStyle: 'Solid' as const
       },
       plotBands: [
         {
           from: -0.5,
           to: 1.5,
-          color: 'rgba(255, 255, 255, 0.02)',
+          color: themeColors.plotBandColor,
           label: {
             text: 'Mezőberény',
             style: {
-              color: '#6b7280',
+              color: themeColors.labelColor,
               fontSize: '12px'
             },
             align: 'center'
@@ -121,11 +291,11 @@ const BreederChart: React.FC<BreederChartProps> = ({
         {
           from: 1.5,
           to: 3.5,
-          color: 'rgba(255, 255, 255, 0.05)',
+          color: themeColors.plotBandColorAlt,
           label: {
             text: 'Csabacsűd',
             style: {
-              color: '#6b7280',
+              color: themeColors.labelColor,
               fontSize: '12px'
             },
             align: 'center'
@@ -134,11 +304,11 @@ const BreederChart: React.FC<BreederChartProps> = ({
         {
           from: 3.5,
           to: 5.5,
-          color: 'rgba(255, 255, 255, 0.02)',
+          color: themeColors.plotBandColor,
           label: {
             text: 'Lakitelek',
             style: {
-              color: '#6b7280',
+              color: themeColors.labelColor,
               fontSize: '12px'
             },
             align: 'center'
@@ -150,27 +320,39 @@ const BreederChart: React.FC<BreederChartProps> = ({
       title: {
         text: 't/ha',
         style: {
-          color: '#a1a1aa'
+          color: themeColors.labelColor
         }
       },
       labels: {
         style: {
-          color: '#a1a1aa'
+          color: themeColors.labelColor
         }
       },
-      gridLineColor: '#3f3f46'
+      gridLineColor: themeColors.gridLineColor
     },
     legend: {
       enabled: true,
+      useHTML: true,
       itemStyle: {
-        color: '#a1a1aa'
+        color: themeColors.labelColor,
+        cursor: 'pointer',
+        fontWeight: 'normal',
+        textOverflow: 'ellipsis'
       },
       itemHoverStyle: {
-        color: '#ffffff'
+        color: '#ffffff',
+        fontWeight: 'bold'
+      },
+      itemHiddenStyle: {
+        color: themeColors.gridLineColor
+      },
+      labelFormatter: function(this: any) {
+        return `<span class="legend-item" style="padding: 2px 5px; border-radius: 3px; transition: all 0.2s ease; display: inline-block;">${this.name}</span>`;
       }
     },
     plotOptions: {
       column: {
+        animation: false,
         borderWidth: 0,
         borderRadius: 3,
         groupPadding: 0.1,
@@ -181,7 +363,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
         states: {
           hover: {
             brightness: 0.2,
-            borderColor: '#ffffff',
+            borderColor: themeColors.titleColor,
             borderWidth: 2
           },
           inactive: {
@@ -191,10 +373,109 @@ const BreederChart: React.FC<BreederChartProps> = ({
         cursor: 'pointer',
         point: {
           events: {
+            click: function(this: Highcharts.Point) {
+              const point = this as any;
+              const series = point.series;
+              const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+
+              // Összegyűjtjük az adott fajta összes helyszínének adatait
+              const allLocationData = categories.map(location => {
+                const locationIndex = categories.indexOf(location);
+                const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
+                return {
+                  location,
+                  value
+                };
+              });
+
+              // Globális state frissítése
+              setActiveChart(chartId, {
+                variety: series.name,
+                location: point.category,
+                value: point.y,
+                seriesColor: series.color,
+                allLocationData
+              });
+            },
             mouseOver: function() {
               const chart = this.series.chart;
               const point = this;
               const varietyName = point.series.name;
+
+              // Ha a panel már nyitva van, akkor frissítjük a hover adatokat
+              if (isChartActiveRef.current(chartIdRef.current)) {
+                const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+                const series = point.series;
+                const allLocationData = categories.map(location => {
+                  const locationIndex = categories.indexOf(location);
+                  const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
+                  return {
+                    location,
+                    value: value || 0
+                  };
+                });
+
+                // Hover adat frissítése
+                setHoverDataRef.current({
+                  variety: series.name,
+                  location: String(point.category || ''),
+                  value: Number(point.y || 0),
+                  seriesColor: String(series.color || '#000000'),
+                  allLocationData
+                });
+              }
+
+              // Legend highlighting - series.legendItem használata
+              const highlightLegend = () => {
+                chart.series.forEach((s: any) => {
+                  if (s.name === varietyName && s.legendItem) {
+                    // Aktív fajta kiemelése
+                    if (s.legendItem.css) {
+                      s.legendItem.css({
+                        'font-weight': 'bold',
+                        'fill': '#ffffff',
+                        'opacity': 1
+                      });
+                    }
+
+                    // Kék háttér hozzáadása
+                    if (!s.legendItem.highlightRect && s.legendItem.element) {
+                      const bbox = s.legendItem.element.getBBox();
+                      s.legendItem.highlightRect = chart.renderer.rect(
+                        bbox.x - 2,
+                        bbox.y - 1,
+                        bbox.width + 4,
+                        bbox.height + 2,
+                        2
+                      ).attr({
+                        fill: '#007acc',
+                        'stroke-width': 0
+                      }).add(s.legendItem.element.parentNode);
+
+                      // Háttér mögé tesszük a szöveget
+                      if (s.legendItem.element.parentNode) {
+                        s.legendItem.element.parentNode.insertBefore(
+                          s.legendItem.highlightRect.element,
+                          s.legendItem.element
+                        );
+                      }
+                    }
+                  } else if (s.legendItem) {
+                    // Többi fajta elhalványítása
+                    if (s.legendItem.css) {
+                      s.legendItem.css({
+                        'opacity': 0.5
+                      });
+                    }
+                  }
+                });
+              };
+
+              // Azonnali próbálkozás
+              highlightLegend();
+
+              // Második próbálkozás egy kis késleltetéssel
+              setTimeout(highlightLegend, 50);
 
               // Kiemeljük az összes ugyanolyan fajta oszlopot
               chart.series.forEach((series: any) => {
@@ -227,6 +508,29 @@ const BreederChart: React.FC<BreederChartProps> = ({
             },
             mouseOut: function() {
               const chart = this.series.chart;
+
+              // Hover adat törlése
+              setHoverDataRef.current(null);
+
+              // Legend highlighting visszaállítása
+              chart.series.forEach((s: any) => {
+                if (s.legendItem) {
+                  // Eredeti színek visszaállítása
+                  if (s.legendItem.css) {
+                    s.legendItem.css({
+                      'font-weight': 'normal',
+                      'fill': themeColors.labelColor,
+                      'opacity': 1
+                    });
+                  }
+
+                  // Háttér rect eltávolítása
+                  if ((s.legendItem as any).highlightRect) {
+                    (s.legendItem as any).highlightRect.destroy();
+                    delete (s.legendItem as any).highlightRect;
+                  }
+                }
+              });
 
               // Visszaállítjuk az eredeti állapotot
               chart.series.forEach((series: any) => {
@@ -270,23 +574,21 @@ const BreederChart: React.FC<BreederChartProps> = ({
         contextButton: {
           enabled: true,
           theme: {
-            fill: 'rgba(55, 65, 81, 0.9)',
-            stroke: '#ffffff',
+            fill: themeColors.exportButtonBg,
+            stroke: themeColors.exportButtonStroke,
             r: 4,
             states: {
               hover: {
-                fill: 'rgba(75, 85, 99, 0.95)',
-                stroke: '#ffffff'
+                fill: themeColors.exportButtonHover,
+                stroke: themeColors.exportButtonStroke
               },
               select: {
-                fill: 'rgba(107, 114, 128, 0.95)',
-                stroke: '#ffffff'
+                fill: themeColors.exportButtonHover,
+                stroke: themeColors.exportButtonStroke
               }
             }
           } as any,
           menuItems: [
-            'viewFullscreen',
-            'separator',
             'downloadPNG',
             'downloadJPEG',
             'downloadSVG'
@@ -302,146 +604,136 @@ const BreederChart: React.FC<BreederChartProps> = ({
       }
     },
     tooltip: {
-      enabled: true,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      borderColor: '#374151',
-      borderRadius: 8,
-      style: {
-        color: '#ffffff',
-        fontSize: '12px'
-      },
-      useHTML: true,
-      positioner: function(this: any, labelWidth: number, labelHeight: number, point: any) {
-        const chart = this.chart;
-        const plotLeft = chart.plotLeft;
-        const plotTop = chart.plotTop;
-        const plotHeight = chart.plotHeight;
-
-        // Konténer határok lekérdezése
-        const chartContainer = chart.container.parentElement;
-        const containerRect = chartContainer.getBoundingClientRect();
-        const containerHeight = containerRect.height;
-
-        // Tooltip a diagram bal oldalán jelenik meg - még balabbra
-        let x = plotLeft - labelWidth - 45; // Diagram bal szélétől 30px-re balra (nagyobb távolság)
-        let y = plotTop + (plotHeight / 2) - (labelHeight / 2); // Középen függőlegesen
-
-        // Biztosítjuk, hogy a tooltip ne menjen ki a konténerből
-        x = Math.max(5, x); // Legalább 5px-re a bal széltől
-        y = Math.max(5, Math.min(y, containerHeight - labelHeight - 5)); // Fentről/lentről ne lógjon ki
-
-        return { x, y };
-      },
-      formatter: function(this: any) {
-        const point = this.point;
-        const series = this.series;
-        const chart = this.series.chart;
-
-        // Megkeressük az összes ugyanolyan fajta adatait
-        let varietyData: any[] = [];
-        let totalValue = 0;
-        let validCount = 0;
-
-        chart.series.forEach((s: any) => {
-          if (s.name === series.name) {
-            s.points.forEach((p: any) => {
-              if (p.y !== null && p.y !== undefined && p.y > 0) {
-                varietyData.push({
-                  location: p.category,
-                  value: p.y,
-                  seriesName: s.name,
-                  color: s.color
-                });
-                totalValue += p.y;
-                validCount++;
-              }
-            });
-          }
-        });
-
-        // Átlag számítása
-        const averageValue = validCount > 0 ? totalValue / validCount : 0;
-
-        // Tooltip HTML összeállítása - optimális szélesség
-        let tooltipHtml = `<div style="width: 120px; max-height: 250px; display: flex; flex-direction: column;">`;
-
-        // Fejléc - nagyobb betűk
-        tooltipHtml += `<div style="flex-shrink: 0; font-weight: bold; margin-bottom: 4px; font-size: 12px; color: #ffffff; border-bottom: 1px solid #10b981; padding-bottom: 3px;">${series.name}</div>`;
-
-        // Scroll-ozható tartalom - nagyobb betűk
-        tooltipHtml += `<div style="flex: 1; overflow-y: auto; max-height: 150px; margin-bottom: 4px;">`;
-
-        // Összes helyszín adatai - nagyobb betűk
-        varietyData.forEach((data, index) => {
-          const isCurrentPoint = data.location === point.category;
-          const bgColor = isCurrentPoint ? 'rgba(16, 185, 129, 0.15)' : 'transparent';
-          const textColor = isCurrentPoint ? '#10b981' : '#d1d5db';
-          const valueColor = isCurrentPoint ? '#ffffff' : '#9ca3af';
-
-          tooltipHtml += `<div style="display: flex; align-items: center; margin: 1px 0; padding: 2px 3px; border-radius: 2px; background: ${bgColor}; border-left: 1px solid ${isCurrentPoint ? '#10b981' : 'transparent'};">`;
-          tooltipHtml += `<span style="width: 6px; height: 6px; background-color: ${data.color}; display: inline-block; margin-right: 4px; border-radius: 1px; flex-shrink: 0;"></span>`;
-          tooltipHtml += `<span style="flex: 1; font-size: 11px; color: ${textColor}; font-weight: ${isCurrentPoint ? '600' : '400'};">${data.location}</span>`;
-          tooltipHtml += `<span style="font-weight: bold; color: ${valueColor}; font-size: 11px; margin-left: 3px;">${data.value.toFixed(1)}</span>`;
-          tooltipHtml += `</div>`;
-        });
-
-        tooltipHtml += `</div>`;
-
-        // Összeg - nagyobb betűk
-        tooltipHtml += `<div style="flex-shrink: 0; border-top: 1px solid rgba(255, 255, 255, 0.2); padding: 3px; background: rgba(16, 185, 129, 0.1); border-radius: 2px;">`;
-        tooltipHtml += `<div style="display: flex; align-items: center; justify-content: space-between; font-weight: bold;">`;
-        tooltipHtml += `<span style="font-size: 10px; color: #ffffff;">Átlag:</span>`;
-        tooltipHtml += `<span style="font-size: 12px; color: #10b981; background: rgba(255, 255, 255, 0.1); padding: 1px 3px; border-radius: 2px;">${averageValue.toFixed(1)}</span>`;
-        tooltipHtml += `</div>`;
-        tooltipHtml += `</div>`;
-
-        tooltipHtml += `</div>`;
-
-        return tooltipHtml;
-      }
+      enabled: false
     }
   };
 
+  // Ellenőrizzük, hogy ez a chart aktív-e
+  const isThisChartActive = isChartActive(chartId);
+  const currentSelectedData = isThisChartActive ? selectedData : null;
+
   return (
-    <div className="w-full h-96 relative">
-      <button
-        onClick={() => {
-          if (chartRef.current) {
-            if (chartRef.current.requestFullscreen) {
-              chartRef.current.requestFullscreen();
-            } else if ((chartRef.current as any).webkitRequestFullscreen) {
-              (chartRef.current as any).webkitRequestFullscreen();
-            } else if ((chartRef.current as any).mozRequestFullScreen) {
-              (chartRef.current as any).mozRequestFullScreen();
-            } else if ((chartRef.current as any).msRequestFullscreen) {
-              (chartRef.current as any).msRequestFullscreen();
-            }
-          }
-        }}
-        className="absolute top-2 right-2 z-10 bg-gray-700 hover:bg-gray-600 text-white p-2 rounded-md transition-colors duration-200 shadow-lg"
-        title="Teljes képernyő"
-      >
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-          />
-        </svg>
-      </button>
-      <div ref={chartRef} className="w-full h-96">
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={options}
-        />
+    <div className="w-full">
+      <div className={`flex gap-4 ${currentSelectedData ? 'flex-col xl:flex-row' : ''}`}>
+        <div className={`${currentSelectedData ? 'flex-1 min-w-0' : 'w-full'} h-96 relative transition-all duration-300`}>
+          {/* Full-screen button */}
+          <button
+            onClick={() => setIsFullScreenOpen(true)}
+            className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-card/80 hover:bg-white dark:hover:bg-card border border-gray-200 dark:border-border hover:border-primary/50 text-foreground p-2 rounded-lg transition-all duration-200 shadow-lg backdrop-blur-sm"
+            title="Teljes képernyős nézet"
+          >
+            <Maximize2 className="w-5 h-5" />
+          </button>
+          <div ref={chartRef} className="w-full h-96">
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={options}
+              callback={(chart: Highcharts.Chart) => {
+                chartInstanceRef.current = chart;
+
+                // Legend hover functionality - panel frissítéssel
+                setTimeout(() => {
+                  chart.series.forEach((series: any) => {
+                    if (series.legendItem && series.legendItem.element) {
+                      const legendElement = series.legendItem.element;
+
+                      // jQuery-szerű hover, de vanilla JS-sel
+                      legendElement.addEventListener('mouseenter', () => {
+                        const varietyName = series.name;
+
+                        // Ha a panel már nyitva van, akkor frissítjük a hover adatokat
+                        if (isChartActiveRef.current(chartIdRef.current)) {
+                          const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+                          const allLocationData = categories.map(location => {
+                            const locationIndex = categories.indexOf(location);
+                            const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
+                            return {
+                              location,
+                              value: value || 0
+                            };
+                          });
+
+                          // Hover adat frissítése a legend hover alapján
+                          setHoverDataRef.current({
+                            variety: series.name,
+                            location: '', // Üres, mert nem konkrét oszlop
+                            value: 0,
+                            seriesColor: String(series.color || '#000000'),
+                            allLocationData
+                          });
+                        }
+
+                        // Oszlopok kiemelése
+                        chart.series.forEach((s: any) => {
+                          if (s.name === varietyName) {
+                            s.points.forEach((p: any) => {
+                              p.update({
+                                color: Highcharts.color(s.color).brighten(0.2).get(),
+                                borderColor: '#ffffff',
+                                borderWidth: 2
+                              }, false);
+                            });
+                            s.update({ opacity: 1 }, false);
+                          } else {
+                            s.update({ opacity: 0.3 }, false);
+                            s.points.forEach((p: any) => {
+                              p.update({ opacity: 0.3 }, false);
+                            });
+                          }
+                        });
+                        chart.redraw();
+                      });
+
+                      legendElement.addEventListener('mouseleave', () => {
+                        // Ha a panel nyitva van, töröljük a hover adatokat
+                        if (isChartActiveRef.current(chartIdRef.current)) {
+                          setHoverDataRef.current(null);
+                        }
+
+                        // Visszaállítás
+                        chart.series.forEach((s: any) => {
+                          s.update({ opacity: 1 }, false);
+                          s.points.forEach((p: any) => {
+                            p.update({
+                              color: s.color,
+                              borderColor: undefined,
+                              borderWidth: 0,
+                              opacity: 1
+                            }, false);
+                          });
+                        });
+                        chart.redraw();
+                      });
+                    }
+                  });
+                }, 100);
+              }}
+            />
+          </div>
+        </div>
+        {currentSelectedData && (
+          <div className="xl:flex-shrink-0 xl:w-52">
+            <BreederDataInfoPanel
+              selectedData={currentSelectedData}
+              hoverData={hoverData}
+              varieties={varieties}
+              theme={theme}
+              onClose={closePanel}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Full-screen modal */}
+      <FullScreenChartModal
+        isOpen={isFullScreenOpen}
+        onClose={() => setIsFullScreenOpen(false)}
+        title={title}
+        varieties={varieties}
+        breederColor={breederColor}
+        breederName={breederName}
+        chartOptions={options}
+      />
     </div>
   );
 };

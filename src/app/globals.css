@@ -1,6 +1,50 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Legend item styling for BreederChart */
+.legend-item {
+  padding: 2px 5px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.highcharts-legend-item:hover .legend-item {
+  background-color: #007acc !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
+}
+
+.highcharts-legend-item {
+  transition: opacity 0.2s ease;
+}
+
+.highcharts-legend-item.highcharts-legend-item-hidden {
+  opacity: 0.5 !important;
+}
+
+/* Custom slider styling for control panel */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -46,183 +90,124 @@
 :root {
   --radius: 0.625rem;
 
-  /* Sötét mód (alapértelmezett) - Paradicsom ültetvény éjszakai színek */
-  --background: 17 24 39; /* Sötétszürke - föld éjszaka */
-  --foreground: 243 244 246; /* Fehér - holdfény */
-  --card: 31 41 55; /* Sötétebb szürke - árnyék */
-  --card-foreground: 243 244 246;
-  --popover: 17 24 39;
-  --popover-foreground: 243 244 246;
-  --primary: 34 197 94; /* Zöld - paradicsom levelek éjszaka */
-  --primary-foreground: 17 24 39;
-  --secondary: 75 85 99; /* Szürke - kövek */
-  --secondary-foreground: 243 244 246;
-  --muted: 55 65 81; /* Középszürke - talaj */
-  --muted-foreground: 156 163 175;
-  --accent: 220 38 38; /* Piros - érett paradicsom */
-  --accent-foreground: 243 244 246;
-  --destructive: 239 68 68;
-  --destructive-foreground: 243 244 246;
-  --border: 75 85 99;
-  --input: 55 65 81;
-  --ring: 34 197 94;
-  --chart-1: 34 197 94; /* Zöld - paradicsom levelek */
-  --chart-2: 220 38 38; /* Piros - érett paradicsom */
-  --chart-3: 245 158 11; /* Narancs - naplemente */
-  --chart-4: 168 85 247; /* Lila - egzotikus fajták */
-  --chart-5: 59 130 246; /* Kék - öntözővíz */
-  --sidebar: 17 24 39;
-  --sidebar-foreground: 243 244 246;
-  --sidebar-primary: 34 197 94;
-  --sidebar-primary-foreground: 17 24 39;
-  --sidebar-accent: 75 85 99;
-  --sidebar-accent-foreground: 243 244 246;
-  --sidebar-border: 75 85 99;
-  --sidebar-ring: 34 197 94;
+  /* ===== VILÁGOS MÓD (alapértelmezett) ===== */
+  /* Természetes, meleg, napfényes színek - kiváló kontraszttal */
+  --background: 255 255 255; /* Tiszta fehér háttér */
+  --foreground: 15 23 42; /* Mély sötétkék szöveg - kiváló kontrasztú */
+  --card: 248 250 252; /* Nagyon világos szürke kártyák */
+  --card-foreground: 15 23 42; /* Mély sötétkék szöveg */
+  --popover: 255 255 255; /* Fehér popup háttér */
+  --popover-foreground: 15 23 42; /* Mély sötétkék szöveg */
+  --primary: 22 163 74; /* Élénk zöld - paradicsom levelek */
+  --primary-foreground: 255 255 255; /* Fehér szöveg zöld háttéren */
+  --secondary: 241 245 249; /* Világos szürke */
+  --secondary-foreground: 15 23 42; /* Mély sötétkék szöveg */
+  --muted: 248 250 252; /* Nagyon világos szürke */
+  --muted-foreground: 71 85 105; /* Közepes szürke - jó kontrasztú */
+  --accent: 220 38 38; /* Élénk piros - paradicsom */
+  --accent-foreground: 255 255 255; /* Fehér szöveg piros háttéren */
+  --destructive: 239 68 68; /* Piros figyelmeztetés */
+  --destructive-foreground: 255 255 255; /* Fehér szöveg */
+  --border: 226 232 240; /* Világos szürke keret */
+  --input: 255 255 255; /* Fehér input háttér */
+  --ring: 22 163 74; /* Zöld focus ring */
+  --chart-1: 22 163 74; /* Zöld */
+  --chart-2: 220 38 38; /* Piros */
+  --chart-3: 245 158 11; /* Narancs */
+  --chart-4: 147 51 234; /* Lila */
+  --chart-5: 59 130 246; /* Kék */
+  --sidebar: 248 250 252;
+  --sidebar-foreground: 15 23 42;
+  --sidebar-primary: 22 163 74;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 241 245 249;
+  --sidebar-accent-foreground: 15 23 42;
+  --sidebar-border: 226 232 240;
+  --sidebar-ring: 22 163 74;
 }
 
 .dark {
-  /* Sötét mód - ugyanaz mint :root */
-  --background: 17 24 39;
-  --foreground: 243 244 246;
-  --card: 31 41 55;
-  --card-foreground: 243 244 246;
-  --popover: 17 24 39;
-  --popover-foreground: 243 244 246;
-  --primary: 34 197 94;
-  --primary-foreground: 17 24 39;
-  --secondary: 75 85 99;
-  --secondary-foreground: 243 244 246;
-  --muted: 55 65 81;
-  --muted-foreground: 156 163 175;
-  --accent: 220 38 38;
-  --accent-foreground: 243 244 246;
-  --destructive: 239 68 68;
-  --destructive-foreground: 243 244 246;
-  --border: 75 85 99;
-  --input: 55 65 81;
-  --ring: 34 197 94;
-  --chart-1: 34 197 94;
-  --chart-2: 220 38 38;
-  --chart-3: 245 158 11;
-  --chart-4: 168 85 247;
-  --chart-5: 59 130 246;
-  --sidebar: 17 24 39;
-  --sidebar-foreground: 243 244 246;
+  /* ===== SÖTÉT MÓD ===== */
+  /* Mély, természetes éjszakai színek - kiváló kontraszttal */
+  --background: 15 23 42; /* Mély éjkék háttér */
+  --foreground: 248 250 252; /* Tiszta fehér szöveg - kiváló kontrasztú */
+  --card: 30 41 59; /* Sötétebb kék kártyák */
+  --card-foreground: 248 250 252; /* Tiszta fehér szöveg */
+  --popover: 30 41 59; /* Sötét popup háttér */
+  --popover-foreground: 248 250 252; /* Tiszta fehér szöveg */
+  --primary: 34 197 94; /* Élénk zöld - paradicsom levelek */
+  --primary-foreground: 15 23 42; /* Sötét szöveg zöld háttéren */
+  --secondary: 51 65 85; /* Közepes sötét szürke */
+  --secondary-foreground: 248 250 252; /* Tiszta fehér szöveg */
+  --muted: 51 65 85; /* Közepes sötét szürke */
+  --muted-foreground: 148 163 184; /* Világos szürke - jó kontrasztú */
+  --accent: 239 68 68; /* Élénk piros - paradicsom */
+  --accent-foreground: 248 250 252; /* Tiszta fehér szöveg */
+  --destructive: 239 68 68; /* Piros figyelmeztetés */
+  --destructive-foreground: 248 250 252; /* Tiszta fehér szöveg */
+  --border: 71 85 105; /* Közepes szürke keret */
+  --input: 51 65 85; /* Sötét input háttér */
+  --ring: 34 197 94; /* Zöld focus ring */
+  --chart-1: 34 197 94; /* Zöld */
+  --chart-2: 239 68 68; /* Piros */
+  --chart-3: 245 158 11; /* Narancs */
+  --chart-4: 168 85 247; /* Lila */
+  --chart-5: 59 130 246; /* Kék */
+  --sidebar: 30 41 59;
+  --sidebar-foreground: 248 250 252;
   --sidebar-primary: 34 197 94;
-  --sidebar-primary-foreground: 17 24 39;
-  --sidebar-accent: 75 85 99;
-  --sidebar-accent-foreground: 243 244 246;
-  --sidebar-border: 75 85 99;
+  --sidebar-primary-foreground: 15 23 42;
+  --sidebar-accent: 51 65 85;
+  --sidebar-accent-foreground: 248 250 252;
+  --sidebar-border: 71 85 105;
   --sidebar-ring: 34 197 94;
 }
 
-/* Világos mód - Paradicsom ültetvény nappali színek (lágyabb) */
-body.light-theme {
-  --background: 249 245 215; /* Krémszín - napsütötte föld */
-  --foreground: 51 65 85; /* Sötétszürke - talaj */
-  --card: 255 251 235; /* Halvány krém - napfény */
-  --card-foreground: 51 65 85;
-  --popover: 255 251 235;
-  --popover-foreground: 51 65 85;
-  --primary: 34 197 94; /* Élénkzöld - friss levelek */
-  --primary-foreground: 255 255 255;
-  --secondary: 254 243 199; /* Világos narancs - fiatal levelek */
-  --secondary-foreground: 34 197 94;
-  --muted: 251 245 225; /* Halvány bézs - száraz talaj */
-  --muted-foreground: 100 116 139;
-  --accent: 220 38 38; /* Piros - érett paradicsom */
-  --accent-foreground: 255 255 255;
-  --destructive: 239 68 68;
-  --destructive-foreground: 255 255 255;
-  --border: 226 232 240;
-  --input: 255 251 235;
-  --ring: 34 197 94;
-  --chart-1: 34 197 94; /* Élénkzöld - friss levelek */
-  --chart-2: 220 38 38; /* Piros - érett paradicsom */
-  --chart-3: 245 158 11; /* Narancs - napfény */
-  --chart-4: 168 85 247; /* Lila - egzotikus fajták */
-  --chart-5: 59 130 246; /* Kék - tiszta ég */
-  --sidebar: 255 251 235;
-  --sidebar-foreground: 51 65 85;
-  --sidebar-primary: 34 197 94;
-  --sidebar-primary-foreground: 255 255 255;
-  --sidebar-accent: 254 243 199;
-  --sidebar-accent-foreground: 34 197 94;
-  --sidebar-border: 226 232 240;
-  --sidebar-ring: 34 197 94;
-}
-
-/* Sötét mód - Paradicsom ültetvény éjszakai színek */
-body.dark-theme {
-  --background: 17 24 39; /* Sötétszürke - föld éjszaka */
-  --foreground: 243 244 246; /* Fehér - holdfény */
-  --card: 31 41 55; /* Sötétebb szürke - árnyék */
-  --card-foreground: 243 244 246;
-  --popover: 17 24 39;
-  --popover-foreground: 243 244 246;
-  --primary: 34 197 94; /* Zöld - paradicsom levelek éjszaka */
-  --primary-foreground: 17 24 39;
-  --secondary: 75 85 99; /* Szürke - kövek */
-  --secondary-foreground: 243 244 246;
-  --muted: 55 65 81; /* Középszürke - talaj */
-  --muted-foreground: 156 163 175;
-  --accent: 220 38 38; /* Piros - érett paradicsom */
-  --accent-foreground: 243 244 246;
-  --destructive: 239 68 68;
-  --destructive-foreground: 243 244 246;
-  --border: 75 85 99;
-  --input: 55 65 81;
-  --ring: 34 197 94;
-  --chart-1: 34 197 94; /* Zöld - paradicsom levelek */
-  --chart-2: 220 38 38; /* Piros - érett paradicsom */
-  --chart-3: 245 158 11; /* Narancs - naplemente */
-  --chart-4: 168 85 247; /* Lila - egzotikus fajták */
-  --chart-5: 59 130 246; /* Kék - öntözővíz */
-  --sidebar: 17 24 39;
-  --sidebar-foreground: 243 244 246;
-  --sidebar-primary: 34 197 94;
-  --sidebar-primary-foreground: 17 24 39;
-  --sidebar-accent: 75 85 99;
-  --sidebar-accent-foreground: 243 244 246;
-  --sidebar-border: 75 85 99;
-  --sidebar-ring: 34 197 94;
-}
-
-/* Töröljük ki az összes CSS változót és használjuk a Tailwind osztályokat */
+/* ===== ALAPVETŐ STÍLUSOK ===== */
 body {
-  /* Alapvető átmenetek */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Dark mode styles - Paradicsom ültetvény éjszakai színek */
+/* Sötét mód beállítások */
 .dark {
   color-scheme: dark;
 }
 
-.dark body {
-  background-color: rgb(17 24 39); /* Sötétszürke - föld éjszaka */
-  color: rgb(243 244 246); /* Fehér - holdfény */
-}
-
-.dark .card {
-  background-color: rgb(31 41 55); /* Sötétebb szürke - árnyék */
-  border-color: rgb(75 85 99);
-}
-
-/* Light mode styles - Paradicsom ültetvény nappali színek (alapértelmezett) */
-body {
-  background-color: rgb(249 245 215); /* Krémszín - napsütötte föld */
-  color: rgb(51 65 85); /* Sötétszürke - talaj */
+/* Világos mód beállítások */
+:root:not(.dark) {
   color-scheme: light;
 }
 
-.card {
-  background-color: rgb(255 251 235); /* Halvány krém - napfény */
-  border-color: rgb(226 232 240);
+/* ===== GLOBÁLIS ÁTMENETEK ===== */
+/* Sima átmenetek minden elemre - teljesítmény optimalizált */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease,
+              color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
 }
 
-/* Smooth transitions */
-* {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* ===== HOZZÁFÉRHETŐSÉG ===== */
+/* Focus láthatóság javítása */
+:focus-visible {
+  outline: 2px solid rgb(var(--ring));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Csökkentett mozgás preferencia esetén */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -16,10 +16,10 @@ export default function Home() {
       <div className="max-w-[1920px] mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
             🍅 Univer 2025 Dashboard
           </h1>
-          <p className="text-lg">
+          <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground">
             Tövön tarthatóság elemzés nemesítőházak szerint
           </p>
         </div>
@@ -29,10 +29,10 @@ export default function Home() {
           {/* Bal oldal - Érett bogyó mennyisége szekció */}
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
                 Érett bogyó mennyisége (t/ha)
               </h2>
-              <p>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
                 Az ép, érett bogyó mennyisége I. és II. szedés során
               </p>
             </div>
@@ -43,16 +43,16 @@ export default function Home() {
                 if (varieties.length === 0) return null;
 
                 return (
-                  <div key={`erett-${breeder.name}`} className="w-full bg-card border border-border rounded-lg p-6">
+                  <div key={`erett-${breeder.name}`} className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 shadow-sm">
                     <div className="mb-4">
-                      <h3 className="text-xl font-semibold flex items-center gap-3">
+                      <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-3 text-foreground">
                         <div
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: breeder.color }}
                         />
                         {breeder.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-600 dark:text-muted-foreground">
                         {varieties.length} fajta adatai
                       </p>
                     </div>
@@ -72,10 +72,10 @@ export default function Home() {
           {/* Jobb oldal - Romló bogyó mennyisége szekció */}
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
                 Romló bogyó mennyisége (t/ha)
               </h2>
-              <p>
+              <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
                 A romló bogyó mennyisége I. és II. szedés során
               </p>
             </div>
@@ -86,16 +86,16 @@ export default function Home() {
                 if (varieties.length === 0) return null;
 
                 return (
-                  <div key={`romlo-${breeder.name}`} className="w-full bg-card border border-border rounded-lg p-6">
+                  <div key={`romlo-${breeder.name}`} className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 shadow-sm">
                     <div className="mb-4">
-                      <h3 className="text-xl font-semibold flex items-center gap-3">
+                      <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-3 text-foreground">
                         <div
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: breeder.color }}
                         />
                         {breeder.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-gray-600 dark:text-muted-foreground">
                         {varieties.length} fajta adatai
                       </p>
                     </div>
@@ -114,8 +114,8 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-border text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-border text-center">
+          <p className="text-sm text-gray-600 dark:text-muted-foreground">
             🍅 Paradicsom fajtakísérlet - 2025 © Minden jog fenntartva
           </p>
         </div>
