@@ -1,5 +1,6 @@
+'use client';
+
 import BreederChart from "@/components/BreederChart";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { processChartData, groupDataByBreeder, BREEDERS, getBreederColor } from "@/utils/dataProcessor";
 
 export default function Home() {
@@ -11,14 +12,14 @@ export default function Home() {
   const romloGrouped = groupDataByBreeder(romloData);
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen p-6">
+      <div className="max-w-[1920px] mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-foreground">
-            Univer 2025 Dashboard
+          <h1 className="text-4xl font-bold">
+            🍅 Univer 2025 Dashboard
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-lg">
             Tövön tarthatóság elemzés nemesítőházak szerint
           </p>
         </div>
@@ -28,10 +29,10 @@ export default function Home() {
           {/* Bal oldal - Érett bogyó mennyisége szekció */}
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-foreground mb-2">
+              <h2 className="text-3xl font-bold mb-2">
                 Érett bogyó mennyisége (t/ha)
               </h2>
-              <p className="text-muted-foreground">
+              <p>
                 Az ép, érett bogyó mennyisége I. és II. szedés során
               </p>
             </div>
@@ -42,29 +43,27 @@ export default function Home() {
                 if (varieties.length === 0) return null;
 
                 return (
-                  <Card key={`erett-${breeder.name}`} className="w-full">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3">
+                  <div key={`erett-${breeder.name}`} className="w-full bg-card border border-border rounded-lg p-6">
+                    <div className="mb-4">
+                      <h3 className="text-xl font-semibold flex items-center gap-3">
                         <div
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: breeder.color }}
                         />
                         {breeder.name}
-                      </CardTitle>
-                      <CardDescription>
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
                         {varieties.length} fajta adatai
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <BreederChart
-                        title="Érett bogyó mennyisége"
-                        varieties={varieties}
-                        breederColor={breeder.color}
-                        breederName={breeder.name}
-                        allVarietiesData={erettData}
-                      />
-                    </CardContent>
-                  </Card>
+                      </p>
+                    </div>
+                    <BreederChart
+                      title="Érett bogyó mennyisége"
+                      varieties={varieties}
+                      breederColor={breeder.color}
+                      breederName={breeder.name}
+                      allVarietiesData={erettData}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -73,10 +72,10 @@ export default function Home() {
           {/* Jobb oldal - Romló bogyó mennyisége szekció */}
           <div className="space-y-6">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-foreground mb-2">
+              <h2 className="text-3xl font-bold mb-2">
                 Romló bogyó mennyisége (t/ha)
               </h2>
-              <p className="text-muted-foreground">
+              <p>
                 A romló bogyó mennyisége I. és II. szedés során
               </p>
             </div>
@@ -87,33 +86,38 @@ export default function Home() {
                 if (varieties.length === 0) return null;
 
                 return (
-                  <Card key={`romlo-${breeder.name}`} className="w-full">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-3">
+                  <div key={`romlo-${breeder.name}`} className="w-full bg-card border border-border rounded-lg p-6">
+                    <div className="mb-4">
+                      <h3 className="text-xl font-semibold flex items-center gap-3">
                         <div
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: breeder.color }}
                         />
                         {breeder.name}
-                      </CardTitle>
-                      <CardDescription>
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
                         {varieties.length} fajta adatai
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <BreederChart
-                        title="Romló bogyó mennyisége"
-                        varieties={varieties}
-                        breederColor={breeder.color}
-                        breederName={breeder.name}
-                        allVarietiesData={romloData}
-                      />
-                    </CardContent>
-                  </Card>
+                      </p>
+                    </div>
+                    <BreederChart
+                      title="Romló bogyó mennyisége"
+                      varieties={varieties}
+                      breederColor={breeder.color}
+                      breederName={breeder.name}
+                      allVarietiesData={romloData}
+                    />
+                  </div>
                 );
               })}
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-12 pt-8 border-t border-border text-center">
+          <p className="text-sm text-muted-foreground">
+            🍅 Paradicsom fajtakísérlet - 2025 © Minden jog fenntartva
+          </p>
         </div>
       </div>
     </div>
