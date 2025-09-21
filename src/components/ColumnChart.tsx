@@ -164,10 +164,9 @@ const ColumnChart: React.FC<ColumnChartProps> = ({
         cursor: 'pointer',
         states: {
           hover: {
-            brightness: 0.1
+
           },
           select: {
-            brightness: 0.2,
             borderColor: '#ffffff',
             borderWidth: 2
           }
