@@ -97,105 +97,105 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
           </button>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Chart Area */}
-          <div className={`p-6 ${hoverData ? 'flex-1 min-h-0' : 'flex-1'}`}>
-            <div ref={chartRef} className="w-full h-full min-h-[300px]">
-              <HighchartsReact
-                highcharts={Highcharts}
-                options={{
-                  ...chartOptions,
-                  chart: {
-                    ...chartOptions.chart,
-                    height: null, // Let it fill the container
-                    backgroundColor: 'transparent',
-                    events: {
-                      mouseLeave: function() {
-                        // Clear hover data when mouse leaves the chart area
-                        setHoverData(null);
+        {/* Main Content Area - All scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-0">
+            {/* Chart Area - now part of scrollable content */}
+            <div className="p-6">
+              <div ref={chartRef} className="w-full h-96">
+                <HighchartsReact
+                  highcharts={Highcharts}
+                  options={{
+                    ...chartOptions,
+                    chart: {
+                      ...chartOptions.chart,
+                      height: 384, // Fixed height for consistent display
+                      backgroundColor: 'transparent',
+                      events: {
+                        mouseLeave: function() {
+                          // Clear hover data when mouse leaves the chart area
+                          setHoverData(null);
+                        }
                       }
-                    }
-                  },
-                  title: {
-                    ...chartOptions.title,
-                    style: {
-                      ...chartOptions.title?.style,
-                      fontSize: '24px'
-                    }
-                  },
-                  subtitle: {
-                    ...chartOptions.subtitle,
-                    style: {
-                      ...chartOptions.subtitle?.style,
-                      fontSize: '16px'
-                    }
-                  },
-                  plotOptions: {
-                    ...chartOptions.plotOptions,
-                    column: {
-                      ...chartOptions.plotOptions?.column,
-                      point: {
-                        events: {
-                          mouseOver: function(this: Highcharts.Point) {
-                            const point = this as any;
-                            const series = point.series;
-                            const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+                    },
+                    title: {
+                      ...chartOptions.title,
+                      style: {
+                        ...chartOptions.title?.style,
+                        fontSize: '24px'
+                      }
+                    },
+                    subtitle: {
+                      ...chartOptions.subtitle,
+                      style: {
+                        ...chartOptions.subtitle?.style,
+                        fontSize: '16px'
+                      }
+                    },
+                    plotOptions: {
+                      ...chartOptions.plotOptions,
+                      column: {
+                        ...chartOptions.plotOptions?.column,
+                        point: {
+                          events: {
+                            mouseOver: function(this: Highcharts.Point) {
+                              const point = this as any;
+                              const series = point.series;
+                              const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
-                            // Collect all location data for this variety
-                            const allLocationData = categories.map(location => {
-                              const locationIndex = categories.indexOf(location);
-                              const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
-                              return {
-                                location,
-                                value: value || 0
-                              };
-                            });
+                              // Collect all location data for this variety
+                              const allLocationData = categories.map(location => {
+                                const locationIndex = categories.indexOf(location);
+                                const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
+                                return {
+                                  location,
+                                  value: value || 0
+                                };
+                              });
 
-                            // Set hover data for the comparison panel
-                            setHoverData({
-                              variety: series.name,
-                              location: String(point.category || ''),
-                              value: Number(point.y || 0),
-                              seriesColor: String(series.color || '#000000'),
-                              allLocationData
-                            });
-                          },
-                          click: function(this: Highcharts.Point) {
-                            const point = this as any;
-                            const series = point.series;
-                            const varietyName = series.name;
+                              // Set hover data for the comparison panel
+                              setHoverData({
+                                variety: series.name,
+                                location: String(point.category || ''),
+                                value: Number(point.y || 0),
+                                seriesColor: String(series.color || '#000000'),
+                                allLocationData
+                              });
+                            },
+                            click: function(this: Highcharts.Point) {
+                              const point = this as any;
+                              const series = point.series;
+                              const varietyName = series.name;
 
-                            // Toggle selection: if already selected, deselect; otherwise select
-                            if (selectedVariety === varietyName) {
-                              setSelectedVariety(null);
-                            } else {
-                              setSelectedVariety(varietyName);
+                              // Toggle selection: if already selected, deselect; otherwise select
+                              if (selectedVariety === varietyName) {
+                                setSelectedVariety(null);
+                              } else {
+                                setSelectedVariety(varietyName);
+                              }
+                            },
+                            mouseOut: function() {
+                              // Keep the panel open for better UX - only clear on chart leave
                             }
-                          },
-                          mouseOut: function() {
-                            // Keep the panel open for better UX - only clear on chart leave
                           }
                         }
                       }
-                    }
-                  },
-                  series: chartOptions.series?.map((series: any) => ({
-                    ...series,
-                    color: selectedVariety && selectedVariety !== series.name
-                      ? (theme === 'dark' ? '#374151' : '#d1d5db') // Dimmed color for non-selected
-                      : series.color, // Original color for selected or when none selected
-                    opacity: selectedVariety && selectedVariety !== series.name ? 0.3 : 1
-                  }))
-                }}
-              />
+                    },
+                    series: chartOptions.series?.map((series: any) => ({
+                      ...series,
+                      color: selectedVariety && selectedVariety !== series.name
+                        ? (theme === 'dark' ? '#374151' : '#d1d5db') // Dimmed color for non-selected
+                        : series.color, // Original color for selected or when none selected
+                      opacity: selectedVariety && selectedVariety !== series.name ? 0.3 : 1
+                    }))
+                  }}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Enhanced Variety Comparison Panel */}
-          {hoverData && (
-            <div className="flex-shrink-0 border-t border-gray-200 dark:border-border bg-white/95 dark:bg-background/95 backdrop-blur-sm">
-              <div className="max-h-[40vh] overflow-y-auto">
+            {/* Enhanced Variety Comparison Panel - always visible when there's hoverData */}
+            {hoverData && (
+              <div className="bg-gray-50 dark:bg-background">
                 <VarietyComparisonPanel
                   selectedVariety={hoverData.variety}
                   hoverData={hoverData}
@@ -203,8 +203,8 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                   breederColor={breederColor}
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
