@@ -48,15 +48,54 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
   }, [theme]);
 
   const chartOptions = useMemo(() => {
-    // Sort varieties by variety name for consistent display
-    const sortedVarieties = [...varieties].sort((a, b) => a.variety.localeCompare(b.variety));
+    // Group varieties by base name (remove -I, -II suffixes) and sort
+    const groupedVarieties = varieties.reduce((acc, variety) => {
+      const baseName = variety.variety.replace(/-I+$/, '');
+      if (!acc[baseName]) {
+        acc[baseName] = [];
+      }
+      acc[baseName].push(variety);
+      return acc;
+    }, {} as Record<string, CumulativeData[]>);
 
-    const categories = sortedVarieties.map(v => v.variety);
+    // Sort groups by base name, then within each group by variety name
+    // Add spacing markers between different variety groups
+    const sortedVarietiesWithSpacing: (CumulativeData | { isSpacing: true; variety: string })[] = [];
+    const sortedGroups = Object.keys(groupedVarieties).sort();
 
-    const erettData = sortedVarieties.map(v => v.érett || 0);
-    const sargaData = sortedVarieties.map(v => v.sárga || 0);
-    const zoldData = sortedVarieties.map(v => v.zöld || 0);
-    const romloData = sortedVarieties.map(v => v.romló || 0);
+    sortedGroups.forEach((baseName, groupIndex) => {
+      const groupVarieties = groupedVarieties[baseName].sort((a, b) => a.variety.localeCompare(b.variety));
+      sortedVarietiesWithSpacing.push(...groupVarieties);
+
+      // Add spacing after each group (except the last one)
+      if (groupIndex < sortedGroups.length - 1) {
+        sortedVarietiesWithSpacing.push({ isSpacing: true, variety: `spacing-${groupIndex}` });
+      }
+    });
+
+    // Extract actual varieties and create categories with spacing
+    const sortedVarieties = sortedVarietiesWithSpacing.filter(item => !('isSpacing' in item)) as CumulativeData[];
+
+    // Calculate average maturity value
+    const totalErett = sortedVarieties.reduce((sum, v) => sum + (v.érett || 0), 0);
+    const averageErett = totalErett / sortedVarieties.length;
+
+    const categories = sortedVarietiesWithSpacing.map(item =>
+      'isSpacing' in item ? '' : item.variety
+    );
+
+    const erettData = sortedVarietiesWithSpacing.map(item =>
+      'isSpacing' in item ? null : (item.érett || 0)
+    );
+    const sargaData = sortedVarietiesWithSpacing.map(item =>
+      'isSpacing' in item ? null : (item.sárga || 0)
+    );
+    const zoldData = sortedVarietiesWithSpacing.map(item =>
+      'isSpacing' in item ? null : (item.zöld || 0)
+    );
+    const romloData = sortedVarietiesWithSpacing.map(item =>
+      'isSpacing' in item ? null : (item.romló || 0)
+    );
 
 
     return {
@@ -70,19 +109,10 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
         animation: false
       },
       title: {
-        text: `${locationName}`,
-        style: {
-          fontSize: '18px',
-          fontWeight: '600',
-          color: themeColors.titleColor
-        }
+        text: undefined
       },
       subtitle: {
-        text: `${breederName} - ${varieties.length} fajta`,
-        style: {
-          fontSize: '14px',
-          color: themeColors.subtitleColor
-        }
+        text: undefined
       },
       xAxis: {
         categories: categories,
@@ -97,25 +127,6 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
         },
         lineColor: themeColors.lineColor,
         tickColor: themeColors.lineColor
-      },
-      yAxis: {
-        min: 0,
-        title: {
-          text: 'Termés mennyisége (t/ha)',
-          style: {
-            fontSize: '12px',
-            color: themeColors.titleColor,
-            fontWeight: '500'
-          }
-        },
-        labels: {
-          style: {
-            fontSize: '11px',
-            color: themeColors.labelColor
-          }
-        },
-        gridLineColor: themeColors.gridColor,
-        lineColor: themeColors.lineColor
       },
       legend: {
         reversed: true,
@@ -137,8 +148,8 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
         series: {
           stacking: 'normal' as const,
           borderWidth: 0,
-          pointPadding: 0.1,
-          groupPadding: 0.1,
+          pointPadding: 0.05, // Smaller padding within variety pairs
+          groupPadding: 0.2,  // Larger padding between different variety groups
           borderRadius: 2
         },
         bar: {
@@ -173,6 +184,31 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
           color: '#DC2626'
         }
       ],
+      yAxis: {
+        plotLines: [{
+          value: averageErett,
+          color: '#DC2626',
+          width: 2,
+          zIndex: 5
+        }],
+        min: 0,
+        title: {
+          text: 'Termés mennyisége (t/ha)',
+          style: {
+            fontSize: '12px',
+            color: themeColors.titleColor,
+            fontWeight: '500'
+          }
+        },
+        labels: {
+          style: {
+            fontSize: '11px',
+            color: themeColors.labelColor
+          }
+        },
+        gridLineColor: themeColors.gridColor,
+        lineColor: themeColors.lineColor
+      },
       tooltip: {
         shared: true,
         useHTML: true,

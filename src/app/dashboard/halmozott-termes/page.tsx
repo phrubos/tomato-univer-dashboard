@@ -73,7 +73,7 @@ export default function HalmozottTermesDashboard() {
   // Process data for current location
   const currentLocationData = selectedLocation && halmozottData[selectedLocation] ? halmozottData[selectedLocation] : [];
   const cumulativeData = processCumulativeData(currentLocationData);
-  const groupedByBreeder = groupHalmozottByBreeder(cumulativeData);
+  const groupedByBreeder = groupHalmozottByBreeder(cumulativeData, selectedLocation);
   const filteredData = filterDataByAccessLevel(groupedByBreeder, accessLevel);
 
   const availableLocations = getAvailableLocations(halmozottData);
@@ -164,6 +164,10 @@ export default function HalmozottTermesDashboard() {
             {Object.entries(filteredData).map(([breederName, varieties]) => {
               if (varieties.length === 0) return null;
 
+              // Calculate average maturity value for this breeder
+              const totalErett = varieties.reduce((sum, v) => sum + (v.érett || 0), 0);
+              const averageErett = totalErett / varieties.length;
+
               const breederColor = BREEDER_COLORS[breederName as keyof typeof BREEDER_COLORS] || '#6B7280';
 
               return (
@@ -176,9 +180,20 @@ export default function HalmozottTermesDashboard() {
                       />
                       {breederName}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {varieties.length} fajta • {getLocationDisplayName(selectedLocation)}
-                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {Math.ceil(varieties.length / 2)} fajta • {getLocationDisplayName(selectedLocation)}
+                      </p>
+                      <div className="flex items-center gap-3 bg-red-50 dark:bg-red-950/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800/30">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-0.5 bg-red-600 rounded-full shadow-sm"></div>
+                          <div className="w-1 h-1 bg-red-600 rounded-full"></div>
+                        </div>
+                        <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+                          Átlagos érett érték: <span className="font-bold">{averageErett.toFixed(1)} t/ha</span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <CumulativeChart
