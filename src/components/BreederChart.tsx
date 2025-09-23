@@ -127,6 +127,9 @@ const BreederChart: React.FC<BreederChartProps> = ({
   // Hover adat state - lokálisan kezeljük
   const [hoverData, setHoverData] = React.useState<any | null>(null);
 
+  // Kiválasztott fajta state a legend kattintáshoz
+  const [selectedBreed, setSelectedBreed] = React.useState<string | null>(null);
+
   // Full-screen modal state
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
@@ -134,13 +137,26 @@ const BreederChart: React.FC<BreederChartProps> = ({
   const setHoverDataRef = React.useRef(setHoverData);
   const isChartActiveRef = React.useRef(isChartActive);
   const chartIdRef = React.useRef(chartId);
+  const selectedBreedRef = React.useRef(selectedBreed);
+  const setSelectedBreedRef = React.useRef(setSelectedBreed);
 
   // Ref-ek frissítése
   React.useEffect(() => {
     setHoverDataRef.current = setHoverData;
     isChartActiveRef.current = isChartActive;
     chartIdRef.current = chartId;
-  }, [setHoverData, isChartActive, chartId]);
+    selectedBreedRef.current = selectedBreed;
+    setSelectedBreedRef.current = setSelectedBreed;
+  }, [setHoverData, isChartActive, chartId, selectedBreed, setSelectedBreed]);
+
+  // Chart aktív állapot figyelése - ha ez a chart már nem aktív, visszaállítjuk
+  React.useEffect(() => {
+    if (!isChartActive(chartId) && selectedBreed) {
+      // Ha ez a chart már nem aktív, de van kiválasztott fajta, visszaállítjuk
+      setSelectedBreed(null);
+      resetHighlight();
+    }
+  }, [isChartActive, chartId, selectedBreed]);
 
   // Modulok betöltése komponens betöltéskor (egyszerűsített)
   useEffect(() => {
@@ -228,12 +244,6 @@ const BreederChart: React.FC<BreederChartProps> = ({
       variety.locations[location as keyof typeof variety.locations]
     ),
     color: colors[index],
-    events: {
-      legendItemClick: function() {
-        // Megakadályozzuk az alapértelmezett legend click viselkedést
-        return false;
-      }
-    }
   }));
 
   const options: Highcharts.Options = {
@@ -331,24 +341,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
       gridLineColor: themeColors.gridLineColor
     },
     legend: {
-      enabled: true,
-      useHTML: true,
-      itemStyle: {
-        color: themeColors.labelColor,
-        cursor: 'pointer',
-        fontWeight: 'normal',
-        textOverflow: 'ellipsis'
-      },
-      itemHoverStyle: {
-        color: '#ffffff',
-        fontWeight: 'bold'
-      },
-      itemHiddenStyle: {
-        color: themeColors.gridLineColor
-      },
-      labelFormatter: function(this: any) {
-        return `<span class="legend-item" style="padding: 2px 5px; border-radius: 3px; transition: all 0.2s ease; display: inline-block;">${this.name}</span>`;
-      }
+      enabled: false
     },
     plotOptions: {
       column: {
@@ -367,7 +360,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
             borderWidth: 2
           },
           inactive: {
-            opacity: 0.3
+            opacity: 0.6
           }
         },
         cursor: 'pointer',
@@ -376,6 +369,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
             click: function(this: Highcharts.Point) {
               const point = this as any;
               const series = point.series;
+              const chart = series.chart;
+              const clickedBreedName = series.name;
               const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
               // Összegyűjtjük az adott fajta összes helyszínének adatait
@@ -388,7 +383,79 @@ const BreederChart: React.FC<BreederChartProps> = ({
                 };
               });
 
-              // Globális state frissítése
+              // Ha már van kiválasztott fajta, előbb visszaállítjuk mindent
+              if (selectedBreedRef.current) {
+                // Minden oszlop visszaállítása eredeti állapotba
+                chart.series.forEach((series: any) => {
+                  if (series && series.update && typeof series.update === 'function') {
+                    series.update({
+                      opacity: 1
+                    }, false);
+                  }
+                  if (series && series.points) {
+                    series.points.forEach((p: any) => {
+                      if (p && p.update && typeof p.update === 'function') {
+                        p.update({
+                          color: series.color,
+                          borderColor: undefined,
+                          borderWidth: 0,
+                          opacity: 1
+                        }, false);
+                      }
+                    });
+                  }
+                });
+              }
+
+              // Beállítjuk a kiválasztott fajtát
+              setSelectedBreed(clickedBreedName);
+
+              // Kiemeljük a kattintott fajta összes oszlopát
+              if (chart && chart.series) {
+                const borderColor = themeColors.titleColor;
+
+                chart.series.forEach((s: any) => {
+                  if (s && s.name === clickedBreedName) {
+                    // Kiemeljük az aktív fajta oszlopait
+                    if (s.points) {
+                      s.points.forEach((p: any) => {
+                        if (p && p.update && typeof p.update === 'function') {
+                          p.update({
+                            color: Highcharts.color(s.color).brighten(0.2).get(),
+                            borderColor: borderColor,
+                            borderWidth: 2
+                          }, false);
+                        }
+                      });
+                    }
+                    if (s.update && typeof s.update === 'function') {
+                      s.update({
+                        opacity: 1
+                      }, false);
+                    }
+                  } else if (s) {
+                    // Elhalványítjuk a többi fajtát
+                    if (s.update && typeof s.update === 'function') {
+                      s.update({
+                        opacity: 0.6
+                      }, false);
+                    }
+                    if (s.points) {
+                      s.points.forEach((p: any) => {
+                        if (p && p.update && typeof p.update === 'function') {
+                          p.update({
+                            opacity: 0.6
+                          }, false);
+                        }
+                      });
+                    }
+                  }
+                });
+
+                chart.redraw();
+              }
+
+              // Globális state frissítése (panel megnyitása)
               setActiveChart(chartId, {
                 variety: series.name,
                 location: point.category,
@@ -423,6 +490,26 @@ const BreederChart: React.FC<BreederChartProps> = ({
                   seriesColor: String(series.color || '#000000'),
                   allLocationData
                 });
+              }
+
+              // Ha van kiválasztott fajta, megakadályozzuk az auto hover effektust
+              if (selectedBreedRef.current) {
+                // Visszaállítjuk a pont megjelenését a kiválasztott fajta állapotának megfelelően
+                if (point.series.name === selectedBreedRef.current) {
+                  // Ez a kiválasztott fajta - megtartjuk a kiemelést
+                  point.update({
+                    color: Highcharts.color(point.series.color).brighten(0.2).get(),
+                    borderColor: themeColors.titleColor,
+                    borderWidth: 2
+                  }, false);
+                } else {
+                  // Ez nem a kiválasztott fajta - elhalványítva marad
+                  point.update({
+                    opacity: 0.6
+                  }, false);
+                }
+                chart.redraw();
+                return; // Megakadályozzuk a további hover logikát
               }
 
               // Legend highlighting - series.legendItem használata
@@ -477,32 +564,49 @@ const BreederChart: React.FC<BreederChartProps> = ({
               // Második próbálkozás egy kis késleltetéssel
               setTimeout(highlightLegend, 50);
 
-              // Kiemeljük az összes ugyanolyan fajta oszlopot
-              chart.series.forEach((series: any) => {
-                if (series.name === varietyName) {
-                  // Kiemeljük az aktív fajta oszlopait
-                  series.points.forEach((p: any) => {
-                    p.update({
-                      color: Highcharts.color(series.color).brighten(0.2).get(),
-                      borderColor: '#ffffff',
-                      borderWidth: 2
-                    }, false);
-                  });
-                  series.update({
-                    opacity: 1
-                  }, false);
-                } else {
-                  // Elhalványítjuk a többi fajtát
-                  series.update({
-                    opacity: 0.3
-                  }, false);
-                  series.points.forEach((p: any) => {
-                    p.update({
-                      opacity: 0.3
-                    }, false);
-                  });
-                }
-              });
+              // Kiemeljük az összes ugyanolyan fajta oszlopot - CSAK ha nincs kiválasztott fajta
+              if (!selectedBreedRef.current && chart && chart.series) {
+                // Theme alapján kiválasztjuk a border színt
+                const borderColor = themeColors.titleColor; // Ez dark-ban fehér, light-ban fekete
+
+                chart.series.forEach((series: any) => {
+                  if (series && series.name === varietyName) {
+                    // Kiemeljük az aktív fajta oszlopait
+                    if (series.points) {
+                      series.points.forEach((p: any) => {
+                        if (p && p.update && typeof p.update === 'function') {
+                          p.update({
+                            color: Highcharts.color(series.color).brighten(0.2).get(),
+                            borderColor: borderColor,
+                            borderWidth: 2
+                          }, false);
+                        }
+                      });
+                    }
+                    if (series.update && typeof series.update === 'function') {
+                      series.update({
+                        opacity: 1
+                      }, false);
+                    }
+                  } else if (series) {
+                    // Elhalványítjuk a többi fajtát
+                    if (series.update && typeof series.update === 'function') {
+                      series.update({
+                        opacity: 0.6
+                      }, false);
+                    }
+                    if (series.points) {
+                      series.points.forEach((p: any) => {
+                        if (p && p.update && typeof p.update === 'function') {
+                          p.update({
+                            opacity: 0.6
+                          }, false);
+                        }
+                      });
+                    }
+                  }
+                });
+              }
 
               chart.redraw();
             },
@@ -532,20 +636,64 @@ const BreederChart: React.FC<BreederChartProps> = ({
                 }
               });
 
-              // Visszaállítjuk az eredeti állapotot
-              chart.series.forEach((series: any) => {
-                series.update({
-                  opacity: 1
-                }, false);
-                series.points.forEach((p: any) => {
-                  p.update({
-                    color: series.color,
-                    borderColor: undefined,
-                    borderWidth: 0,
-                    opacity: 1
-                  }, false);
-                });
-              });
+              // Ha van kiválasztott fajta, azt megtartjuk, különben visszaállítjuk
+              if (chart && chart.series) {
+                const borderColor = themeColors.titleColor; // Theme-nek megfelelő border szín
+
+                if (selectedBreedRef.current) {
+                  // Kiválasztott fajta állapotának visszaállítása
+                  chart.series.forEach((series: any) => {
+                    if (series && series.name === selectedBreedRef.current) {
+                      if (series.points) {
+                        series.points.forEach((p: any) => {
+                          if (p && p.update && typeof p.update === 'function') {
+                            p.update({
+                              color: Highcharts.color(series.color).brighten(0.2).get(),
+                              borderColor: borderColor,
+                              borderWidth: 2
+                            }, false);
+                          }
+                        });
+                      }
+                      if (series.update && typeof series.update === 'function') {
+                        series.update({ opacity: 1 }, false);
+                      }
+                    } else if (series) {
+                      if (series.update && typeof series.update === 'function') {
+                        series.update({ opacity: 0.6 }, false);
+                      }
+                      if (series.points) {
+                        series.points.forEach((p: any) => {
+                          if (p && p.update && typeof p.update === 'function') {
+                            p.update({ opacity: 0.6 }, false);
+                          }
+                        });
+                      }
+                    }
+                  });
+                } else if (!selectedBreedRef.current) {
+                  // Nincs kiválasztott fajta, mindent visszaállítunk
+                  chart.series.forEach((series: any) => {
+                    if (series && series.update && typeof series.update === 'function') {
+                      series.update({
+                        opacity: 1
+                      }, false);
+                    }
+                    if (series && series.points) {
+                      series.points.forEach((p: any) => {
+                        if (p && p.update && typeof p.update === 'function') {
+                          p.update({
+                            color: series.color,
+                            borderColor: undefined,
+                            borderWidth: 0,
+                            opacity: 1
+                          }, false);
+                        }
+                      });
+                    }
+                  });
+                }
+              }
 
               chart.redraw();
             }
@@ -559,7 +707,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
             enabled: true
           },
           inactive: {
-            opacity: 0.3
+            opacity: 0.6
           }
         }
       }
@@ -608,6 +756,122 @@ const BreederChart: React.FC<BreederChartProps> = ({
     }
   };
 
+  // Highlight funkciók
+  const highlightBreed = (breedName: string) => {
+    const chart = chartInstanceRef.current;
+    if (!chart) return;
+
+    // Theme alapján kiválasztjuk a border színt
+    const borderColor = theme === 'dark' ? '#ffffff' : '#000000';
+
+    chart.series.forEach((series: any) => {
+      if (series && series.name === breedName) {
+        // Kiemeljük az aktív fajta oszlopait
+        if (series.points) {
+          series.points.forEach((p: any) => {
+            if (p && p.update && typeof p.update === 'function') {
+              p.update({
+                color: Highcharts.color(series.color).brighten(0.2).get(),
+                borderColor: borderColor,
+                borderWidth: 2
+              }, false);
+            }
+          });
+        }
+        if (series.update && typeof series.update === 'function') {
+          series.update({
+            opacity: 1
+          }, false);
+        }
+      } else if (series) {
+        // Elhalványítjuk a többi fajtát
+        if (series.update && typeof series.update === 'function') {
+          series.update({
+            opacity: 0.6
+          }, false);
+        }
+        if (series.points) {
+          series.points.forEach((p: any) => {
+            if (p && p.update && typeof p.update === 'function') {
+              p.update({
+                opacity: 0.6
+              }, false);
+            }
+          });
+        }
+      }
+    });
+    chart.redraw();
+  };
+
+  const resetHighlight = () => {
+    const chart = chartInstanceRef.current;
+    if (!chart) return;
+
+    chart.series.forEach((series: any) => {
+      if (series && series.update && typeof series.update === 'function') {
+        series.update({
+          opacity: 1
+        }, false);
+      }
+      if (series && series.points) {
+        series.points.forEach((p: any) => {
+          if (p && p.update && typeof p.update === 'function') {
+            p.update({
+              color: series.color,
+              borderColor: undefined,
+              borderWidth: 0,
+              opacity: 1
+            }, false);
+          }
+        });
+      }
+    });
+    chart.redraw();
+  };
+
+  const handleLegendClick = (breedName: string) => {
+    if (selectedBreed === breedName) {
+      // Ha ugyanarra kattintunk újra, visszaállítjuk
+      setSelectedBreed(null);
+      resetHighlight();
+      closePanel(); // Panel bezárása
+    } else {
+      // Új fajta kiválasztása
+      // Először visszaállítjuk mindent eredeti állapotba
+      resetHighlight();
+
+      // Majd beállítjuk az új kiválasztást
+      setSelectedBreed(breedName);
+      highlightBreed(breedName);
+
+      // Panel megnyitása az első helyszín adataival
+      const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+      const selectedVariety = varieties.find(v => v.variety === breedName);
+
+      if (selectedVariety) {
+        // Az első helyszín adatait használjuk (M-I)
+        const firstLocation = categories[0];
+        const firstLocationValue = selectedVariety.locations[firstLocation as keyof typeof selectedVariety.locations];
+
+        // Összegyűjtjük az összes helyszín adatait
+        const allLocationData = categories.map(location => ({
+          location,
+          value: selectedVariety.locations[location as keyof typeof selectedVariety.locations] || 0
+        }));
+
+        // Megnyitjuk a panelt
+        setActiveChart(chartId, {
+          variety: breedName,
+          location: firstLocation,
+          value: firstLocationValue,
+          seriesColor: colors[varieties.findIndex(v => v.variety === breedName)],
+          allLocationData
+        });
+      }
+    }
+  };
+
   // Ellenőrizzük, hogy ez a chart aktív-e
   const isThisChartActive = isChartActive(chartId);
   const currentSelectedData = isThisChartActive ? selectedData : null;
@@ -631,82 +895,6 @@ const BreederChart: React.FC<BreederChartProps> = ({
               callback={(chart: Highcharts.Chart) => {
                 chartInstanceRef.current = chart;
 
-                // Legend hover functionality - panel frissítéssel
-                setTimeout(() => {
-                  chart.series.forEach((series: any) => {
-                    if (series.legendItem && series.legendItem.element) {
-                      const legendElement = series.legendItem.element;
-
-                      // jQuery-szerű hover, de vanilla JS-sel
-                      legendElement.addEventListener('mouseenter', () => {
-                        const varietyName = series.name;
-
-                        // Ha a panel már nyitva van, akkor frissítjük a hover adatokat
-                        if (isChartActiveRef.current(chartIdRef.current)) {
-                          const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
-                          const allLocationData = categories.map(location => {
-                            const locationIndex = categories.indexOf(location);
-                            const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
-                            return {
-                              location,
-                              value: value || 0
-                            };
-                          });
-
-                          // Hover adat frissítése a legend hover alapján
-                          setHoverDataRef.current({
-                            variety: series.name,
-                            location: '', // Üres, mert nem konkrét oszlop
-                            value: 0,
-                            seriesColor: String(series.color || '#000000'),
-                            allLocationData
-                          });
-                        }
-
-                        // Oszlopok kiemelése
-                        chart.series.forEach((s: any) => {
-                          if (s.name === varietyName) {
-                            s.points.forEach((p: any) => {
-                              p.update({
-                                color: Highcharts.color(s.color).brighten(0.2).get(),
-                                borderColor: '#ffffff',
-                                borderWidth: 2
-                              }, false);
-                            });
-                            s.update({ opacity: 1 }, false);
-                          } else {
-                            s.update({ opacity: 0.3 }, false);
-                            s.points.forEach((p: any) => {
-                              p.update({ opacity: 0.3 }, false);
-                            });
-                          }
-                        });
-                        chart.redraw();
-                      });
-
-                      legendElement.addEventListener('mouseleave', () => {
-                        // Ha a panel nyitva van, töröljük a hover adatokat
-                        if (isChartActiveRef.current(chartIdRef.current)) {
-                          setHoverDataRef.current(null);
-                        }
-
-                        // Visszaállítás
-                        chart.series.forEach((s: any) => {
-                          s.update({ opacity: 1 }, false);
-                          s.points.forEach((p: any) => {
-                            p.update({
-                              color: s.color,
-                              borderColor: undefined,
-                              borderWidth: 0,
-                              opacity: 1
-                            }, false);
-                          });
-                        });
-                        chart.redraw();
-                      });
-                    }
-                  });
-                }, 100);
               }}
             />
           </div>
@@ -724,6 +912,33 @@ const BreederChart: React.FC<BreederChartProps> = ({
         )}
       </div>
 
+      {/* Egyedi Legend - a diagram alatt */}
+      <div className="flex flex-wrap gap-2 mt-4 justify-center">
+        {varieties.map((variety, index) => (
+          <button
+            key={variety.variety}
+            onClick={() => handleLegendClick(variety.variety)}
+            className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 ${
+              selectedBreed === variety.variety
+                ? 'bg-blue-100 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-600'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+            }`}
+          >
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: colors[index] }}
+            ></div>
+            <span className={`text-sm ${
+              selectedBreed === variety.variety
+                ? 'font-semibold text-blue-800 dark:text-blue-200'
+                : 'text-foreground'
+            }`}>
+              {variety.variety}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* Full-screen modal */}
       <FullScreenChartModal
         isOpen={isFullScreenOpen}
@@ -733,6 +948,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
         breederColor={breederColor}
         breederName={breederName}
         chartOptions={options}
+        colors={colors}
       />
     </div>
   );

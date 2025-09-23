@@ -17,6 +17,7 @@ interface FullScreenChartModalProps {
   breederColor: string;
   breederName: string;
   chartOptions: Highcharts.Options;
+  colors?: string[]; // Színek a legend gombokhoz
 }
 
 const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
@@ -26,17 +27,135 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
   varieties,
   breederColor,
   breederName,
-  chartOptions
+  chartOptions,
+  colors = []
 }) => {
   const { theme } = useTheme();
   const modalRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
+  const chartInstanceRef = useRef<Highcharts.Chart | null>(null);
 
   // Hover data for enhanced information panel
   const [hoverData, setHoverData] = useState<any | null>(null);
 
   // Selected variety for persistent highlighting
   const [selectedVariety, setSelectedVariety] = useState<string | null>(null);
+
+  // Legend highlight functions
+  const highlightBreed = (breedName: string) => {
+    const chart = chartInstanceRef.current;
+    if (!chart) return;
+
+    // Theme alapján kiválasztjuk a border színt
+    const borderColor = theme === 'dark' ? '#ffffff' : '#000000';
+
+    chart.series.forEach((series: any) => {
+      if (series && series.name === breedName) {
+        // Kiemeljük az aktív fajta oszlopait
+        if (series.points) {
+          series.points.forEach((p: any) => {
+            if (p && p.update && typeof p.update === 'function') {
+              p.update({
+                color: Highcharts.color(series.color).brighten(0.2).get(),
+                borderColor: borderColor,
+                borderWidth: 2
+              }, false);
+            }
+          });
+        }
+        if (series.update && typeof series.update === 'function') {
+          series.update({
+            opacity: 1
+          }, false);
+        }
+      } else if (series) {
+        // Elhalványítjuk a többi fajtát
+        if (series.update && typeof series.update === 'function') {
+          series.update({
+            opacity: 0.6
+          }, false);
+        }
+        if (series.points) {
+          series.points.forEach((p: any) => {
+            if (p && p.update && typeof p.update === 'function') {
+              p.update({
+                opacity: 0.6
+              }, false);
+            }
+          });
+        }
+      }
+    });
+    chart.redraw();
+  };
+
+  const resetHighlight = () => {
+    const chart = chartInstanceRef.current;
+    if (!chart) return;
+
+    chart.series.forEach((series: any) => {
+      if (series && series.update && typeof series.update === 'function') {
+        series.update({
+          opacity: 1
+        }, false);
+      }
+      if (series && series.points) {
+        series.points.forEach((p: any) => {
+          if (p && p.update && typeof p.update === 'function') {
+            p.update({
+              color: series.color,
+              borderColor: undefined,
+              borderWidth: 0,
+              opacity: 1
+            }, false);
+          }
+        });
+      }
+    });
+    chart.redraw();
+  };
+
+  const handleLegendClick = (breedName: string) => {
+    if (selectedVariety === breedName) {
+      // Ha ugyanarra kattintunk újra, visszaállítjuk
+      setSelectedVariety(null);
+      resetHighlight();
+      setHoverData(null); // Panel bezárása
+    } else {
+      // Új fajta kiválasztása
+      // Először visszaállítjuk mindent eredeti állapotba
+      resetHighlight();
+
+      // Majd beállítjuk az új kiválasztást
+      setSelectedVariety(breedName);
+      highlightBreed(breedName);
+
+      // Panel megnyitása az első helyszín adataival
+      const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+      const selectedVarietyData = varieties.find(v => v.variety === breedName);
+
+      if (selectedVarietyData) {
+        // Az első helyszín adatait használjuk (M-I)
+        const firstLocation = categories[0];
+        const firstLocationValue = selectedVarietyData.locations[firstLocation as keyof typeof selectedVarietyData.locations];
+
+        // Összegyűjtjük az összes helyszín adatait
+        const allLocationData = categories.map(location => ({
+          location,
+          value: selectedVarietyData.locations[location as keyof typeof selectedVarietyData.locations] || 0
+        }));
+
+        // Megnyitjuk a panelt
+        setHoverData({
+          variety: breedName,
+          location: firstLocation,
+          value: firstLocationValue,
+          seriesColor: colors[varieties.findIndex(v => v.variety === breedName)] || breederColor,
+          allLocationData
+        });
+      }
+    }
+  };
 
   // Handle escape key
   useEffect(() => {
@@ -56,6 +175,35 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, onClose]);
+
+  // Initialize default hover data when modal opens and reset when closes
+  useEffect(() => {
+    if (isOpen && varieties.length > 0) {
+      const firstVariety = varieties[0];
+      const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+      const firstLocation = categories[0];
+      const firstLocationValue = firstVariety.locations[firstLocation as keyof typeof firstVariety.locations];
+
+      // Összegyűjtjük az összes helyszín adatait
+      const allLocationData = categories.map(location => ({
+        location,
+        value: firstVariety.locations[location as keyof typeof firstVariety.locations] || 0
+      }));
+
+      // Beállítjuk az alapértelmezett hover adatot
+      setHoverData({
+        variety: firstVariety.variety,
+        location: firstLocation,
+        value: firstLocationValue,
+        seriesColor: colors[0] || breederColor,
+        allLocationData
+      });
+    } else if (!isOpen) {
+      // Modal bezárásakor reseteljük a state-eket
+      setHoverData(null);
+      setSelectedVariety(null);
+    }
+  }, [isOpen, varieties, colors, breederColor]);
 
 
 
@@ -105,6 +253,9 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
               <div ref={chartRef} className="w-full h-96">
                 <HighchartsReact
                   highcharts={Highcharts}
+                  callback={(chart: Highcharts.Chart) => {
+                    chartInstanceRef.current = chart;
+                  }}
                   options={{
                     ...chartOptions,
                     chart: {
@@ -141,6 +292,8 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                             mouseOver: function(this: Highcharts.Point) {
                               const point = this as any;
                               const series = point.series;
+                              const chart = series.chart;
+                              const varietyName = series.name;
                               const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
                               // Collect all location data for this variety
@@ -161,35 +314,248 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                                 seriesColor: String(series.color || '#000000'),
                                 allLocationData
                               });
+
+                              // Highlight logic - csak ha nincs kiválasztott fajta
+                              if (!selectedVariety && chart && chart.series) {
+                                // Theme alapján kiválasztjuk a border színt
+                                const borderColor = theme === 'dark' ? '#ffffff' : '#000000';
+
+                                chart.series.forEach((s: any) => {
+                                  if (s && s.name === varietyName) {
+                                    // Kiemeljük az aktív fajta oszlopait
+                                    if (s.points) {
+                                      s.points.forEach((p: any) => {
+                                        if (p && p.update && typeof p.update === 'function') {
+                                          p.update({
+                                            color: Highcharts.color(s.color).brighten(0.2).get(),
+                                            borderColor: borderColor,
+                                            borderWidth: 2
+                                          }, false);
+                                        }
+                                      });
+                                    }
+                                    if (s.update && typeof s.update === 'function') {
+                                      s.update({
+                                        opacity: 1
+                                      }, false);
+                                    }
+                                  } else if (s) {
+                                    // Elhalványítjuk a többi fajtát
+                                    if (s.update && typeof s.update === 'function') {
+                                      s.update({
+                                        opacity: 0.6
+                                      }, false);
+                                    }
+                                    if (s.points) {
+                                      s.points.forEach((p: any) => {
+                                        if (p && p.update && typeof p.update === 'function') {
+                                          p.update({
+                                            opacity: 0.6
+                                          }, false);
+                                        }
+                                      });
+                                    }
+                                  }
+                                });
+                                chart.redraw();
+                              }
                             },
                             click: function(this: Highcharts.Point) {
                               const point = this as any;
                               const series = point.series;
-                              const varietyName = series.name;
+                              const chart = series.chart;
+                              const clickedBreedName = series.name;
+                              const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
-                              // Toggle selection: if already selected, deselect; otherwise select
-                              if (selectedVariety === varietyName) {
-                                setSelectedVariety(null);
-                              } else {
-                                setSelectedVariety(varietyName);
+                              // Ha már van kiválasztott fajta, előbb visszaállítjuk mindent
+                              if (selectedVariety) {
+                                // Minden oszlop visszaállítása eredeti állapotba
+                                chart.series.forEach((series: any) => {
+                                  if (series && series.update && typeof series.update === 'function') {
+                                    series.update({
+                                      opacity: 1
+                                    }, false);
+                                  }
+                                  if (series && series.points) {
+                                    series.points.forEach((p: any) => {
+                                      if (p && p.update && typeof p.update === 'function') {
+                                        p.update({
+                                          color: series.color,
+                                          borderColor: undefined,
+                                          borderWidth: 0,
+                                          opacity: 1
+                                        }, false);
+                                      }
+                                    });
+                                  }
+                                });
+                                chart.redraw();
                               }
+
+                              // Összegyűjtjük az adott fajta összes helyszínének adatait
+                              const allLocationData = categories.map(location => {
+                                const locationIndex = categories.indexOf(location);
+                                const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
+                                return {
+                                  location,
+                                  value
+                                };
+                              });
+
+                              // Beállítjuk a kiválasztott fajtát
+                              setSelectedVariety(clickedBreedName);
+
+                              // Kiemeljük a kattintott fajta összes oszlopát
+                              if (chart && chart.series) {
+                                const borderColor = theme === 'dark' ? '#ffffff' : '#000000';
+
+                                chart.series.forEach((s: any) => {
+                                  if (s && s.name === clickedBreedName) {
+                                    // Kiemeljük az aktív fajta oszlopait
+                                    if (s.points) {
+                                      s.points.forEach((p: any) => {
+                                        if (p && p.update && typeof p.update === 'function') {
+                                          p.update({
+                                            color: Highcharts.color(s.color).brighten(0.2).get(),
+                                            borderColor: borderColor,
+                                            borderWidth: 2
+                                          }, false);
+                                        }
+                                      });
+                                    }
+                                    if (s.update && typeof s.update === 'function') {
+                                      s.update({
+                                        opacity: 1
+                                      }, false);
+                                    }
+                                  } else if (s) {
+                                    // Elhalványítjuk a többi fajtát
+                                    if (s.update && typeof s.update === 'function') {
+                                      s.update({
+                                        opacity: 0.6
+                                      }, false);
+                                    }
+                                    if (s.points) {
+                                      s.points.forEach((p: any) => {
+                                        if (p && p.update && typeof p.update === 'function') {
+                                          p.update({
+                                            opacity: 0.6
+                                          }, false);
+                                        }
+                                      });
+                                    }
+                                  }
+                                });
+
+                                chart.redraw();
+                              }
+
+                              // Panel megnyitása a kattintott pont adataival
+                              setHoverData({
+                                variety: series.name,
+                                location: point.category,
+                                value: point.y,
+                                seriesColor: series.color,
+                                allLocationData
+                              });
                             },
                             mouseOut: function() {
-                              // Keep the panel open for better UX - only clear on chart leave
+                              const chart = this.series.chart;
+
+                              // Ha van kiválasztott fajta, azt megtartjuk, különben visszaállítjuk
+                              if (selectedVariety && chart && chart.series) {
+                                // Theme alapján kiválasztjuk a border színt
+                                const borderColor = theme === 'dark' ? '#ffffff' : '#000000';
+
+                                // Kiválasztott fajta állapotának visszaállítása
+                                chart.series.forEach((series: any) => {
+                                  if (series && series.name === selectedVariety) {
+                                    if (series.points) {
+                                      series.points.forEach((p: any) => {
+                                        if (p && p.update && typeof p.update === 'function') {
+                                          p.update({
+                                            color: Highcharts.color(series.color).brighten(0.2).get(),
+                                            borderColor: borderColor,
+                                            borderWidth: 2
+                                          }, false);
+                                        }
+                                      });
+                                    }
+                                    if (series.update && typeof series.update === 'function') {
+                                      series.update({ opacity: 1 }, false);
+                                    }
+                                  } else if (series) {
+                                    if (series.update && typeof series.update === 'function') {
+                                      series.update({ opacity: 0.6 }, false);
+                                    }
+                                    if (series.points) {
+                                      series.points.forEach((p: any) => {
+                                        if (p && p.update && typeof p.update === 'function') {
+                                          p.update({ opacity: 0.6 }, false);
+                                        }
+                                      });
+                                    }
+                                  }
+                                });
+                              } else if (!selectedVariety && chart && chart.series) {
+                                // Nincs kiválasztott fajta, mindent visszaállítunk
+                                chart.series.forEach((series: any) => {
+                                  if (series && series.update && typeof series.update === 'function') {
+                                    series.update({
+                                      opacity: 1
+                                    }, false);
+                                  }
+                                  if (series && series.points) {
+                                    series.points.forEach((p: any) => {
+                                      if (p && p.update && typeof p.update === 'function') {
+                                        p.update({
+                                          color: series.color,
+                                          borderColor: undefined,
+                                          borderWidth: 0,
+                                          opacity: 1
+                                        }, false);
+                                      }
+                                    });
+                                  }
+                                });
+                              }
+
+                              chart.redraw();
                             }
                           }
                         }
                       }
                     },
-                    series: chartOptions.series?.map((series: any) => ({
-                      ...series,
-                      color: selectedVariety && selectedVariety !== series.name
-                        ? (theme === 'dark' ? '#374151' : '#d1d5db') // Dimmed color for non-selected
-                        : series.color, // Original color for selected or when none selected
-                      opacity: selectedVariety && selectedVariety !== series.name ? 0.3 : 1
-                    }))
+                    series: chartOptions.series
                   }}
                 />
+              </div>
+
+              {/* Egyedi Legend - a diagram alatt */}
+              <div className="flex flex-wrap gap-2 justify-center px-6">
+                {varieties.map((variety, index) => (
+                  <button
+                    key={variety.variety}
+                    onClick={() => handleLegendClick(variety.variety)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 ${
+                      selectedVariety === variety.variety
+                        ? 'bg-blue-100 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-600'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+                    }`}
+                  >
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: colors[index] || breederColor }}
+                    ></div>
+                    <span className={`text-sm ${
+                      selectedVariety === variety.variety
+                        ? 'font-semibold text-blue-800 dark:text-blue-200'
+                        : 'text-foreground'
+                    }`}>
+                      {variety.variety}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
 
