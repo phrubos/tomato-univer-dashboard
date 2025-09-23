@@ -1,0 +1,84 @@
+{
+  "CSABACSŰD - 2 SOROS": [
+    {
+      "variety": "UG1227*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 89.7,
+      "sárga": 13.9,
+      "zöld": 25.9,
+      "romló": 1.63
+    },
+    {
+      "variety": "UG1227*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 103.0,
+      "sárga": 7.58,
+      "zöld": 9.8,
+      "romló": 1.98
+    },
+    {
+      "variety": "UG8492-I",
+      "breeder": "Unigen Seeds",
+      "érett": 96.3,
+      "sárga": 12.6,
+      "zöld": 18.0,
+      "romló": 3.03
+    },
+    {
+      "variety": "UG8492-II",
+      "breeder": "Unigen Seeds",
+      "érett": 103.0,
+      "sárga": 3.97,
+      "zöld": 7.35,
+      "romló": 4.32
+    },
+    {
+      "variety": "UG1578-I",
+      "breeder": "Unigen Seeds",
+      "érett": 113.0,
+      "sárga": 13.5,
+      "zöld": 27.1,
+      "romló": 3.85
+    },
+    {
+      "variety": "UG1578-II",
+      "breeder": "Unigen Seeds",
+      "érett": 142.0,
+      "sárga": 6.42,
+      "zöld": 13.5,
+      "romló": 11.2
+    },
+    {
+      "variety": "UG17219-I",
+      "breeder": "Unigen Seeds",
+      "érett": 94.1,
+      "sárga": 16.2,
+      "zöld": 45.3,
+      "romló": 3.27
+    },
+    {
+      "variety": "UG17219-II",
+      "breeder": "Unigen Seeds",
+      "érett": 128.0,
+      "sárga": 7.0,
+      "zöld": 18.4,
+      "romló": 9.1
+    },
+    {
+      "variety": "UG13577*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 102.0,
+      "sárga": 14.8,
+      "zöld": 12.8,
+      "romló": 1.63
+    },
+    {
+      "variety": "UG13577*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 123.0,
+      "sárga": 1.87,
+      "zöld": 4.32,
+      "romló": 5.6
+    }
+  ]
+}

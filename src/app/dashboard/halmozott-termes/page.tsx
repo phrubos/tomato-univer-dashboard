@@ -1,12 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/AuthContext";
+import CumulativeChart from "@/components/CumulativeChart";
+import {
+  loadHalmozottData,
+  processCumulativeData,
+  groupHalmozottByBreeder,
+  filterDataByAccessLevel,
+  getLocationDisplayName,
+  getAvailableLocations,
+  BREEDER_COLORS,
+  type HalmozottLocationData
+} from "@/utils/halmozottDataProcessor";
 
 export default function HalmozottTermesDashboard() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
   const router = useRouter();
+  const [halmozottData, setHalmozottData] = useState<HalmozottLocationData>({});
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Ha nincs autentikálva vagy nincs total hozzáférés, irányítson vissza
   useEffect(() => {
@@ -16,6 +30,31 @@ export default function HalmozottTermesDashboard() {
       router.push('/dashboard');
     }
   }, [isAuthenticated, accessLevel, router]);
+
+  // Load data
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setIsLoading(true);
+        const data = await loadHalmozottData();
+        setHalmozottData(data);
+
+        // Set default location to first available
+        const locations = getAvailableLocations(data);
+        if (locations.length > 0 && !selectedLocation) {
+          setSelectedLocation(locations[0]);
+        }
+      } catch (error) {
+        console.error('Error loading halmozott data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (isAuthenticated && accessLevel === 'total') {
+      fetchData();
+    }
+  }, [isAuthenticated, accessLevel, selectedLocation]);
 
   // Ha nincs autentikálva vagy nincs total hozzáférés, ne jelenítse meg a tartalmat
   if (!isAuthenticated || accessLevel !== 'total') {
@@ -30,6 +69,14 @@ export default function HalmozottTermesDashboard() {
   const navigateToErettRomlo = () => {
     router.push('/dashboard');
   };
+
+  // Process data for current location
+  const currentLocationData = selectedLocation && halmozottData[selectedLocation] ? halmozottData[selectedLocation] : [];
+  const cumulativeData = processCumulativeData(currentLocationData);
+  const groupedByBreeder = groupHalmozottByBreeder(cumulativeData);
+  const filteredData = filterDataByAccessLevel(groupedByBreeder, accessLevel);
+
+  const availableLocations = getAvailableLocations(halmozottData);
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
@@ -82,31 +129,87 @@ export default function HalmozottTermesDashboard() {
           </div>
         )}
 
-        {/* Main Content Area */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
-          <div className="text-center py-20">
-            <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-green-500 to-red-500 rounded-full mb-8 shadow-lg">
-              <span className="text-4xl">📈</span>
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Halmozott Termés Diagram
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Ez az oldal jelenleg fejlesztés alatt áll. Itt fognak megjelenni a halmozott termés adatok és diagramok.
-            </p>
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 max-w-md mx-auto">
-              <div className="flex items-center justify-center mb-3">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm font-medium text-blue-800 dark:text-blue-300">Hamarosan elérhető</span>
-              </div>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                A halmozott termés adatok feldolgozása és megjelenítése folyamatban van.
-              </p>
+        {/* Location Selector */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex flex-wrap gap-1">
+              {availableLocations.map((location) => (
+                <button
+                  key={location}
+                  onClick={() => setSelectedLocation(location)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    selectedLocation === location
+                      ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {getLocationDisplayName(location)}
+                </button>
+              ))}
             </div>
           </div>
         </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-lg text-gray-600 dark:text-gray-300">Adatok betöltése...</span>
+          </div>
+        )}
+
+        {/* Charts */}
+        {!isLoading && selectedLocation && (
+          <div className="space-y-8">
+            {Object.entries(filteredData).map(([breederName, varieties]) => {
+              if (varieties.length === 0) return null;
+
+              const breederColor = BREEDER_COLORS[breederName as keyof typeof BREEDER_COLORS] || '#6B7280';
+
+              return (
+                <div key={breederName} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
+                  <div className="mb-6">
+                    <h3 className="text-xl font-semibold flex items-center gap-3 text-gray-900 dark:text-white">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: breederColor }}
+                      />
+                      {breederName}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {varieties.length} fajta • {getLocationDisplayName(selectedLocation)}
+                    </p>
+                  </div>
+
+                  <CumulativeChart
+                    title={`Halmozott Termés - ${breederName}`}
+                    varieties={varieties}
+                    breederColor={breederColor}
+                    breederName={breederName}
+                    locationName={getLocationDisplayName(selectedLocation)}
+                  />
+                </div>
+              );
+            })}
+
+            {/* No data message */}
+            {Object.keys(filteredData).length === 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-700">
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    Nincs adat
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Ehhez a helyszínhez nem található adat.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-center">

@@ -1,0 +1,922 @@
+{
+  "LAKITELEK - 4 SOROS": [
+    {
+      "variety": "H2127-II",
+      "breeder": "Waller + Heinz",
+      "érett": 172.0,
+      "sárga": 5.08,
+      "zöld": 2.89,
+      "romló": 7.44
+    },
+    {
+      "variety": "H2127-I",
+      "breeder": "Waller + Heinz",
+      "érett": 110.0,
+      "sárga": 25.3,
+      "zöld": 36.2,
+      "romló": 2.28
+    },
+    {
+      "variety": "H1881-II",
+      "breeder": "Waller + Heinz",
+      "érett": 135.0,
+      "sárga": 2.89,
+      "zöld": 0.875,
+      "romló": 12.7
+    },
+    {
+      "variety": "H1881-I",
+      "breeder": "Waller + Heinz",
+      "érett": 158.0,
+      "sárga": 17.7,
+      "zöld": 18.8,
+      "romló": 2.54
+    },
+    {
+      "variety": "H2249-II",
+      "breeder": "Waller + Heinz",
+      "érett": 153.0,
+      "sárga": 12.3,
+      "zöld": 6.21,
+      "romló": 11.6
+    },
+    {
+      "variety": "H2249-I",
+      "breeder": "Waller + Heinz",
+      "érett": 136.0,
+      "sárga": 12.1,
+      "zöld": 29.7,
+      "romló": 1.84
+    },
+    {
+      "variety": "H2239-II",
+      "breeder": "Waller + Heinz",
+      "érett": 157.0,
+      "sárga": 2.45,
+      "zöld": 1.31,
+      "romló": 16.8
+    },
+    {
+      "variety": "H2239-I",
+      "breeder": "Waller + Heinz",
+      "érett": 145.0,
+      "sárga": 17.2,
+      "zöld": 20.3,
+      "romló": 2.98
+    },
+    {
+      "variety": "H2123*-II",
+      "breeder": "Waller + Heinz",
+      "érett": 164.0,
+      "sárga": 9.28,
+      "zöld": 3.59,
+      "romló": 3.68
+    },
+    {
+      "variety": "H2123*-I",
+      "breeder": "Waller + Heinz",
+      "érett": 155.0,
+      "sárga": 9.98,
+      "zöld": 6.04,
+      "romló": 3.5
+    },
+    {
+      "variety": "WALLER-II",
+      "breeder": "Waller + Heinz",
+      "érett": 129.0,
+      "sárga": 6.48,
+      "zöld": 6.3,
+      "romló": 10.2
+    },
+    {
+      "variety": "WALLER-I",
+      "breeder": "Waller + Heinz",
+      "érett": 171.0,
+      "sárga": 5.95,
+      "zöld": 7.0,
+      "romló": 3.33
+    },
+    {
+      "variety": "N00339-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 162.0,
+      "sárga": 7.79,
+      "zöld": 2.36,
+      "romló": 2.36
+    },
+    {
+      "variety": "N00339-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 102.0,
+      "sárga": 29.6,
+      "zöld": 47.3,
+      "romló": 2.19
+    },
+    {
+      "variety": "N00539-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 165.0,
+      "sárga": 8.05,
+      "zöld": 3.06,
+      "romló": 20.7
+    },
+    {
+      "variety": "N00539-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 149.0,
+      "sárga": 14.4,
+      "zöld": 13.9,
+      "romló": 3.41
+    },
+    {
+      "variety": "N00544-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 164.0,
+      "sárga": 13.8,
+      "zöld": 7.7,
+      "romló": 3.41
+    },
+    {
+      "variety": "N00544-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 133.0,
+      "sárga": 31.7,
+      "zöld": 12.1,
+      "romló": 1.49
+    },
+    {
+      "variety": "N00530-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 141.0,
+      "sárga": 3.06,
+      "zöld": 3.94,
+      "romló": 7.7
+    },
+    {
+      "variety": "N00530-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 145.0,
+      "sárga": 8.84,
+      "zöld": 18.2,
+      "romló": 3.24
+    },
+    {
+      "variety": "N00541*-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 186.0,
+      "sárga": 2.45,
+      "zöld": 1.49,
+      "romló": 9.71
+    },
+    {
+      "variety": "N00541*-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 120.0,
+      "sárga": 28.3,
+      "zöld": 29.4,
+      "romló": 1.93
+    },
+    {
+      "variety": "UG1578-II",
+      "breeder": "Unigen Seeds",
+      "érett": 173.0,
+      "sárga": 5.86,
+      "zöld": 7.7,
+      "romló": 10.2
+    },
+    {
+      "variety": "UG1578-I",
+      "breeder": "Unigen Seeds",
+      "érett": 148.0,
+      "sárga": 5.51,
+      "zöld": 4.46,
+      "romló": 2.45
+    },
+    {
+      "variety": "UG17219-II",
+      "breeder": "Unigen Seeds",
+      "érett": 138.0,
+      "sárga": 9.1,
+      "zöld": 9.45,
+      "romló": 18.0
+    },
+    {
+      "variety": "UG17219-I",
+      "breeder": "Unigen Seeds",
+      "érett": 111.0,
+      "sárga": 30.0,
+      "zöld": 17.4,
+      "romló": 3.68
+    },
+    {
+      "variety": "UG8492-II",
+      "breeder": "Unigen Seeds",
+      "érett": 173.0,
+      "sárga": 7.53,
+      "zöld": 5.08,
+      "romló": 6.65
+    },
+    {
+      "variety": "UG8492-I",
+      "breeder": "Unigen Seeds",
+      "érett": 135.0,
+      "sárga": 14.5,
+      "zöld": 5.69,
+      "romló": 4.73
+    },
+    {
+      "variety": "UG11227*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 176.0,
+      "sárga": 13.1,
+      "zöld": 9.36,
+      "romló": 1.84
+    },
+    {
+      "variety": "UG11227*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 142.0,
+      "sárga": 16.4,
+      "zöld": 12.3,
+      "romló": 2.1
+    }
+  ],
+  "MEZŐBERÉNY - 2 SOROS": [
+    {
+      "variety": "H2127-II",
+      "breeder": "Waller + Heinz",
+      "érett": 115.0,
+      "sárga": 6.42,
+      "zöld": 21.2,
+      "romló": 7.82
+    },
+    {
+      "variety": "H2127-I",
+      "breeder": "Waller + Heinz",
+      "érett": 73.9,
+      "sárga": 16.0,
+      "zöld": 25.0,
+      "romló": 4.9
+    },
+    {
+      "variety": "H1881-II",
+      "breeder": "Waller + Heinz",
+      "érett": 116.0,
+      "sárga": 11.3,
+      "zöld": 8.63,
+      "romló": 9.45
+    },
+    {
+      "variety": "H1881-I",
+      "breeder": "Waller + Heinz",
+      "érett": 64.6,
+      "sárga": 29.9,
+      "zöld": 30.1,
+      "romló": 3.38
+    },
+    {
+      "variety": "H2249-II",
+      "breeder": "Waller + Heinz",
+      "érett": 88.8,
+      "sárga": 16.6,
+      "zöld": 16.5,
+      "romló": 1.4
+    },
+    {
+      "variety": "H2249-I",
+      "breeder": "Waller + Heinz",
+      "érett": 31.1,
+      "sárga": 19.3,
+      "zöld": 50.1,
+      "romló": 2.68
+    },
+    {
+      "variety": "H2239-II",
+      "breeder": "Waller + Heinz",
+      "érett": 104.0,
+      "sárga": 8.87,
+      "zöld": 12.0,
+      "romló": 8.75
+    },
+    {
+      "variety": "H2239-I",
+      "breeder": "Waller + Heinz",
+      "érett": 80.2,
+      "sárga": 18.3,
+      "zöld": 20.4,
+      "romló": 3.27
+    },
+    {
+      "variety": "H2123*-II",
+      "breeder": "Waller + Heinz",
+      "érett": 64.2,
+      "sárga": 9.45,
+      "zöld": 15.2,
+      "romló": 2.8
+    },
+    {
+      "variety": "H2123*-I",
+      "breeder": "Waller + Heinz",
+      "érett": 52.7,
+      "sárga": 11.3,
+      "zöld": 48.3,
+      "romló": 2.33
+    },
+    {
+      "variety": "WALLER-II",
+      "breeder": "Waller + Heinz",
+      "érett": 76.7,
+      "sárga": 8.4,
+      "zöld": 25.9,
+      "romló": 3.27
+    },
+    {
+      "variety": "WALLER-I",
+      "breeder": "Waller + Heinz",
+      "érett": 41.7,
+      "sárga": 8.05,
+      "zöld": 27.4,
+      "romló": 0.7
+    },
+    {
+      "variety": "N00540*-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 63.8,
+      "sárga": 4.43,
+      "zöld": 9.45,
+      "romló": 3.97
+    },
+    {
+      "variety": "N00540*-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 52.5,
+      "sárga": 11.6,
+      "zöld": 33.5,
+      "romló": 2.57
+    },
+    {
+      "variety": "N4510-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 81.7,
+      "sárga": 15.6,
+      "zöld": 14.2,
+      "romló": 2.57
+    },
+    {
+      "variety": "N4510-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 44.9,
+      "sárga": 12.5,
+      "zöld": 36.8,
+      "romló": 3.15
+    },
+    {
+      "variety": "N00339-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 98.5,
+      "sárga": 10.5,
+      "zöld": 5.6,
+      "romló": 5.25
+    },
+    {
+      "variety": "N00339-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 52.9,
+      "sárga": 28.2,
+      "zöld": 27.9,
+      "romló": 4.55
+    },
+    {
+      "variety": "N00544-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 102.0,
+      "sárga": 5.72,
+      "zöld": 8.05,
+      "romló": 10.9
+    },
+    {
+      "variety": "N00544-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 76.4,
+      "sárga": 12.6,
+      "zöld": 12.0,
+      "romló": 10.4
+    },
+    {
+      "variety": "N00530-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 65.5,
+      "sárga": 10.2,
+      "zöld": 18.1,
+      "romló": 6.07
+    },
+    {
+      "variety": "N00530-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 36.4,
+      "sárga": 17.7,
+      "zöld": 44.5,
+      "romló": 3.62
+    },
+    {
+      "variety": "N00541*-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 88.1,
+      "sárga": 11.6,
+      "zöld": 11.6,
+      "romló": 2.68
+    },
+    {
+      "variety": "N00541*-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 44.1,
+      "sárga": 8.75,
+      "zöld": 37.1,
+      "romló": 2.8
+    },
+    {
+      "variety": "UG13577*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 65.5,
+      "sárga": 5.37,
+      "zöld": 5.13,
+      "romló": 7.7
+    },
+    {
+      "variety": "UG13577*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 66.4,
+      "sárga": 13.3,
+      "zöld": 18.3,
+      "romló": 2.92
+    },
+    {
+      "variety": "UG1578-II",
+      "breeder": "Unigen Seeds",
+      "érett": 118.0,
+      "sárga": 13.5,
+      "zöld": 8.63,
+      "romló": 14.8
+    },
+    {
+      "variety": "UG1578-I",
+      "breeder": "Unigen Seeds",
+      "érett": 61.7,
+      "sárga": 14.5,
+      "zöld": 34.7,
+      "romló": 4.08
+    },
+    {
+      "variety": "UG17219-II",
+      "breeder": "Unigen Seeds",
+      "érett": 103.0,
+      "sárga": 5.83,
+      "zöld": 21.8,
+      "romló": 7.23
+    },
+    {
+      "variety": "UG17219-I",
+      "breeder": "Unigen Seeds",
+      "érett": 66.6,
+      "sárga": 12.8,
+      "zöld": 30.6,
+      "romló": 3.97
+    },
+    {
+      "variety": "UG8492-II",
+      "breeder": "Unigen Seeds",
+      "érett": 70.6,
+      "sárga": 8.28,
+      "zöld": 8.4,
+      "romló": 10.3
+    },
+    {
+      "variety": "UG8492-I",
+      "breeder": "Unigen Seeds",
+      "érett": 62.2,
+      "sárga": 6.53,
+      "zöld": 8.87,
+      "romló": 1.05
+    },
+    {
+      "variety": "UG11227*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 108.0,
+      "sárga": 18.2,
+      "zöld": 18.6,
+      "romló": 6.65
+    },
+    {
+      "variety": "UG11227*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 58.8,
+      "sárga": 5.37,
+      "zöld": 65.9,
+      "romló": 1.75
+    }
+  ],
+  "CSABACSŰD - 2 SOROS": [
+    {
+      "variety": "H2127-II",
+      "breeder": "Waller + Heinz",
+      "érett": 149.0,
+      "sárga": 11.9,
+      "zöld": 21.2,
+      "romló": 3.85
+    },
+    {
+      "variety": "H2127-I",
+      "breeder": "Waller + Heinz",
+      "érett": 104.0,
+      "sárga": 12.7,
+      "zöld": 24.0,
+      "romló": 1.63
+    },
+    {
+      "variety": "H1881-II",
+      "breeder": "Waller + Heinz",
+      "érett": 130.0,
+      "sárga": 2.92,
+      "zöld": 5.48,
+      "romló": 1.75
+    },
+    {
+      "variety": "H1881-I",
+      "breeder": "Waller + Heinz",
+      "érett": 111.0,
+      "sárga": 14.9,
+      "zöld": 23.2,
+      "romló": 2.22
+    },
+    {
+      "variety": "H2249-II",
+      "breeder": "Waller + Heinz",
+      "érett": 106.0,
+      "sárga": 22.9,
+      "zöld": 15.1,
+      "romló": 2.68
+    },
+    {
+      "variety": "H2249-I",
+      "breeder": "Waller + Heinz",
+      "érett": 59.8,
+      "sárga": 23.9,
+      "zöld": 51.2,
+      "romló": 3.27
+    },
+    {
+      "variety": "H2239-II",
+      "breeder": "Waller + Heinz",
+      "érett": 142.0,
+      "sárga": 4.55,
+      "zöld": 11.6,
+      "romló": 2.33
+    },
+    {
+      "variety": "H2239-I",
+      "breeder": "Waller + Heinz",
+      "érett": 108.0,
+      "sárga": 25.6,
+      "zöld": 48.3,
+      "romló": 3.27
+    },
+    {
+      "variety": "H2123*-II",
+      "breeder": "Waller + Heinz",
+      "érett": 128.0,
+      "sárga": 9.68,
+      "zöld": 8.05,
+      "romló": 2.8
+    },
+    {
+      "variety": "H2123*-I",
+      "breeder": "Waller + Heinz",
+      "érett": 77.5,
+      "sárga": 22.6,
+      "zöld": 34.2,
+      "romló": 2.57
+    },
+    {
+      "variety": "WALLER-II",
+      "breeder": "Waller + Heinz",
+      "érett": 121.0,
+      "sárga": 3.15,
+      "zöld": 9.22,
+      "romló": 1.98
+    },
+    {
+      "variety": "WALLER-I",
+      "breeder": "Waller + Heinz",
+      "érett": 109.0,
+      "sárga": 5.95,
+      "zöld": 14.8,
+      "romló": 1.28
+    },
+    {
+      "variety": "N4510-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 111.0,
+      "sárga": 16.2,
+      "zöld": 14.8,
+      "romló": 2.33
+    },
+    {
+      "variety": "N4510-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 57.8,
+      "sárga": 20.7,
+      "zöld": 44.8,
+      "romló": 1.28
+    },
+    {
+      "variety": "N00339-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 148.0,
+      "sárga": 23.5,
+      "zöld": 14.9,
+      "romló": 6.07
+    },
+    {
+      "variety": "N00339-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 94.4,
+      "sárga": 24.4,
+      "zöld": 35.0,
+      "romló": 1.87
+    },
+    {
+      "variety": "N00544-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 155.0,
+      "sárga": 3.73,
+      "zöld": 7.12,
+      "romló": 1.98
+    },
+    {
+      "variety": "N00544-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 111.0,
+      "sárga": 7.12,
+      "zöld": 11.8,
+      "romló": 2.22
+    },
+    {
+      "variety": "N00530-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 103.0,
+      "sárga": 4.43,
+      "zöld": 5.37,
+      "romló": 2.92
+    },
+    {
+      "variety": "N00530-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 95.5,
+      "sárga": 13.4,
+      "zöld": 17.5,
+      "romló": 1.87
+    },
+    {
+      "variety": "N00541*-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 116.0,
+      "sárga": 5.95,
+      "zöld": 2.92,
+      "romló": 3.5
+    },
+    {
+      "variety": "N00541*-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 62.9,
+      "sárga": 20.1,
+      "zöld": 22.8,
+      "romló": 3.27
+    },
+    {
+      "variety": "UG13577*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 123.0,
+      "sárga": 1.87,
+      "zöld": 4.32,
+      "romló": 5.6
+    },
+    {
+      "variety": "UG13577*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 102.0,
+      "sárga": 14.8,
+      "zöld": 12.8,
+      "romló": 1.63
+    },
+    {
+      "variety": "UG1578-II",
+      "breeder": "Unigen Seeds",
+      "érett": 142.0,
+      "sárga": 6.42,
+      "zöld": 13.5,
+      "romló": 11.2
+    },
+    {
+      "variety": "UG1578-I",
+      "breeder": "Unigen Seeds",
+      "érett": 113.0,
+      "sárga": 13.5,
+      "zöld": 27.1,
+      "romló": 3.85
+    },
+    {
+      "variety": "UG17219-II",
+      "breeder": "Unigen Seeds",
+      "érett": 128.0,
+      "sárga": 7.0,
+      "zöld": 18.4,
+      "romló": 9.1
+    },
+    {
+      "variety": "UG17219-I",
+      "breeder": "Unigen Seeds",
+      "érett": 94.1,
+      "sárga": 16.2,
+      "zöld": 45.3,
+      "romló": 3.27
+    },
+    {
+      "variety": "UG8492-II",
+      "breeder": "Unigen Seeds",
+      "érett": 103.0,
+      "sárga": 3.97,
+      "zöld": 7.35,
+      "romló": 4.32
+    },
+    {
+      "variety": "UG8492-I",
+      "breeder": "Unigen Seeds",
+      "érett": 96.3,
+      "sárga": 12.6,
+      "zöld": 18.0,
+      "romló": 3.03
+    },
+    {
+      "variety": "UG11227*-II",
+      "breeder": "Unigen Seeds",
+      "érett": 103.0,
+      "sárga": 7.58,
+      "zöld": 9.8,
+      "romló": 1.98
+    },
+    {
+      "variety": "UG11227*-I",
+      "breeder": "Unigen Seeds",
+      "érett": 89.7,
+      "sárga": 13.9,
+      "zöld": 25.9,
+      "romló": 1.63
+    }
+  ],
+  "LAKITELEK - 50 TÖVES": [
+    {
+      "variety": "9-H2128-II",
+      "breeder": "Waller + Heinz",
+      "érett": 176.0,
+      "sárga": 5.43,
+      "zöld": 7.26,
+      "romló": 3.5
+    },
+    {
+      "variety": "9-H2128-I",
+      "breeder": "Waller + Heinz",
+      "érett": 143.0,
+      "sárga": 12.6,
+      "zöld": 12.5,
+      "romló": 1.23
+    },
+    {
+      "variety": "8-H2247-II",
+      "breeder": "Waller + Heinz",
+      "érett": 164.0,
+      "sárga": 8.49,
+      "zöld": 10.7,
+      "romló": 1.58
+    },
+    {
+      "variety": "8-H2247-I",
+      "breeder": "Waller + Heinz",
+      "érett": 127.0,
+      "sárga": 9.45,
+      "zöld": 23.2,
+      "romló": 0.875
+    },
+    {
+      "variety": "7-H2359-II",
+      "breeder": "Waller + Heinz",
+      "érett": 169.0,
+      "sárga": 12.6,
+      "zöld": 14.4,
+      "romló": 2.45
+    },
+    {
+      "variety": "7-H2359-I",
+      "breeder": "Waller + Heinz",
+      "érett": 115.0,
+      "sárga": 31.6,
+      "zöld": 42.1,
+      "romló": 1.58
+    },
+    {
+      "variety": "6-H2361-II",
+      "breeder": "Waller + Heinz",
+      "érett": 179.0,
+      "sárga": 10.8,
+      "zöld": 6.74,
+      "romló": 1.58
+    },
+    {
+      "variety": "6-H2361-I",
+      "breeder": "Waller + Heinz",
+      "érett": 143.0,
+      "sárga": 15.6,
+      "zöld": 10.9,
+      "romló": 0.175
+    },
+    {
+      "variety": "5-N4523*-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 172.0,
+      "sárga": 4.73,
+      "zöld": 5.6,
+      "romló": 1.05
+    },
+    {
+      "variety": "5-N4523*-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 141.0,
+      "sárga": 16.5,
+      "zöld": 14.8,
+      "romló": 1.4
+    },
+    {
+      "variety": "4-N4510-II",
+      "breeder": "BASF-Nunhems",
+      "érett": 204.0,
+      "sárga": 14.4,
+      "zöld": 5.16,
+      "romló": 2.28
+    },
+    {
+      "variety": "4-N4510-I",
+      "breeder": "BASF-Nunhems",
+      "érett": 176.0,
+      "sárga": 30.2,
+      "zöld": 23.8,
+      "romló": 1.05
+    },
+    {
+      "variety": "3-N507-II",
+      "breeder": "Unknown",
+      "érett": 181.0,
+      "sárga": 12.6,
+      "zöld": 8.31,
+      "romló": 5.08
+    },
+    {
+      "variety": "3-N507-I",
+      "breeder": "Unknown",
+      "érett": 165.0,
+      "sárga": 20.1,
+      "zöld": 20.6,
+      "romló": 1.31
+    },
+    {
+      "variety": "2-N296*-II",
+      "breeder": "Unknown",
+      "érett": 186.0,
+      "sárga": 10.2,
+      "zöld": 2.8,
+      "romló": 1.58
+    },
+    {
+      "variety": "2-N296*-I",
+      "breeder": "Unknown",
+      "érett": 152.0,
+      "sárga": 25.2,
+      "zöld": 11.2,
+      "romló": 1.14
+    },
+    {
+      "variety": "1-Prestomech*-II",
+      "breeder": "Waller + Heinz",
+      "érett": 189.0,
+      "sárga": 14.3,
+      "zöld": 6.3,
+      "romló": 3.76
+    },
+    {
+      "variety": "1-Prestomech*-I",
+      "breeder": "Waller + Heinz",
+      "érett": 120.0,
+      "sárga": 22.6,
+      "zöld": 33.6,
+      "romló": 1.93
+    }
+  ]
+}
