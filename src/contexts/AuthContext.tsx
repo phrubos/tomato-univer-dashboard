@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 
 export type AccessLevel = 'total' | 'unigen' | 'nunhems' | 'waller_heinz' | null;
 
@@ -24,6 +24,31 @@ const PASSWORD_MAP = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessLevel, setAccessLevel] = useState<AccessLevel>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
+
+  // 10 perc = 600000 ms
+  const INACTIVITY_TIMEOUT = 10 * 60 * 1000;
+
+  const resetTimeout = useCallback(() => {
+    lastActivityRef.current = Date.now();
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    if (isAuthenticated) {
+      timeoutRef.current = setTimeout(() => {
+        logout();
+      }, INACTIVITY_TIMEOUT);
+    }
+  }, [isAuthenticated]);
+
+  const handleUserActivity = useCallback(() => {
+    if (isAuthenticated) {
+      resetTimeout();
+    }
+  }, [isAuthenticated, resetTimeout]);
 
   useEffect(() => {
     // Check if user is already authenticated on mount
@@ -33,6 +58,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Aktivitás események listenerek hozzáadása
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+
+      events.forEach(event => {
+        document.addEventListener(event, handleUserActivity, true);
+      });
+
+      // Timeout beállítása
+      resetTimeout();
+
+      return () => {
+        // Cleanup
+        events.forEach(event => {
+          document.removeEventListener(event, handleUserActivity, true);
+        });
+
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      };
+    }
+  }, [isAuthenticated, handleUserActivity, resetTimeout]);
 
   const login = (password: string): boolean => {
     const level = PASSWORD_MAP[password as keyof typeof PASSWORD_MAP];
@@ -45,11 +95,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setAccessLevel(null);
     setIsAuthenticated(false);
     localStorage.removeItem('univer_dashboard_access_level');
-  };
+
+    // Timeout törlése kijelentkezéskor
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{
