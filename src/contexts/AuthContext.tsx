@@ -30,6 +30,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // 10 perc = 600000 ms
   const INACTIVITY_TIMEOUT = 10 * 60 * 1000;
 
+  const logout = useCallback(() => {
+    setAccessLevel(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem('univer_dashboard_access_level');
+
+    // Timeout törlése kijelentkezéskor
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
+
   const resetTimeout = useCallback(() => {
     lastActivityRef.current = Date.now();
 
@@ -42,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout();
       }, INACTIVITY_TIMEOUT);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, INACTIVITY_TIMEOUT, logout]);
 
   const handleUserActivity = useCallback(() => {
     if (isAuthenticated) {
@@ -94,18 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return false;
   };
-
-  const logout = useCallback(() => {
-    setAccessLevel(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('univer_dashboard_access_level');
-
-    // Timeout törlése kijelentkezéskor
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }, []);
 
   return (
     <AuthContext.Provider value={{

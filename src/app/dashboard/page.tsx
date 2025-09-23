@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import BreederChart from "@/components/BreederChart";
-import { processChartData, groupDataByBreeder, BREEDERS, getBreederColor } from "@/utils/dataProcessor";
+import { processChartData, groupDataByBreeder, BREEDERS } from "@/utils/dataProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {

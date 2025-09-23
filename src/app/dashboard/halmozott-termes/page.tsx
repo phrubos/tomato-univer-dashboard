@@ -182,9 +182,7 @@ export default function HalmozottTermesDashboard() {
                   </div>
 
                   <CumulativeChart
-                    title={`Halmozott Termés - ${breederName}`}
                     varieties={varieties}
-                    breederColor={breederColor}
                     breederName={breederName}
                     locationName={getLocationDisplayName(selectedLocation)}
                   />

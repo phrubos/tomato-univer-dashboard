@@ -1,20 +1,16 @@
 import React, { useEffect, useMemo, useId } from 'react';
 import Highcharts from 'highcharts';
-import { CumulativeData, BREEDER_COLORS } from '@/utils/halmozottDataProcessor';
+import { CumulativeData } from '@/utils/halmozottDataProcessor';
 import { useTheme } from './ThemeProvider';
 
 interface CumulativeChartProps {
-  title: string;
   varieties: CumulativeData[];
-  breederColor: string;
   breederName: string;
   locationName: string;
 }
 
 const CumulativeChart: React.FC<CumulativeChartProps> = ({
-  title,
   varieties,
-  breederColor,
   breederName,
   locationName
 }) => {
@@ -123,8 +119,8 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
       },
       legend: {
         reversed: true,
-        align: 'center',
-        verticalAlign: 'bottom',
+        align: 'center' as const,
+        verticalAlign: 'bottom' as const,
         itemStyle: {
           fontSize: '12px',
           fontWeight: '500',
@@ -139,7 +135,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
       },
       plotOptions: {
         series: {
-          stacking: 'normal',
+          stacking: 'normal' as const,
           borderWidth: 0,
           pointPadding: 0.1,
           groupPadding: 0.1,
@@ -153,21 +149,25 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
       },
       series: [
         {
+          type: 'bar' as const,
           name: 'Romló',
           data: romloData,
           color: '#6B7280'
         },
         {
+          type: 'bar' as const,
           name: 'Zöld',
           data: zoldData,
           color: '#10B981'
         },
         {
+          type: 'bar' as const,
           name: 'Sárga',
           data: sargaData,
           color: '#F59E0B'
         },
         {
+          type: 'bar' as const,
           name: 'Érett',
           data: erettData,
           color: '#DC2626'
@@ -192,8 +192,9 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
           fontFamily: 'var(--font-geist-sans)',
           color: themeColors.tooltipText
         },
-        formatter: function(this: any) {
-          const point = this.point || this.points[0].point;
+        formatter: function() {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const point = (this as any).point || (this as any).points[0].point;
           const variety = sortedVarieties.find(v => v.variety === point.category);
 
           if (!variety) return '';
