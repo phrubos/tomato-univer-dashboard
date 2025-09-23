@@ -35,8 +35,16 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<Highcharts.Chart | null>(null);
 
-  // Hover data for enhanced information panel
-  const [hoverData, setHoverData] = useState<any | null>(null);
+  interface HoverDataType {
+  variety: string;
+  location: string;
+  value: number;
+  seriesColor: string;
+  allLocationData: Array<{ location: string; value: number }>;
+}
+
+// Hover data for enhanced information panel
+const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
 
   // Selected variety for persistent highlighting
   const [selectedVariety, setSelectedVariety] = useState<string | null>(null);
@@ -56,7 +64,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
           series.points.forEach((p: any) => {
             if (p && p.update && typeof p.update === 'function') {
               p.update({
-                color: Highcharts.color(series.color).brighten(0.2).get(),
+                color: series.color ? Highcharts.color(series.color).brighten(0.2).get() : '#007acc',
                 borderColor: borderColor,
                 borderWidth: 2
               }, false);
@@ -103,7 +111,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
         series.points.forEach((p: any) => {
           if (p && p.update && typeof p.update === 'function') {
             p.update({
-              color: series.color,
+              color: series.color || '#007acc',
               borderColor: undefined,
               borderWidth: 0,
               opacity: 1
@@ -290,7 +298,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                         point: {
                           events: {
                             mouseOver: function(this: Highcharts.Point) {
-                              const point = this as any;
+                              const point = this;
                               const series = point.series;
                               const chart = series.chart;
                               const varietyName = series.name;
@@ -310,9 +318,12 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                               setHoverData({
                                 variety: series.name,
                                 location: String(point.category || ''),
-                                value: Number(point.y || 0),
+                                value: point.y || 0,
                                 seriesColor: String(series.color || '#000000'),
-                                allLocationData
+                                allLocationData: allLocationData.map(item => ({
+                                  location: item.location,
+                                  value: item.value || 0
+                                }))
                               });
 
                               // Highlight logic - csak ha nincs kiválasztott fajta
@@ -361,7 +372,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                               }
                             },
                             click: function(this: Highcharts.Point) {
-                              const point = this as any;
+                              const point = this;
                               const series = point.series;
                               const chart = series.chart;
                               const clickedBreedName = series.name;
@@ -453,13 +464,16 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                               // Panel megnyitása a kattintott pont adataival
                               setHoverData({
                                 variety: series.name,
-                                location: point.category,
-                                value: point.y,
-                                seriesColor: series.color,
-                                allLocationData
+                                location: String(point.category || ''),
+                                value: point.y || 0,
+                                seriesColor: String(series.color || '#000000'),
+                                allLocationData: allLocationData.map(item => ({
+                                  location: item.location,
+                                  value: item.value || 0
+                                }))
                               });
                             },
-                            mouseOut: function() {
+                            mouseOut: function(this: Highcharts.Point) {
                               const chart = this.series.chart;
 
                               // Ha van kiválasztott fajta, azt megtartjuk, különben visszaállítjuk
@@ -474,7 +488,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
                                       series.points.forEach((p: any) => {
                                         if (p && p.update && typeof p.update === 'function') {
                                           p.update({
-                                            color: Highcharts.color(series.color).brighten(0.2).get(),
+                                            color: series.color ? Highcharts.color(series.color).brighten(0.2).get() : '#007acc',
                                             borderColor: borderColor,
                                             borderWidth: 2
                                           }, false);

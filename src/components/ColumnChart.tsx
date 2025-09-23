@@ -152,10 +152,10 @@ const ColumnChart: React.FC<ColumnChartProps> = ({
         point: {
           events: {
             click: function(this: Highcharts.Point) {
-              const pointData = this as any;
+              const pointData = this;
               setSelectedData({
-                name: pointData.name || pointData.category,
-                value: pointData.y,
+                name: String(pointData.name || pointData.category || ''),
+                value: pointData.y || 0,
                 index: pointData.index
               });
             }
@@ -185,19 +185,8 @@ const ColumnChart: React.FC<ColumnChartProps> = ({
           enabled: true,
           theme: {
             fill: 'rgba(55, 65, 81, 0.9)',
-            stroke: '#ffffff',
-            r: 4,
-            states: {
-              hover: {
-                fill: 'rgba(75, 85, 99, 0.95)',
-                stroke: '#ffffff'
-              },
-              select: {
-                fill: 'rgba(107, 114, 128, 0.95)',
-                stroke: '#ffffff'
-              }
-            }
-          } as any,
+            stroke: '#ffffff'
+          },
           menuItems: [
             'viewFullscreen',
             'separator',

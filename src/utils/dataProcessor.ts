@@ -96,7 +96,17 @@ export function groupDataByBreeder(data: ProcessedData[]): Record<string, Proces
   }, {} as Record<string, ProcessedData[]>);
 }
 
-export function createChartSeriesData(varieties: ProcessedData[], breederColor: string): any[] {
+interface ChartSeriesData {
+  name: string;
+  data: Array<{
+    name: string;
+    y: number;
+    color: string;
+  }>;
+  color: string;
+}
+
+export function createChartSeriesData(varieties: ProcessedData[], breederColor: string): ChartSeriesData[] {
   const locations = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
   
   return varieties.map((variety, varietyIndex) => ({

@@ -498,7 +498,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
                 if (point.series.name === selectedBreedRef.current) {
                   // Ez a kiválasztott fajta - megtartjuk a kiemelést
                   point.update({
-                    color: Highcharts.color(point.series.color).brighten(0.2).get(),
+                    color: point.series.color ? Highcharts.color(point.series.color).brighten(0.2).get() : '#007acc',
                     borderColor: themeColors.titleColor,
                     borderWidth: 2
                   }, false);
@@ -576,7 +576,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
                       series.points.forEach((p: any) => {
                         if (p && p.update && typeof p.update === 'function') {
                           p.update({
-                            color: Highcharts.color(series.color).brighten(0.2).get(),
+                            color: series.color ? Highcharts.color(series.color).brighten(0.2).get() : '#007acc',
                             borderColor: borderColor,
                             borderWidth: 2
                           }, false);
@@ -648,7 +648,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
                         series.points.forEach((p: any) => {
                           if (p && p.update && typeof p.update === 'function') {
                             p.update({
-                              color: Highcharts.color(series.color).brighten(0.2).get(),
+                              color: series.color ? Highcharts.color(series.color).brighten(0.2).get() : '#007acc',
                               borderColor: borderColor,
                               borderWidth: 2
                             }, false);
@@ -683,7 +683,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
                       series.points.forEach((p: any) => {
                         if (p && p.update && typeof p.update === 'function') {
                           p.update({
-                            color: series.color,
+                            color: series.color || '#007acc',
                             borderColor: undefined,
                             borderWidth: 0,
                             opacity: 1
@@ -723,19 +723,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
           enabled: true,
           theme: {
             fill: themeColors.exportButtonBg,
-            stroke: themeColors.exportButtonStroke,
-            r: 4,
-            states: {
-              hover: {
-                fill: themeColors.exportButtonHover,
-                stroke: themeColors.exportButtonStroke
-              },
-              select: {
-                fill: themeColors.exportButtonHover,
-                stroke: themeColors.exportButtonStroke
-              }
-            }
-          } as any,
+            stroke: themeColors.exportButtonStroke
+          },
           menuItems: [
             'downloadPNG',
             'downloadJPEG',
@@ -771,7 +760,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
           series.points.forEach((p: any) => {
             if (p && p.update && typeof p.update === 'function') {
               p.update({
-                color: Highcharts.color(series.color).brighten(0.2).get(),
+                color: series.color ? Highcharts.color(series.color).brighten(0.2).get() : '#007acc',
                 borderColor: borderColor,
                 borderWidth: 2
               }, false);
@@ -818,7 +807,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
         series.points.forEach((p: any) => {
           if (p && p.update && typeof p.update === 'function') {
             p.update({
-              color: series.color,
+              color: series.color || '#007acc',
               borderColor: undefined,
               borderWidth: 0,
               opacity: 1

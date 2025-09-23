@@ -14,9 +14,17 @@ import {
   Activity
 } from 'lucide-react';
 
+interface HoverDataType {
+  variety: string;
+  location: string;
+  value: number;
+  seriesColor: string;
+  allLocationData: Array<{ location: string; value: number }>;
+}
+
 interface VarietyComparisonPanelProps {
   selectedVariety: string;
-  hoverData: any;
+  hoverData: HoverDataType | null;
   allVarieties: ProcessedData[];
   breederColor: string;
 }
