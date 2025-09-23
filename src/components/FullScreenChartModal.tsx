@@ -302,31 +302,8 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
                               const series = point.series;
                               const chart = series.chart;
                               const varietyName = series.name;
-                              const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
-                              // Collect all location data for this variety
-                              const allLocationData = categories.map(location => {
-                                const locationIndex = categories.indexOf(location);
-                                const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
-                                return {
-                                  location,
-                                  value: value || 0
-                                };
-                              });
-
-                              // Set hover data for the comparison panel
-                              setHoverData({
-                                variety: series.name,
-                                location: String(point.category || ''),
-                                value: point.y || 0,
-                                seriesColor: String(series.color || '#000000'),
-                                allLocationData: allLocationData.map(item => ({
-                                  location: item.location,
-                                  value: item.value || 0
-                                }))
-                              });
-
-                              // Highlight logic - csak ha nincs kiválasztott fajta
+                              // CSAK a kiemelési logika fut, hover adatok NINCS frissítve
                               if (!selectedVariety && chart && chart.series) {
                                 // Theme alapján kiválasztjuk a border színt
                                 const borderColor = theme === 'dark' ? '#ffffff' : '#000000';

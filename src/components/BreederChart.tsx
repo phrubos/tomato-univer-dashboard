@@ -514,48 +514,53 @@ const BreederChart: React.FC<BreederChartProps> = ({
 
               // Legend highlighting - series.legendItem használata
               const highlightLegend = () => {
-                chart.series.forEach((s: any) => {
-                  if (s.name === varietyName && s.legendItem) {
-                    // Aktív fajta kiemelése
-                    if (s.legendItem.css) {
-                      s.legendItem.css({
-                        'font-weight': 'bold',
-                        'fill': '#ffffff',
-                        'opacity': 1
-                      });
-                    }
+                try {
+                  chart.series.forEach((s: any) => {
+                    if (s && s.legendItem && s.name === varietyName) {
+                      // Aktív fajta kiemelése
+                      if (s.legendItem.css) {
+                        s.legendItem.css({
+                          'font-weight': 'bold',
+                          'fill': '#ffffff',
+                          'opacity': 1
+                        });
+                      }
 
-                    // Kék háttér hozzáadása
-                    if (!s.legendItem.highlightRect && s.legendItem.element) {
-                      const bbox = s.legendItem.element.getBBox();
-                      s.legendItem.highlightRect = chart.renderer.rect(
-                        bbox.x - 2,
-                        bbox.y - 1,
-                        bbox.width + 4,
-                        bbox.height + 2,
-                        2
-                      ).attr({
-                        fill: '#007acc',
-                        'stroke-width': 0
-                      }).add(s.legendItem.element.parentNode);
+                      // Kék háttér hozzáadása
+                      if (!s.legendItem.highlightRect && s.legendItem.element) {
+                        const bbox = s.legendItem.element.getBBox();
+                        s.legendItem.highlightRect = chart.renderer.rect(
+                          bbox.x - 2,
+                          bbox.y - 1,
+                          bbox.width + 4,
+                          bbox.height + 2,
+                          2
+                        ).attr({
+                          fill: '#007acc',
+                          'stroke-width': 0
+                        }).add(s.legendItem.element.parentNode);
 
-                      // Háttér mögé tesszük a szöveget
-                      if (s.legendItem.element.parentNode) {
-                        s.legendItem.element.parentNode.insertBefore(
-                          s.legendItem.highlightRect.element,
-                          s.legendItem.element
-                        );
+                        // Háttér mögé tesszük a szöveget
+                        if (s.legendItem.element.parentNode) {
+                          s.legendItem.element.parentNode.insertBefore(
+                            s.legendItem.highlightRect.element,
+                            s.legendItem.element
+                          );
+                        }
+                      }
+                    } else if (s && s.legendItem) {
+                      // Többi fajta elhalványítása
+                      if (s.legendItem.css) {
+                        s.legendItem.css({
+                          'opacity': 0.5
+                        });
                       }
                     }
-                  } else if (s.legendItem) {
-                    // Többi fajta elhalványítása
-                    if (s.legendItem.css) {
-                      s.legendItem.css({
-                        'opacity': 0.5
-                      });
-                    }
-                  }
-                });
+                  });
+                } catch (error) {
+                  // Silently handle legendItem errors to prevent crashes
+                  console.warn('Legend highlighting failed:', error);
+                }
               };
 
               // Azonnali próbálkozás
@@ -617,24 +622,29 @@ const BreederChart: React.FC<BreederChartProps> = ({
               setHoverDataRef.current(null);
 
               // Legend highlighting visszaállítása
-              chart.series.forEach((s: any) => {
-                if (s.legendItem) {
-                  // Eredeti színek visszaállítása
-                  if (s.legendItem.css) {
-                    s.legendItem.css({
-                      'font-weight': 'normal',
-                      'fill': themeColors.labelColor,
-                      'opacity': 1
-                    });
-                  }
+              try {
+                chart.series.forEach((s: any) => {
+                  if (s && s.legendItem) {
+                    // Eredeti színek visszaállítása
+                    if (s.legendItem.css) {
+                      s.legendItem.css({
+                        'font-weight': 'normal',
+                        'fill': themeColors.labelColor,
+                        'opacity': 1
+                      });
+                    }
 
-                  // Háttér rect eltávolítása
-                  if ((s.legendItem as any).highlightRect) {
-                    (s.legendItem as any).highlightRect.destroy();
-                    delete (s.legendItem as any).highlightRect;
+                    // Háttér rect eltávolítása
+                    if ((s.legendItem as any).highlightRect) {
+                      (s.legendItem as any).highlightRect.destroy();
+                      delete (s.legendItem as any).highlightRect;
+                    }
                   }
-                }
-              });
+                });
+              } catch (error) {
+                // Silently handle legendItem errors to prevent crashes
+                console.warn('Legend reset failed:', error);
+              }
 
               // Ha van kiválasztott fajta, azt megtartjuk, különben visszaállítjuk
               if (chart && chart.series) {

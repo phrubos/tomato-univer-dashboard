@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChartPanelProvider } from "@/contexts/ChartPanelContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,10 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ChartPanelProvider>
-            <ThemeToggle />
-            {children}
+            <AuthProvider>
+              <ThemeToggle />
+              {children}
+            </AuthProvider>
           </ChartPanelProvider>
         </ThemeProvider>
       </body>
