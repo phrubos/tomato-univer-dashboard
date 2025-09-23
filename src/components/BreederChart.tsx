@@ -504,9 +504,9 @@ const BreederChart: React.FC<BreederChartProps> = ({
                   }, false);
                 } else {
                   // Ez nem a kiválasztott fajta - elhalványítva marad
-                  point.update({
-                    opacity: 0.6
-                  }, false);
+                  if (point.graphic) {
+                    point.graphic.attr({ opacity: 0.6 });
+                  }
                 }
                 chart.redraw();
                 return; // Megakadályozzuk a további hover logikát
@@ -664,8 +664,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
                       }
                       if (series.points) {
                         series.points.forEach((p: any) => {
-                          if (p && p.update && typeof p.update === 'function') {
-                            p.update({ opacity: 0.6 }, false);
+                          if (p && p.graphic) {
+                            p.graphic.attr({ opacity: 0.6 });
                           }
                         });
                       }
