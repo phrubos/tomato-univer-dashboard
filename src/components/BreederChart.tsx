@@ -24,7 +24,7 @@ const BreederDataInfoPanel: React.FC<{
   varieties: ProcessedData[];
   theme: string;
   onClose: () => void;
-}> = ({ selectedData, hoverData, varieties, theme, onClose }) => {
+}> = ({ selectedData, hoverData, onClose }) => {
   // Ha van hover adat, azt mutatjuk, egyébként a kiválasztott adatot
   const displayData = hoverData || selectedData;
 
@@ -38,12 +38,12 @@ const BreederDataInfoPanel: React.FC<{
 
   // Helyszín nevek mapping
   const locationNames: { [key: string]: string } = {
-    'M-I': 'Mezőberény I.',
-    'M-II': 'Mezőberény II.',
-    'Cs-I': 'Csabacsűd I.',
-    'Cs-II': 'Csabacsűd II.',
-    'L-I': 'Lakitelek I.',
-    'L-II': 'Lakitelek II.'
+    'M-I': 'Mezőberény-I',
+    'M-II': 'Mezőberény-II',
+    'Cs-I': 'Csabacsűd-I',
+    'Cs-II': 'Csabacsűd-II',
+    'L-I': 'Lakitelek-I',
+    'L-II': 'Lakitelek-II'
   };
 
   return (
@@ -111,8 +111,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
   title,
   varieties,
   breederColor,
-  breederName,
-  allVarietiesData = []
+  breederName
 }) => {
   const chartRef = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();

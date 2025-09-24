@@ -558,6 +558,7 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
                   hoverData={hoverData}
                   allVarieties={varieties}
                   breederColor={breederColor}
+                  isDecayData={title.includes("Romló bogyó")}
                 />
               </div>
             )}

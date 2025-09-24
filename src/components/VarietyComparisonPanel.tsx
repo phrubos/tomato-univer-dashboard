@@ -2,11 +2,9 @@
 
 import React from 'react';
 import { ProcessedData } from '@/utils/dataProcessor';
-import { useTheme } from './ThemeProvider';
 import {
   TrendingUp,
   TrendingDown,
-  BarChart3,
   Target,
   Award,
   MapPin,
@@ -27,15 +25,16 @@ interface VarietyComparisonPanelProps {
   hoverData: HoverDataType | null;
   allVarieties: ProcessedData[];
   breederColor: string;
+  isDecayData?: boolean; // Ha true, akkor fordított logika (alacsonyabb = jobb)
 }
 
 const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
   selectedVariety,
   hoverData,
   allVarieties,
-  breederColor
+  breederColor,
+  isDecayData = false
 }) => {
-  const { theme } = useTheme();
 
   // Find the selected variety data
   const varietyData = allVarieties.find(v => v.variety === selectedVariety);
@@ -46,13 +45,30 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
   const values = locations.map(loc => varietyData.locations[loc as keyof typeof varietyData.locations]);
   const nonZeroValues = values.filter(v => v > 0);
 
+  // Calculate vine retention (fruit growth until 2nd harvest)
+  const vineRetention = (() => {
+    const firstHarvests = [varietyData.locations['M-I'], varietyData.locations['Cs-I'], varietyData.locations['L-I']];
+    const secondHarvests = [varietyData.locations['M-II'], varietyData.locations['Cs-II'], varietyData.locations['L-II']];
+
+    let totalDifference = 0;
+    let locationCount = 0;
+
+    for (let i = 0; i < 3; i++) {
+      if (firstHarvests[i] > 0 && secondHarvests[i] > 0) {
+        totalDifference += (secondHarvests[i] - firstHarvests[i]);
+        locationCount++;
+      }
+    }
+
+    return locationCount > 0 ? totalDifference / locationCount : 0;
+  })();
+
   const stats = {
-    total: values.reduce((sum, val) => sum + val, 0),
     average: nonZeroValues.length > 0 ? nonZeroValues.reduce((sum, val) => sum + val, 0) / nonZeroValues.length : 0,
     max: Math.max(...values),
     min: Math.min(...nonZeroValues),
     activeLocations: nonZeroValues.length,
-    consistency: nonZeroValues.length > 1 ? 1 - (Math.max(...nonZeroValues) - Math.min(...nonZeroValues)) / Math.max(...nonZeroValues) : 1
+    vineRetention: vineRetention
   };
 
   // Compare with other varieties
@@ -62,45 +78,66 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
     return vals.length > 0 ? vals.reduce((sum, val) => sum + val, 0) / vals.length : 0;
   });
 
-  const ranking = allAverages.sort((a, b) => b - a).indexOf(stats.average) + 1;
-  const percentile = ((allAverages.length - ranking + 1) / allAverages.length) * 100;
+  const ranking = allAverages.sort((a, b) => isDecayData ? a - b : b - a).indexOf(stats.average) + 1;
+
+  // Calculate vine retention for all varieties and rank them
+  const allVineRetentions = allVarieties.map(v => {
+    const firstHarvests = [v.locations['M-I'], v.locations['Cs-I'], v.locations['L-I']];
+    const secondHarvests = [v.locations['M-II'], v.locations['Cs-II'], v.locations['L-II']];
+
+    let totalDifference = 0;
+    let locationCount = 0;
+
+    for (let i = 0; i < 3; i++) {
+      if (firstHarvests[i] > 0 && secondHarvests[i] > 0) {
+        totalDifference += (secondHarvests[i] - firstHarvests[i]);
+        locationCount++;
+      }
+    }
+
+    return locationCount > 0 ? totalDifference / locationCount : 0;
+  });
+
+
+
+  // Calculate vine retention percentage relative to maximum value
+  const maxVineRetention = Math.max(...allVineRetentions);
+  const minVineRetention = Math.min(...allVineRetentions);
+
+  const vineRetentionPercentage = isDecayData
+    ? // Romló bogyó adatok esetén: minél kisebb az érték, annál jobb
+      maxVineRetention !== minVineRetention
+        ? ((maxVineRetention - stats.vineRetention) / (maxVineRetention - minVineRetention)) * 100
+        : 100
+    : // Normál adatok esetén: minél nagyobb az érték, annál jobb
+      maxVineRetention > 0
+        ? (stats.vineRetention / maxVineRetention) * 100
+        : 0;
+
+  // Debug: Log vine retention values for analysis
+  console.log('=== TÖVÖN TARTHATÓSÁG/ROMLÁSI TRENDEK DEBUG ===');
+  console.log('Kiválasztott fajta:', selectedVariety);
+  console.log('Romló bogyó mód:', isDecayData);
+  console.log('Kiválasztott fajta értéke:', stats.vineRetention.toFixed(3));
+  console.log('Maximum érték:', maxVineRetention.toFixed(3));
+  console.log('Minimum érték:', minVineRetention.toFixed(3));
+  console.log('Számított százalék:', vineRetentionPercentage.toFixed(1) + '%');
+  console.log('Kategória:',
+    vineRetentionPercentage > 66 ? 'JÓ' :
+    vineRetentionPercentage >= 33 ? 'KÖZEPES' : 'GYENGE'
+  );
+  console.log('================================================');
 
   // Location names mapping
   const locationNames: { [key: string]: string } = {
-    'M-I': 'Mezőberény I.',
-    'M-II': 'Mezőberény II.',
-    'Cs-I': 'Csabacsűd I.',
-    'Cs-II': 'Csabacsűd II.',
-    'L-I': 'Lakitelek I.',
-    'L-II': 'Lakitelek II.'
+    'M-I': 'Mezőberény-I',
+    'M-II': 'Mezőberény-II',
+    'Cs-I': 'Csabacsűd-I',
+    'Cs-II': 'Csabacsűd-II',
+    'L-I': 'Lakitelek-I',
+    'L-II': 'Lakitelek-II'
   };
 
-  // Performance indicators with theme-aware colors
-  const getPerformanceLevel = (value: number, max: number) => {
-    const ratio = value / max;
-    if (ratio >= 0.8) return {
-      level: 'Kiváló',
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-50 dark:bg-green-500/10 border-green-200 dark:border-green-500/20'
-    };
-    if (ratio >= 0.6) return {
-      level: 'Jó',
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20'
-    };
-    if (ratio >= 0.4) return {
-      level: 'Közepes',
-      color: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/20'
-    };
-    return {
-      level: 'Gyenge',
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20'
-    };
-  };
-
-  const performance = getPerformanceLevel(stats.average, stats.max);
 
   return (
     <div
@@ -112,19 +149,14 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
       <div className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gray-200 dark:border-border shadow-lg">
         <div className="p-4 sm:p-6">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-4 h-4 rounded-full ring-2 ring-background"
-                  style={{ backgroundColor: breederColor }}
-                />
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                  Fajta elemzés: {selectedVariety}
-                </h3>
-              </div>
-              <div className={`px-3 py-1 rounded-full text-xs font-medium border ${performance.bgColor} ${performance.color} self-start sm:self-auto`}>
-                {performance.level}
-              </div>
+            <div className="flex items-center gap-3">
+              <div
+                className="w-4 h-4 rounded-full ring-2 ring-background"
+                style={{ backgroundColor: breederColor }}
+              />
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                Fajta elemzés: {selectedVariety}
+              </h3>
             </div>
           </div>
         </div>
@@ -137,22 +169,10 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
 
         {/* Main Statistics Grid */}
         <div
-          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+          className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4"
           role="group"
           aria-label="Fő teljesítmény mutatók"
         >
-          <div
-            className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
-            role="article"
-            aria-label={`Összesen: ${stats.total.toFixed(1)} tonna per hektár`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="w-4 h-4 text-primary" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Összesen</span>
-            </div>
-            <div className="text-2xl font-bold text-foreground">{stats.total.toFixed(1)}</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">t/ha</div>
-          </div>
 
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
@@ -161,7 +181,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
           >
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Átlag</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Átlagos romló bogyó' : 'Átlag'}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">{stats.average.toFixed(1)}</div>
             <div className="text-xs text-gray-500 dark:text-muted-foreground">t/ha</div>
@@ -170,27 +190,27 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
             role="article"
-            aria-label={`Helyezés: ${ranking}. hely, ${percentile.toFixed(0)}. percentilis`}
+            aria-label={`Helyezés: ${ranking}. hely`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Award className="w-4 h-4 text-yellow-600 dark:text-yellow-400" aria-hidden="true" />
               <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Helyezés</span>
             </div>
             <div className="text-2xl font-bold text-foreground">#{ranking}</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">{percentile.toFixed(0)}. percentilis</div>
+            <div className="text-xs text-gray-500 dark:text-muted-foreground">{allVarieties.length} fajtából</div>
           </div>
 
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
             role="article"
-            aria-label={`Konzisztencia: ${(stats.consistency * 100).toFixed(0)} százalék egyenletesség`}
+            aria-label={`${isDecayData ? 'Romlási trendek' : 'Tövön tarthatóság'}: ${stats.vineRetention.toFixed(1)} tonna per hektár különbség`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Activity className="w-4 h-4 text-green-600 dark:text-green-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Konzisztencia</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Romlási trendek' : 'Tövön tarthatóság'}</span>
             </div>
-            <div className="text-2xl font-bold text-foreground">{(stats.consistency * 100).toFixed(0)}%</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">egyenletesség</div>
+            <div className="text-2xl font-bold text-foreground">{stats.vineRetention >= 0 ? '+' : ''}{stats.vineRetention.toFixed(1)}</div>
+            <div className="text-xs text-gray-500 dark:text-muted-foreground">{isDecayData ? 't/ha átlagos változás' : 't/ha átlagos növekedés'}</div>
           </div>
         </div>
 
@@ -300,23 +320,18 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 {locations.map((location, index) => {
                   const value = values[index];
                   const percentage = stats.max > 0 ? (value / stats.max) * 100 : 0;
-                  const isHovered = hoverData?.location === location;
+                  // Ensure minimum width for non-zero values so they are always visible
+                  const displayWidth = value > 0 ? Math.max(percentage, 15) : percentage;
 
                   return (
                     <div key={location} className="flex items-center gap-3">
                       <div className="w-20 text-xs text-gray-600 dark:text-muted-foreground">
-                        {locationNames[location].split(' ')[0]}
+                        {locationNames[location]}
                       </div>
                       <div className="flex-1 bg-gray-100 dark:bg-muted/30 rounded-full h-6 relative overflow-hidden border border-gray-200 dark:border-border">
                         <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            isHovered
-                              ? 'bg-primary'
-                              : value > 0
-                                ? 'bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-400 dark:to-green-400'
-                                : 'bg-gray-400 dark:bg-gray-600'
-                          }`}
-                          style={{ width: `${percentage}%` }}
+                          className="h-full bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-400 dark:to-green-400 rounded-full transition-all duration-500"
+                          style={{ width: `${displayWidth}%` }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white drop-shadow-sm">
                           {value.toFixed(1)}
@@ -337,24 +352,34 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 <h5 className="font-medium text-foreground mb-3">Teljesítmény mutatók</h5>
                 <div className="space-y-3">
                   {[
-                    { label: 'Átlagos hozam', value: stats.average, max: Math.max(...allAverages), unit: 't/ha' },
-                    { label: 'Konzisztencia', value: stats.consistency * 100, max: 100, unit: '%' },
-                    { label: 'Adaptáció', value: (stats.activeLocations / 6) * 100, max: 100, unit: '%' },
-                    { label: 'Relatív teljesítmény', value: percentile, max: 100, unit: '%' }
+                    { label: isDecayData ? 'Átlagos romló bogyó' : 'Átlagos hozam', value: stats.average, max: Math.max(...allAverages), unit: 't/ha' },
+                    { label: isDecayData ? 'Romlási trendek' : 'Tövön tarthatóság', value: stats.vineRetention, max: Math.max(...allVineRetentions), unit: 't/ha', allowNegative: true, isDecayMetric: isDecayData }
                   ].map((metric, index) => {
-                    const percentage = (metric.value / metric.max) * 100;
+                    let percentage;
+                    if (metric.isDecayMetric && index === 1) {
+                      // Romlási trendek esetén használjuk a már kiszámolt vineRetentionPercentage-t
+                      percentage = vineRetentionPercentage;
+                    } else if (metric.allowNegative && metric.value < 0) {
+                      percentage = 0;
+                    } else {
+                      percentage = Math.min((Math.abs(metric.value) / metric.max) * 100, 100);
+                    }
                     return (
                       <div key={index} className="space-y-1">
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-600 dark:text-muted-foreground">{metric.label}</span>
                           <span className="text-foreground font-medium">
-                            {metric.value.toFixed(1)}{metric.unit}
+                            {metric.allowNegative && metric.value >= 0 ? '+' : ''}{metric.value.toFixed(1)}{metric.unit}
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-muted/30 rounded-full h-2 border border-gray-200 dark:border-border">
                           <div
-                            className="h-2 bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 dark:from-red-400 dark:via-yellow-400 dark:to-green-400 rounded-full transition-all duration-700"
-                            style={{ width: `${Math.min(percentage, 100)}%` }}
+                            className={`h-2 rounded-full transition-all duration-700 ${
+                              metric.allowNegative && metric.value < 0
+                                ? 'bg-red-500 dark:bg-red-400'
+                                : 'bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 dark:from-red-400 dark:via-yellow-400 dark:to-green-400'
+                            }`}
+                            style={{ width: `${percentage}%` }}
                           />
                         </div>
                       </div>
@@ -383,11 +408,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                         </div>
                         <div className="flex-1 bg-gray-100 dark:bg-muted/30 rounded-full h-3 border border-gray-200 dark:border-border">
                           <div
-                            className={`h-3 rounded-full transition-all duration-500 ${
-                              isSelected
-                                ? 'bg-primary'
-                                : 'bg-blue-500 dark:bg-blue-400'
-                            }`}
+                            className="h-3 bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-500"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
@@ -410,31 +431,40 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
             <div>
               <span className="font-medium text-foreground">Erősségek:</span>
               <ul className="mt-1 text-gray-600 dark:text-muted-foreground">
-                {stats.max === Math.max(...allAverages) && <li>• Legjobb csúcsteljesítmény</li>}
-                {stats.consistency > 0.7 && <li>• Kiváló konzisztencia</li>}
-                {stats.activeLocations >= 5 && <li>• Széles adaptáció</li>}
-                {percentile > 75 && <li>• Felső kvartilis teljesítmény</li>}
+                {(isDecayData ? stats.average === Math.min(...allAverages) : stats.max === Math.max(...allAverages)) && <li>• Legjobb teljesítmény</li>}
+                {vineRetentionPercentage > 66 && <li>• {isDecayData ? 'Jó romlási trendek' : 'Jó tövön tarthatóság'}</li>}
+                {vineRetentionPercentage >= 33 && vineRetentionPercentage <= 66 && <li>• {isDecayData ? 'Közepes romlási trendek' : 'Közepes tövön tarthatóság'}</li>}
+                {ranking <= Math.ceil(allVarieties.length / 4) && <li>• Átlag feletti {isDecayData ? 'alacsony romló bogyó' : 'termés'} eredmény</li>}
               </ul>
             </div>
             <div>
               <span className="font-medium text-foreground">Fejlesztési területek:</span>
               <ul className="mt-1 text-gray-600 dark:text-muted-foreground">
-                {stats.consistency < 0.5 && <li>• Ingadozó teljesítmény</li>}
-                {stats.activeLocations < 4 && <li>• Korlátozott adaptáció</li>}
-                {ranking > allAverages.length / 2 && <li>• Átlag alatti eredmény</li>}
+                {vineRetentionPercentage < 33 && <li>• {isDecayData ? 'Gyenge romlási trendek' : 'Gyenge tövön tarthatóság'}</li>}
+                {ranking > allAverages.length / 2 && <li>• Átlag alatti {isDecayData ? 'magas romló bogyó' : 'termés'} eredmény</li>}
                 {stats.min === 0 && <li>• Hiányzó helyszín adatok</li>}
               </ul>
             </div>
             <div>
               <span className="font-medium text-foreground">Ajánlás:</span>
               <p className="mt-1 text-gray-600 dark:text-muted-foreground">
-                {stats.average > Math.max(...allAverages) * 0.8
-                  ? "Kiváló választás további termesztésre. Magas hozamú és megbízható fajta."
-                  : stats.consistency > 0.7
-                    ? "Megbízható fajta konzisztens teljesítménnyel. Megfontolható választás."
-                    : stats.activeLocations >= 5
-                      ? "Jó adaptációs képesség, de változó teljesítmény. Helyszín-specifikus optimalizálás szükséges."
-                      : "További tesztelés és fejlesztés szükséges a teljesítmény javításához."
+                {isDecayData
+                  ? (stats.average < Math.min(...allAverages) * 1.2
+                      ? "Kiváló választás további termesztésre. Alacsony romló bogyó mennyiségű és megbízható fajta."
+                      : vineRetentionPercentage > 66
+                        ? "Jó romlási trendekkel rendelkező fajta közepes romló bogyó értékekkel. Megfontolható választás."
+                        : vineRetentionPercentage >= 33
+                          ? "Közepes romlási trendekkel rendelkező fajta. További megfigyelés szükséges."
+                          : "Gyenge romlási trendek. További fejlesztés és optimalizálás szükséges."
+                    )
+                  : (stats.average > Math.max(...allAverages) * 0.8
+                      ? "Kiváló választás további termesztésre. Magas hozamú és megbízható fajta."
+                      : vineRetentionPercentage > 66
+                        ? "Jó tövön tarthatóságú fajta közepes teljesítménnyel. Megfontolandó választás."
+                        : vineRetentionPercentage >= 33
+                          ? "Közepes tövön tarthatóságú fajta. További megfigyelés szükséges."
+                          : "Gyenge tövön tarthatóság. További fejlesztés és optimalizálás szükséges."
+                    )
                 }
               </p>
             </div>
