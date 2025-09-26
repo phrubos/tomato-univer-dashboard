@@ -181,7 +181,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
           >
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Átlagos romló bogyó' : 'Átlag'}</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Átlagos romló bogyó' : 'Átlagos érett bogyótömeg'}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">{stats.average.toFixed(1)}</div>
             <div className="text-xs text-gray-500 dark:text-muted-foreground">t/ha</div>
@@ -203,14 +203,14 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
             role="article"
-            aria-label={`${isDecayData ? 'Romlási trendek' : 'Tövön tarthatóság'}: ${stats.vineRetention.toFixed(1)} tonna per hektár különbség`}
+            aria-label={`${isDecayData ? 'Romlás mértéke' : 'Tövön tarthatóság'}: ${stats.vineRetention.toFixed(1)} tonna per hektár különbség`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Activity className="w-4 h-4 text-green-600 dark:text-green-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Romlási trendek' : 'Tövön tarthatóság'}</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Romlás mértéke' : 'Tövön tarthatóság'}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">{stats.vineRetention >= 0 ? '+' : ''}{stats.vineRetention.toFixed(1)}</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">{isDecayData ? 't/ha átlagos változás' : 't/ha átlagos növekedés'}</div>
+            <div className="text-xs text-gray-500 dark:text-muted-foreground">{isDecayData ? 't/ha átlagos változás a II. szedésig' : 't/ha átlagos növekedés a II. szedésig'}</div>
           </div>
         </div>
 
@@ -253,12 +253,6 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                       <span className={`font-semibold ${isActive ? 'text-foreground' : 'text-gray-500 dark:text-muted-foreground'}`}>
                         {value.toFixed(1)} t/ha
                       </span>
-                      {value === stats.max && value > 0 && (
-                        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-                      )}
-                      {value === stats.min && value > 0 && stats.min !== stats.max && (
-                        <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
-                      )}
                     </div>
                   </div>
                 );
@@ -352,15 +346,24 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 <h5 className="font-medium text-foreground mb-3">Teljesítmény mutatók</h5>
                 <div className="space-y-3">
                   {[
-                    { label: isDecayData ? 'Átlagos romló bogyó' : 'Átlagos hozam', value: stats.average, max: Math.max(...allAverages), unit: 't/ha' },
-                    { label: isDecayData ? 'Romlási trendek' : 'Tövön tarthatóság', value: stats.vineRetention, max: Math.max(...allVineRetentions), unit: 't/ha', allowNegative: true, isDecayMetric: isDecayData }
+                    { label: isDecayData ? 'Átlagos romló bogyótömeg' : 'Átlagos érett bogyótömeg', value: stats.average, max: Math.max(...allAverages), unit: 't/ha' },
+                    { label: isDecayData ? 'Romlás mértéke (átlagos változás a II. szedésig)' : 'Tövön tarthatóság (átlagos növekedés a II. szedésig)', value: stats.vineRetention, max: Math.max(...allVineRetentions), unit: 't/ha', allowNegative: true, isDecayMetric: isDecayData }
                   ].map((metric, index) => {
                     let percentage;
-                    if (metric.isDecayMetric && index === 1) {
-                      // Romlási trendek esetén használjuk a már kiszámolt vineRetentionPercentage-t
-                      percentage = vineRetentionPercentage;
-                    } else if (metric.allowNegative && metric.value < 0) {
-                      percentage = 0;
+                    if (index === 0) {
+                      // Átlagos érték (első mutató) - lineáris skála: legnagyobb érték = 100%, legkisebb = 0%
+                      const maxValue = Math.max(...allAverages);
+                      const minValue = Math.min(...allAverages);
+                      percentage = maxValue !== minValue
+                        ? ((stats.average - minValue) / (maxValue - minValue)) * 100
+                        : 100;
+                    } else if (index === 1) {
+                      // Tövön tarthatóság/Romlás mértéke - lineáris skála: legnagyobb érték = 100%, legkisebb = 0%
+                      const maxValue = Math.max(...allVineRetentions);
+                      const minValue = Math.min(...allVineRetentions);
+                      percentage = maxValue !== minValue
+                        ? ((stats.vineRetention - minValue) / (maxValue - minValue)) * 100
+                        : 100;
                     } else {
                       percentage = Math.min((Math.abs(metric.value) / metric.max) * 100, 100);
                     }
@@ -434,14 +437,14 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 {(isDecayData ? stats.average === Math.min(...allAverages) : stats.max === Math.max(...allAverages)) && <li>• Legjobb teljesítmény</li>}
                 {vineRetentionPercentage > 66 && <li>• {isDecayData ? 'Jó romlási trendek' : 'Jó tövön tarthatóság'}</li>}
                 {vineRetentionPercentage >= 33 && vineRetentionPercentage <= 66 && <li>• {isDecayData ? 'Közepes romlási trendek' : 'Közepes tövön tarthatóság'}</li>}
-                {ranking <= Math.ceil(allVarieties.length / 4) && <li>• Átlag feletti {isDecayData ? 'alacsony romló bogyó' : 'termés'} eredmény</li>}
+                {ranking <= Math.ceil(allVarieties.length / 4) && <li>• Átlagosnál jobb {isDecayData ? 'romló bogyó' : 'termés'} eredmény</li>}
               </ul>
             </div>
             <div>
               <span className="font-medium text-foreground">Fejlesztési területek:</span>
               <ul className="mt-1 text-gray-600 dark:text-muted-foreground">
                 {vineRetentionPercentage < 33 && <li>• {isDecayData ? 'Gyenge romlási trendek' : 'Gyenge tövön tarthatóság'}</li>}
-                {ranking > allAverages.length / 2 && <li>• Átlag alatti {isDecayData ? 'magas romló bogyó' : 'termés'} eredmény</li>}
+                {ranking > allAverages.length / 2 && <li>• Átlagosnál rosszabb {isDecayData ? 'romló bogyó' : 'termés'} eredmény</li>}
                 {stats.min === 0 && <li>• Hiányzó helyszín adatok</li>}
               </ul>
             </div>

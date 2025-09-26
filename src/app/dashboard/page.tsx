@@ -84,26 +84,24 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Navigation Tabs - Only visible for total access */}
-        {accessLevel === 'total' && (
-          <div className="flex justify-center mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="flex space-x-1">
-                <button
-                  className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm"
-                >
-                  📊 Tövön Tarthatóság Diagram
-                </button>
-                <button
-                  onClick={() => router.push('/dashboard/halmozott-termes')}
-                  className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-                >
-                  📈 Halmozott Termés Diagram
-                </button>
-              </div>
+        {/* Navigation Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex space-x-1">
+              <button
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm"
+              >
+                📊 Tövön Tarthatóság Diagram
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/halmozott-termes')}
+                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+              >
+                📈 Halmozott Termés Diagram
+              </button>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Bal-jobb oldali elrendezés */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -114,7 +112,7 @@ export default function Dashboard() {
                 Érett bogyó mennyisége (t/ha)
               </h2>
               <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
-                Az ép, érett bogyó mennyisége I. és II. szedés során
+                Az ép, érett bogyó mennyisége az I. és II. szedés során
               </p>
             </div>
 
@@ -157,7 +155,7 @@ export default function Dashboard() {
                 Romló bogyó mennyisége (t/ha)
               </h2>
               <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
-                A romló bogyó mennyisége I. és II. szedés során
+                A romló bogyó mennyisége az I. és II. szedés során
               </p>
             </div>
 

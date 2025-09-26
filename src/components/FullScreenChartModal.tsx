@@ -548,6 +548,15 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
                   </button>
                 ))}
               </div>
+
+              {/* Explanation text for asterisks - only in full screen */}
+              {varieties.some(variety => variety.variety.includes('*')) && (
+                <div className="mt-3 text-center">
+                  <p className="text-xs text-gray-600 dark:text-muted-foreground">
+                    *= korai, középkorai fajta
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Enhanced Variety Comparison Panel - always visible when there's hoverData */}

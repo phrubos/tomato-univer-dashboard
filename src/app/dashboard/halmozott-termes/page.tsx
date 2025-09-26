@@ -11,6 +11,7 @@ import {
   filterDataByAccessLevel,
   getLocationDisplayName,
   getAvailableLocations,
+  getAvailableLocationsForAccessLevel,
   BREEDER_COLORS,
   type HalmozottLocationData
 } from "@/utils/halmozottDataProcessor";
@@ -22,14 +23,12 @@ export default function HalmozottTermesDashboard() {
   const [selectedLocation, setSelectedLocation] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Ha nincs autentikálva vagy nincs total hozzáférés, irányítson vissza
+  // Ha nincs autentikálva, irányítson vissza
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/');
-    } else if (accessLevel !== 'total') {
-      router.push('/dashboard');
     }
-  }, [isAuthenticated, accessLevel, router]);
+  }, [isAuthenticated, router]);
 
   // Load data
   useEffect(() => {
@@ -39,8 +38,8 @@ export default function HalmozottTermesDashboard() {
         const data = await loadHalmozottData();
         setHalmozottData(data);
 
-        // Set default location to first available
-        const locations = getAvailableLocations(data);
+        // Set default location to first available for this access level
+        const locations = getAvailableLocationsForAccessLevel(data, accessLevel);
         if (locations.length > 0 && !selectedLocation) {
           setSelectedLocation(locations[0]);
         }
@@ -51,13 +50,13 @@ export default function HalmozottTermesDashboard() {
       }
     }
 
-    if (isAuthenticated && accessLevel === 'total') {
+    if (isAuthenticated) {
       fetchData();
     }
   }, [isAuthenticated, accessLevel, selectedLocation]);
 
-  // Ha nincs autentikálva vagy nincs total hozzáférés, ne jelenítse meg a tartalmat
-  if (!isAuthenticated || accessLevel !== 'total') {
+  // Ha nincs autentikálva, ne jelenítse meg a tartalmat
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -76,7 +75,7 @@ export default function HalmozottTermesDashboard() {
   const groupedByBreeder = groupHalmozottByBreeder(cumulativeData, selectedLocation);
   const filteredData = filterDataByAccessLevel(groupedByBreeder, accessLevel);
 
-  const availableLocations = getAvailableLocations(halmozottData);
+  const availableLocations = getAvailableLocationsForAccessLevel(halmozottData, accessLevel);
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
@@ -108,26 +107,24 @@ export default function HalmozottTermesDashboard() {
           )}
         </div>
 
-        {/* Navigation Tabs - Only visible for total access */}
-        {accessLevel === 'total' && (
-          <div className="flex justify-center mb-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
-              <div className="flex space-x-1">
-                <button
-                  onClick={navigateToErettRomlo}
-                  className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-                >
-                  📊 Tövön Tarthatóság Diagram
-                </button>
-                <button
-                  className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm"
-                >
-                  📈 Halmozott Termés Diagram
-                </button>
-              </div>
+        {/* Navigation Tabs */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex space-x-1">
+              <button
+                onClick={navigateToErettRomlo}
+                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+              >
+                📊 Tövön Tarthatóság Diagram
+              </button>
+              <button
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm"
+              >
+                📈 Halmozott Termés Diagram
+              </button>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Location Selector */}
         <div className="flex justify-center mb-6">

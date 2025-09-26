@@ -937,6 +937,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
         ))}
       </div>
 
+
       {/* Full-screen modal */}
       <FullScreenChartModal
         isOpen={isFullScreenOpen}

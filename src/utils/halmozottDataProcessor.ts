@@ -152,3 +152,26 @@ export function getLocationDisplayName(location: string): string {
 export function getAvailableLocations(data: HalmozottLocationData): string[] {
   return Object.keys(data).sort();
 }
+
+// Get available locations filtered by access level
+export function getAvailableLocationsForAccessLevel(
+  data: HalmozottLocationData,
+  accessLevel: string | null
+): string[] {
+  const allLocations = getAvailableLocations(data);
+
+  // For total access, show all locations
+  if (!accessLevel || accessLevel === 'total') {
+    return allLocations;
+  }
+
+  // For specific breeding houses, filter out locations where they have no data
+  return allLocations.filter(location => {
+    const locationData = data[location] || [];
+    const grouped = groupHalmozottByBreeder(processCumulativeData(locationData), location);
+    const filtered = filterDataByAccessLevel(grouped, accessLevel);
+
+    // Only show location if the breeding house has data there
+    return Object.keys(filtered).length > 0;
+  });
+}
