@@ -59,12 +59,26 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
     }, {} as Record<string, CumulativeData[]>);
 
     // Sort groups by base name, then within each group by variety name
+    // WALLER varieties should be at the top
     // Add spacing markers between different variety groups
     const sortedVarietiesWithSpacing: (CumulativeData | { isSpacing: true; variety: string })[] = [];
-    const sortedGroups = Object.keys(groupedVarieties).sort();
+    const sortedGroups = Object.keys(groupedVarieties).sort((a, b) => {
+      const aIsWaller = a.startsWith('WALLER');
+      const bIsWaller = b.startsWith('WALLER');
+
+      if (aIsWaller && !bIsWaller) return -1;
+      if (!aIsWaller && bIsWaller) return 1;
+      return a.localeCompare(b);
+    });
 
     sortedGroups.forEach((baseName, groupIndex) => {
-      const groupVarieties = groupedVarieties[baseName].sort((a, b) => a.variety.localeCompare(b.variety));
+      const groupVarieties = groupedVarieties[baseName].sort((a, b) => {
+        // Within WALLER group, ensure WALLER-I comes before WALLER-II, etc.
+        if (baseName === 'WALLER') {
+          return a.variety.localeCompare(b.variety);
+        }
+        return a.variety.localeCompare(b.variety);
+      });
       sortedVarietiesWithSpacing.push(...groupVarieties);
 
       // Add spacing after each group (except the last one)

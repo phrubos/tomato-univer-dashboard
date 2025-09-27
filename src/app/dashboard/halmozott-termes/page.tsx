@@ -102,7 +102,7 @@ export default function HalmozottTermesDashboard() {
           </p>
           {accessLevel !== 'total' && (
             <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'Waller + Heinz'}
+              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'Prestomech + Heinz'}
             </p>
           )}
         </div>
@@ -158,7 +158,9 @@ export default function HalmozottTermesDashboard() {
         {/* Charts */}
         {!isLoading && selectedLocation && (
           <div className="space-y-8">
-            {Object.entries(filteredData).map(([breederName, varieties]) => {
+            {/* Explicit ordering: Unigen Seeds, BASF-Nunhems, Waller + Heinz, Prestomech + Heinz */}
+            {['Unigen Seeds', 'BASF-Nunhems', 'Waller + Heinz', 'Prestomech + Heinz'].map((breederName) => {
+              const varieties = filteredData[breederName] || [];
               if (varieties.length === 0) return null;
 
               // Calculate average maturity value for this breeder

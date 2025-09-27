@@ -1,0 +1,150 @@
+{
+  "LAKITELEK - 50 SOROS": [
+    {
+      "variety": "Prestomech*",
+      "breeder": "Prestomech",
+      "romló_I": 1.93,
+      "romló_II": 3.76,
+      "érett_I": 120.0,
+      "érett_II": 189.0
+    },
+    {
+      "variety": "N296*",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.14,
+      "romló_II": 1.58,
+      "érett_I": 152.0,
+      "érett_II": 186.0
+    },
+    {
+      "variety": "N507",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.31,
+      "romló_II": 5.08,
+      "érett_I": 165.0,
+      "érett_II": 181.0
+    },
+    {
+      "variety": "N4510",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.05,
+      "romló_II": 2.28,
+      "érett_I": 176.0,
+      "érett_II": 204.0
+    },
+    {
+      "variety": "N4523*",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.4,
+      "romló_II": 1.05,
+      "érett_I": 141.0,
+      "érett_II": 172.0
+    },
+    {
+      "variety": "H2361",
+      "breeder": "Waller + Heinz",
+      "romló_I": 0.175,
+      "romló_II": 1.58,
+      "érett_I": 143.0,
+      "érett_II": 179.0
+    },
+    {
+      "variety": "H2359",
+      "breeder": "Waller + Heinz",
+      "romló_I": 1.58,
+      "romló_II": 2.45,
+      "érett_I": 115.0,
+      "érett_II": 169.0
+    },
+    {
+      "variety": "H2247",
+      "breeder": "Waller + Heinz",
+      "romló_I": 0.875,
+      "romló_II": 1.58,
+      "érett_I": 127.0,
+      "érett_II": 164.0
+    },
+    {
+      "variety": "H2128",
+      "breeder": "Waller + Heinz",
+      "romló_I": 1.23,
+      "romló_II": 3.5,
+      "érett_I": 143.0,
+      "érett_II": 176.0
+    }
+  ],
+  "MEZ-CSAB-LAK (4 SOROS)": [
+    {
+      "variety": "Prestomech*",
+      "breeder": "Prestomech",
+      "romló_I": 1.93,
+      "romló_II": 3.76,
+      "érett_I": 120.0,
+      "érett_II": 189.0
+    },
+    {
+      "variety": "N296*",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.14,
+      "romló_II": 1.58,
+      "érett_I": 152.0,
+      "érett_II": 186.0
+    },
+    {
+      "variety": "N507",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.31,
+      "romló_II": 5.08,
+      "érett_I": 165.0,
+      "érett_II": 181.0
+    },
+    {
+      "variety": "N4510",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.05,
+      "romló_II": 2.28,
+      "érett_I": 176.0,
+      "érett_II": 204.0
+    },
+    {
+      "variety": "N4523*",
+      "breeder": "BASF-Nunhems",
+      "romló_I": 1.4,
+      "romló_II": 1.05,
+      "érett_I": 141.0,
+      "érett_II": 172.0
+    },
+    {
+      "variety": "H2361",
+      "breeder": "Waller + Heinz",
+      "romló_I": 0.175,
+      "romló_II": 1.58,
+      "érett_I": 143.0,
+      "érett_II": 179.0
+    },
+    {
+      "variety": "H2359",
+      "breeder": "Waller + Heinz",
+      "romló_I": 1.58,
+      "romló_II": 2.45,
+      "érett_I": 115.0,
+      "érett_II": 169.0
+    },
+    {
+      "variety": "H2247",
+      "breeder": "Waller + Heinz",
+      "romló_I": 0.875,
+      "romló_II": 1.58,
+      "érett_I": 127.0,
+      "érett_II": 164.0
+    },
+    {
+      "variety": "H2128",
+      "breeder": "Waller + Heinz",
+      "romló_I": 1.23,
+      "romló_II": 3.5,
+      "érett_I": 143.0,
+      "érett_II": 176.0
+    }
+  ]
+}

@@ -25,6 +25,15 @@ export interface ProcessedData {
   };
 }
 
+export interface L50Data {
+  variety: string;
+  breeder: string;
+  romló_I: number;
+  romló_II: number;
+  érett_I: number;
+  érett_II: number;
+}
+
 // Nemesítőházak definíciója
 export const BREEDERS: BreederGroup[] = [
   {
@@ -130,4 +139,64 @@ function adjustColorBrightness(hex: string, factor: number): string {
   return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
     (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
     (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+}
+
+// L50 adatok betöltése és feldolgozása
+export async function loadL50Data(): Promise<L50Data[]> {
+  try {
+    const response = await fetch('/data/l50_data.json');
+    const data = await response.json();
+    const lakitelekData = data['LAKITELEK - 50 SOROS'] || [];
+
+    return lakitelekData.map((item: any) => {
+      let breeder = item.breeder;
+      let variety = item.variety;
+
+      // Prestomech fajtákat együtt kezeljük a H-s fajtákkal
+      if (breeder === 'Prestomech') {
+        breeder = 'Prestomech + Heinz';
+      } else if (breeder === 'Waller + Heinz') {
+        breeder = 'Prestomech + Heinz';
+      }
+
+      return {
+        variety,
+        breeder,
+        romló_I: item.romló_I || 0,
+        romló_II: item.romló_II || 0,
+        érett_I: item.érett_I || 0,
+        érett_II: item.érett_II || 0
+      };
+    });
+  } catch (error) {
+    console.error('Error loading L50 data:', error);
+    return [];
+  }
+}
+
+// L50 adatok csoportosítása nemesítőházak szerint
+export function groupL50DataByBreeder(data: L50Data[]): Record<string, L50Data[]> {
+  return data.reduce((acc, item) => {
+    if (!acc[item.breeder]) {
+      acc[item.breeder] = [];
+    }
+    acc[item.breeder].push(item);
+    return acc;
+  }, {} as Record<string, L50Data[]>);
+}
+
+// L50 diagramhoz alkalmas adatstruktúra létrehozása
+export function processL50DataForChart(varieties: L50Data[], chartType: 'érett' | 'romló'): ProcessedData[] {
+  return varieties.map(variety => ({
+    variety: variety.variety,
+    breeder: variety.breeder,
+    locations: {
+      'M-I': 0,
+      'M-II': 0,
+      'Cs-I': 0,
+      'Cs-II': 0,
+      'L-I': chartType === 'érett' ? variety.érett_I : variety.romló_I,
+      'L-II': chartType === 'érett' ? variety.érett_II : variety.romló_II
+    }
+  }));
 }

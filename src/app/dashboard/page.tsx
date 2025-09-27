@@ -1,14 +1,26 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import BreederChart from "@/components/BreederChart";
-import { processChartData, groupDataByBreeder, BREEDERS } from "@/utils/dataProcessor";
+import {
+  processChartData,
+  groupDataByBreeder,
+  BREEDERS,
+  loadL50Data,
+  groupL50DataByBreeder,
+  processL50DataForChart,
+  type L50Data
+} from "@/utils/dataProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
   const router = useRouter();
+  const [l50Data, setL50Data] = useState<L50Data[]>([]);
+  const [isLoadingL50, setIsLoadingL50] = useState(true);
+  const [showL50ForBasf, setShowL50ForBasf] = useState(false);
+  const [showL50ForWaller, setShowL50ForWaller] = useState(false);
 
   // Adatok feldolgozása
   const erettData = processChartData('érett');
@@ -16,6 +28,32 @@ export default function Dashboard() {
 
   const erettGrouped = groupDataByBreeder(erettData);
   const romloGrouped = groupDataByBreeder(romloData);
+
+  // L50 adatok betöltése
+  useEffect(() => {
+    async function fetchL50Data() {
+      try {
+        const data = await loadL50Data();
+        setL50Data(data);
+      } catch (error) {
+        console.error('Error loading L50 data:', error);
+      } finally {
+        setIsLoadingL50(false);
+      }
+    }
+
+    if (isAuthenticated) {
+      fetchL50Data();
+    }
+  }, [isAuthenticated]);
+
+  // L50 adatok feldolgozása
+  const l50Grouped = groupL50DataByBreeder(l50Data);
+  const l50ErettData = l50Data.length > 0 ? processL50DataForChart(l50Data, 'érett') : [];
+  const l50RomloData = l50Data.length > 0 ? processL50DataForChart(l50Data, 'romló') : [];
+
+  const l50ErettGrouped = groupDataByBreeder(l50ErettData);
+  const l50RomloGrouped = groupDataByBreeder(l50RomloData);
 
   // Ha nincs autentikálva, irányítson a landing page-re
   useEffect(() => {
@@ -44,6 +82,57 @@ export default function Dashboard() {
         return BREEDERS.filter(breeder => breeder.name === 'Waller + Heinz');
       default:
         return [];
+    }
+  };
+
+  // Adatok kiválasztása a toggle state alapján
+  const getDataForBreeder = (breederName: string, chartType: 'érett' | 'romló') => {
+    if (breederName === 'BASF-Nunhems') {
+      if (showL50ForBasf) {
+        const l50Data = chartType === 'érett' ? l50ErettGrouped['BASF-Nunhems'] || [] : l50RomloGrouped['BASF-Nunhems'] || [];
+        return {
+          data: l50Data,
+          isL50: true,
+          title: 'BASF-Nunhems',
+          hasL50Available: l50Data.length > 0
+        };
+      } else {
+        const originalData = chartType === 'érett' ? erettGrouped[breederName] || [] : romloGrouped[breederName] || [];
+        const l50Data = chartType === 'érett' ? l50ErettGrouped['BASF-Nunhems'] || [] : l50RomloGrouped['BASF-Nunhems'] || [];
+        return {
+          data: originalData,
+          isL50: false,
+          title: breederName,
+          hasL50Available: l50Data.length > 0
+        };
+      }
+    } else if (breederName === 'Waller + Heinz') {
+      if (showL50ForWaller) {
+        const l50Data = chartType === 'érett' ? l50ErettGrouped['Prestomech + Heinz'] || [] : l50RomloGrouped['Prestomech + Heinz'] || [];
+        return {
+          data: l50Data,
+          isL50: true,
+          title: 'Prestomech + Heinz',
+          hasL50Available: l50Data.length > 0
+        };
+      } else {
+        const originalData = chartType === 'érett' ? erettGrouped[breederName] || [] : romloGrouped[breederName] || [];
+        const l50Data = chartType === 'érett' ? l50ErettGrouped['Prestomech + Heinz'] || [] : l50RomloGrouped['Prestomech + Heinz'] || [];
+        return {
+          data: originalData,
+          isL50: false,
+          title: breederName,
+          hasL50Available: l50Data.length > 0
+        };
+      }
+    } else {
+      const originalData = chartType === 'érett' ? erettGrouped[breederName] || [] : romloGrouped[breederName] || [];
+      return {
+        data: originalData,
+        isL50: false,
+        title: breederName,
+        hasL50Available: false
+      };
     }
   };
 
@@ -118,29 +207,52 @@ export default function Dashboard() {
 
             <div className="space-y-6">
               {filteredBreeders.map((breeder) => {
-                const varieties = erettGrouped[breeder.name] || [];
+                const breederData = getDataForBreeder(breeder.name, 'érett');
+                const varieties = breederData.data;
+
                 if (varieties.length === 0) return null;
 
                 return (
                   <div key={`erett-${breeder.name}`} className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 shadow-sm">
                     <div className="mb-4">
-                      <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-3 text-foreground">
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: breeder.color }}
-                        />
-                        {breeder.name}
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color }}
+                          />
+                          <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                            {breederData.title}
+                          </h3>
+                        </div>
+
+                        {/* Toggle gomb csak akkor jelenik meg, ha van L50 adat */}
+                        {breederData.hasL50Available && !isLoadingL50 && (
+                          <button
+                            onClick={() => {
+                              if (breeder.name === 'BASF-Nunhems') {
+                                setShowL50ForBasf(!showL50ForBasf);
+                              } else if (breeder.name === 'Waller + Heinz') {
+                                setShowL50ForWaller(!showL50ForWaller);
+                              }
+                            }}
+                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
+                          >
+                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 tőves'}
+                          </button>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                        {varieties.length} fajta adatai
+                        {varieties.length} fajta adatai{breederData.isL50 ? ' • Lakitelek 50 töves' : ''}
                       </p>
                     </div>
                     <BreederChart
                       title="Érett bogyó mennyisége"
                       varieties={varieties}
-                      breederColor={breeder.color}
-                      breederName={breeder.name}
-                      allVarietiesData={erettData}
+                      breederColor={breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color}
+                      breederName={breederData.title}
+                      allVarietiesData={breederData.isL50 ? [...erettData, ...l50ErettData] : erettData}
+                      showOnlyLakitelek={breederData.isL50}
                     />
                   </div>
                 );
@@ -161,29 +273,52 @@ export default function Dashboard() {
 
             <div className="space-y-6">
               {filteredBreeders.map((breeder) => {
-                const varieties = romloGrouped[breeder.name] || [];
+                const breederData = getDataForBreeder(breeder.name, 'romló');
+                const varieties = breederData.data;
+
                 if (varieties.length === 0) return null;
 
                 return (
                   <div key={`romlo-${breeder.name}`} className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 shadow-sm">
                     <div className="mb-4">
-                      <h3 className="text-lg sm:text-xl font-semibold flex items-center gap-3 text-foreground">
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: breeder.color }}
-                        />
-                        {breeder.name}
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color }}
+                          />
+                          <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                            {breederData.title}
+                          </h3>
+                        </div>
+
+                        {/* Toggle gomb csak akkor jelenik meg, ha van L50 adat */}
+                        {breederData.hasL50Available && !isLoadingL50 && (
+                          <button
+                            onClick={() => {
+                              if (breeder.name === 'BASF-Nunhems') {
+                                setShowL50ForBasf(!showL50ForBasf);
+                              } else if (breeder.name === 'Waller + Heinz') {
+                                setShowL50ForWaller(!showL50ForWaller);
+                              }
+                            }}
+                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
+                          >
+                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 tőves'}
+                          </button>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                        {varieties.length} fajta adatai
+                        {varieties.length} fajta adatai{breederData.isL50 ? ' • Lakitelek 50 töves' : ''}
                       </p>
                     </div>
                     <BreederChart
                       title="Romló bogyó mennyisége"
                       varieties={varieties}
-                      breederColor={breeder.color}
-                      breederName={breeder.name}
-                      allVarietiesData={romloData}
+                      breederColor={breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color}
+                      breederName={breederData.title}
+                      allVarietiesData={breederData.isL50 ? [...romloData, ...l50RomloData] : romloData}
+                      showOnlyLakitelek={breederData.isL50}
                     />
                   </div>
                 );

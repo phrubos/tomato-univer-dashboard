@@ -24,7 +24,8 @@ export interface CumulativeData {
 export const BREEDER_COLORS = {
   'Unigen Seeds': '#dc2626',
   'BASF-Nunhems': '#d97706',
-  'Waller + Heinz': '#1e40af'
+  'Waller + Heinz': '#1e40af',
+  'Prestomech + Heinz': '#1e40af'
 } as const;
 
 // Load and process cumulative yield data
@@ -77,9 +78,9 @@ export function groupHalmozottByBreeder(data: CumulativeData[], locationName?: s
 
     // Special handling for LAKITELEK - 50 TŐVES location
     if (locationName === 'LAKITELEK - 50 TŐVES') {
-      // Move Prestomech varieties to Waller + Heinz
+      // Move Prestomech varieties to Prestomech + Heinz
       if (item.breeder === 'Prestomech') {
-        targetBreeder = 'Waller + Heinz';
+        targetBreeder = 'Prestomech + Heinz';
       }
       // Move N-prefix varieties to BASF-Nunhems
       else if (item.variety.startsWith('N')) {
@@ -129,6 +130,9 @@ export function filterDataByAccessLevel(
     case 'waller_heinz':
       if (data['Waller + Heinz']) {
         filtered['Waller + Heinz'] = data['Waller + Heinz'];
+      }
+      if (data['Prestomech + Heinz']) {
+        filtered['Prestomech + Heinz'] = data['Prestomech + Heinz'];
       }
       break;
   }

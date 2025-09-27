@@ -15,6 +15,7 @@ interface BreederChartProps {
   breederColor: string;
   breederName: string;
   allVarietiesData?: ProcessedData[]; // Az összes fajta adatai a tooltip-hez
+  showOnlyLakitelek?: boolean; // Csak Lakitelek helyszíneket mutassa
 }
 
 // Információs panel komponens a BreederChart-hoz
@@ -111,7 +112,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
   title,
   varieties,
   breederColor,
-  breederName
+  breederName,
+  showOnlyLakitelek = false
 }) => {
   const chartRef = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -234,7 +236,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
   const colors = generateColorShades(breederColor, varieties.length);
 
   // Adatok előkészítése Highcharts számára
-  const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+  const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
   
   const series = varieties.map((variety, index) => ({
     type: 'column' as const,
@@ -370,7 +372,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
               const series = point.series;
               const chart = series.chart;
               const clickedBreedName = series.name;
-              const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+              const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
               // Összegyűjtjük az adott fajta összes helyszínének adatait
               const allLocationData = categories.map(location => {
@@ -470,7 +472,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
 
               // Ha a panel már nyitva van, akkor frissítjük a hover adatokat
               if (isChartActiveRef.current(chartIdRef.current)) {
-                const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+                const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
                 const series = point.series;
                 const allLocationData = categories.map(location => {
                   const locationIndex = categories.indexOf(location);
@@ -844,7 +846,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
       highlightBreed(breedName);
 
       // Panel megnyitása az első helyszín adataival
-      const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
+      const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
       const selectedVariety = varieties.find(v => v.variety === breedName);
 
       if (selectedVariety) {
