@@ -351,18 +351,16 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                   ].map((metric, index) => {
                     let percentage;
                     if (index === 0) {
-                      // Átlagos érték (első mutató) - lineáris skála: legnagyobb érték = 100%, legkisebb = 0%
+                      // Átlagos érték (első mutató) - arányos skála: legnagyobb érték = 100%, többi arányosan
                       const maxValue = Math.max(...allAverages);
-                      const minValue = Math.min(...allAverages);
-                      percentage = maxValue !== minValue
-                        ? ((stats.average - minValue) / (maxValue - minValue)) * 100
+                      percentage = maxValue > 0
+                        ? (stats.average / maxValue) * 100
                         : 100;
                     } else if (index === 1) {
-                      // Tövön tarthatóság/Romlás mértéke - lineáris skála: legnagyobb érték = 100%, legkisebb = 0%
+                      // Tövön tarthatóság/Romlás mértéke - arányos skála: legnagyobb érték = 100%, többi arányosan
                       const maxValue = Math.max(...allVineRetentions);
-                      const minValue = Math.min(...allVineRetentions);
-                      percentage = maxValue !== minValue
-                        ? ((stats.vineRetention - minValue) / (maxValue - minValue)) * 100
+                      percentage = maxValue > 0
+                        ? (stats.vineRetention / maxValue) * 100
                         : 100;
                     } else {
                       percentage = Math.min((Math.abs(metric.value) / metric.max) * 100, 100);

@@ -274,7 +274,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
                 </div>
                 <div class="border-t ${borderClass} pt-2 mt-2">
                   <div class="flex justify-between items-center font-semibold">
-                    <span>Összesen:</span>
+                    <span>Összesen: </span>
                     <span>${total.toFixed(1)} t/ha</span>
                   </div>
                 </div>
