@@ -10,7 +10,6 @@ import {
   groupHalmozottByBreeder,
   filterDataByAccessLevel,
   getLocationDisplayName,
-  getAvailableLocations,
   getAvailableLocationsForAccessLevel,
   BREEDER_COLORS,
   type HalmozottLocationData

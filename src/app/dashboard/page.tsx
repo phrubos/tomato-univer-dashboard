@@ -48,7 +48,6 @@ export default function Dashboard() {
   }, [isAuthenticated]);
 
   // L50 adatok feldolgozása
-  const l50Grouped = groupL50DataByBreeder(l50Data);
   const l50ErettData = l50Data.length > 0 ? processL50DataForChart(l50Data, 'érett') : [];
   const l50RomloData = l50Data.length > 0 ? processL50DataForChart(l50Data, 'romló') : [];
 

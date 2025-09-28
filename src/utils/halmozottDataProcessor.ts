@@ -24,7 +24,6 @@ export interface CumulativeData {
 export const BREEDER_COLORS = {
   'Unigen Seeds': '#dc2626',
   'BASF-Nunhems': '#d97706',
-  'WALLER + Heinz': '#1e40af',
   'WALLER + Heinz': '#1e40af'
 } as const;
 
