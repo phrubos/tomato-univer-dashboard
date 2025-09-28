@@ -257,7 +257,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
       animation: false
     },
     title: {
-      text: `${breederName}`,
+      text: `${breederName === 'WALLER + Heinz' && showOnlyLakitelek ? 'Prestomech + Heinz' : breederName}`,
       style: {
         color: themeColors.titleColor,
         fontSize: '18px',
@@ -285,7 +285,21 @@ const BreederChart: React.FC<BreederChartProps> = ({
         color: themeColors.crosshairColor,
         dashStyle: 'Solid' as const
       },
-      plotBands: [
+      plotBands: showOnlyLakitelek ? [
+        {
+          from: -0.5,
+          to: 1.5,
+          color: themeColors.plotBandColor,
+          label: {
+            text: 'Lakitelek 50 töves',
+            style: {
+              color: themeColors.labelColor,
+              fontSize: '12px'
+            },
+            align: 'center'
+          }
+        }
+      ] : [
         {
           from: -0.5,
           to: 1.5,

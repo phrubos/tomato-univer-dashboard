@@ -47,7 +47,7 @@ export const BREEDERS: BreederGroup[] = [
     varieties: ['N00541*', 'N00530', 'N00544', 'N00539', 'N00339', 'N4510', 'N00540*']
   },
   {
-    name: 'Waller + Heinz',
+    name: 'WALLER + Heinz',
     color: '#1e40af', // Királykék
     varieties: ['WALLER', 'H2123*', 'H2239', 'H2249', 'H1881', 'H2127']
   }
@@ -155,7 +155,7 @@ export async function loadL50Data(): Promise<L50Data[]> {
       // Prestomech fajtákat együtt kezeljük a H-s fajtákkal
       if (breeder === 'Prestomech') {
         breeder = 'Prestomech + Heinz';
-      } else if (breeder === 'Waller + Heinz') {
+      } else if (breeder === 'WALLER + Heinz') {
         breeder = 'Prestomech + Heinz';
       }
 

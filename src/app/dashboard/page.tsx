@@ -79,7 +79,7 @@ export default function Dashboard() {
       case 'nunhems':
         return BREEDERS.filter(breeder => breeder.name === 'BASF-Nunhems');
       case 'waller_heinz':
-        return BREEDERS.filter(breeder => breeder.name === 'Waller + Heinz');
+        return BREEDERS.filter(breeder => breeder.name === 'WALLER + Heinz');
       default:
         return [];
     }
@@ -106,11 +106,32 @@ export default function Dashboard() {
           hasL50Available: l50Data.length > 0
         };
       }
-    } else if (breederName === 'Waller + Heinz') {
+    } else if (breederName === 'WALLER + Heinz') {
       if (showL50ForWaller) {
         const l50Data = chartType === 'érett' ? l50ErettGrouped['Prestomech + Heinz'] || [] : l50RomloGrouped['Prestomech + Heinz'] || [];
+        const originalData = chartType === 'érett' ? erettGrouped[breederName] || [] : romloGrouped[breederName] || [];
+
+        // Kombináljuk az L50 adatokat (Prestomech) az eredeti Heinz fajtákkal
+        const combinedData = [...l50Data];
+        originalData.forEach(originalItem => {
+          if (originalItem.variety.startsWith('H')) {
+            // Heinz fajták hozzáadása csak L-I és L-II helyszínekkel
+            combinedData.push({
+              ...originalItem,
+              locations: {
+                'M-I': 0,
+                'M-II': 0,
+                'Cs-I': 0,
+                'Cs-II': 0,
+                'L-I': originalItem.locations['L-I'],
+                'L-II': originalItem.locations['L-II']
+              }
+            });
+          }
+        });
+
         return {
-          data: l50Data,
+          data: combinedData,
           isL50: true,
           title: 'Prestomech + Heinz',
           hasL50Available: l50Data.length > 0
@@ -168,7 +189,7 @@ export default function Dashboard() {
           </p>
           {accessLevel !== 'total' && (
             <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'Waller + Heinz'}
+              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'WALLER + Heinz'}
             </p>
           )}
         </div>
@@ -219,7 +240,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-3">
                           <div
                             className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color }}
+                            style={{ backgroundColor: breederData.isL50 && breeder.name === 'WALLER + Heinz' ? '#1e40af' : breeder.color }}
                           />
                           <h3 className="text-lg sm:text-xl font-semibold text-foreground">
                             {breederData.title}
@@ -232,13 +253,13 @@ export default function Dashboard() {
                             onClick={() => {
                               if (breeder.name === 'BASF-Nunhems') {
                                 setShowL50ForBasf(!showL50ForBasf);
-                              } else if (breeder.name === 'Waller + Heinz') {
+                              } else if (breeder.name === 'WALLER + Heinz') {
                                 setShowL50ForWaller(!showL50ForWaller);
                               }
                             }}
                             className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
                           >
-                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 tőves'}
+                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
                           </button>
                         )}
                       </div>
@@ -249,7 +270,7 @@ export default function Dashboard() {
                     <BreederChart
                       title="Érett bogyó mennyisége"
                       varieties={varieties}
-                      breederColor={breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color}
+                      breederColor={breederData.isL50 && breeder.name === 'WALLER + Heinz' ? '#1e40af' : breeder.color}
                       breederName={breederData.title}
                       allVarietiesData={breederData.isL50 ? [...erettData, ...l50ErettData] : erettData}
                       showOnlyLakitelek={breederData.isL50}
@@ -285,7 +306,7 @@ export default function Dashboard() {
                         <div className="flex items-center gap-3">
                           <div
                             className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color }}
+                            style={{ backgroundColor: breederData.isL50 && breeder.name === 'WALLER + Heinz' ? '#1e40af' : breeder.color }}
                           />
                           <h3 className="text-lg sm:text-xl font-semibold text-foreground">
                             {breederData.title}
@@ -298,13 +319,13 @@ export default function Dashboard() {
                             onClick={() => {
                               if (breeder.name === 'BASF-Nunhems') {
                                 setShowL50ForBasf(!showL50ForBasf);
-                              } else if (breeder.name === 'Waller + Heinz') {
+                              } else if (breeder.name === 'WALLER + Heinz') {
                                 setShowL50ForWaller(!showL50ForWaller);
                               }
                             }}
                             className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
                           >
-                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 tőves'}
+                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
                           </button>
                         )}
                       </div>
@@ -315,7 +336,7 @@ export default function Dashboard() {
                     <BreederChart
                       title="Romló bogyó mennyisége"
                       varieties={varieties}
-                      breederColor={breederData.isL50 && breeder.name === 'Waller + Heinz' ? '#1e40af' : breeder.color}
+                      breederColor={breederData.isL50 && breeder.name === 'WALLER + Heinz' ? '#1e40af' : breeder.color}
                       breederName={breederData.title}
                       allVarietiesData={breederData.isL50 ? [...romloData, ...l50RomloData] : romloData}
                       showOnlyLakitelek={breederData.isL50}

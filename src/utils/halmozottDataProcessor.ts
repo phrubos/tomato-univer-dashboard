@@ -24,8 +24,8 @@ export interface CumulativeData {
 export const BREEDER_COLORS = {
   'Unigen Seeds': '#dc2626',
   'BASF-Nunhems': '#d97706',
-  'Waller + Heinz': '#1e40af',
-  'Prestomech + Heinz': '#1e40af'
+  'WALLER + Heinz': '#1e40af',
+  'WALLER + Heinz': '#1e40af'
 } as const;
 
 // Load and process cumulative yield data
@@ -71,21 +71,22 @@ export function groupHalmozottByBreeder(data: CumulativeData[], locationName?: s
     if (item.breeder === 'Unknown') {
       targetBreeder = 'BASF-Nunhems';
     }
-    // Keep Waller + Heinz as is
+    // Keep Waller + Heinz as is but change to WALLER + Heinz
     else if (item.breeder === 'Waller + Heinz') {
-      targetBreeder = 'Waller + Heinz';
+      targetBreeder = 'WALLER + Heinz';
     }
 
     // Special handling for LAKITELEK - 50 TŐVES location
-    if (locationName === 'LAKITELEK - 50 TŐVES') {
-      // Move Prestomech varieties to Prestomech + Heinz
+    if (locationName === 'LAKITELEK - 50 TÖVES') {
+      // Move Prestomech varieties to WALLER + Heinz
       if (item.breeder === 'Prestomech') {
-        targetBreeder = 'Prestomech + Heinz';
+        targetBreeder = 'WALLER + Heinz';
       }
-      // Move N-prefix varieties to BASF-Nunhems
-      else if (item.variety.startsWith('N')) {
-        targetBreeder = 'BASF-Nunhems';
-      }
+    }
+
+    // Move N-prefix varieties to BASF-Nunhems
+    if (item.variety.startsWith('N')) {
+      targetBreeder = 'BASF-Nunhems';
     }
 
     if (!grouped[targetBreeder]) {
@@ -128,11 +129,11 @@ export function filterDataByAccessLevel(
       }
       break;
     case 'waller_heinz':
-      if (data['Waller + Heinz']) {
-        filtered['Waller + Heinz'] = data['Waller + Heinz'];
+      if (data['WALLER + Heinz']) {
+        filtered['WALLER + Heinz'] = data['WALLER + Heinz'];
       }
       if (data['Prestomech + Heinz']) {
-        filtered['Prestomech + Heinz'] = data['Prestomech + Heinz'];
+        filtered['WALLER + Heinz'] = data['Prestomech + Heinz'];
       }
       break;
   }

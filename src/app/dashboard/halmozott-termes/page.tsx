@@ -75,6 +75,7 @@ export default function HalmozottTermesDashboard() {
   const groupedByBreeder = groupHalmozottByBreeder(cumulativeData, selectedLocation);
   const filteredData = filterDataByAccessLevel(groupedByBreeder, accessLevel);
 
+
   const availableLocations = getAvailableLocationsForAccessLevel(halmozottData, accessLevel);
 
   return (
@@ -102,7 +103,7 @@ export default function HalmozottTermesDashboard() {
           </p>
           {accessLevel !== 'total' && (
             <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'Prestomech + Heinz'}
+              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'WALLER + Heinz'}
             </p>
           )}
         </div>
@@ -158,8 +159,8 @@ export default function HalmozottTermesDashboard() {
         {/* Charts */}
         {!isLoading && selectedLocation && (
           <div className="space-y-8">
-            {/* Explicit ordering: Unigen Seeds, BASF-Nunhems, Waller + Heinz, Prestomech + Heinz */}
-            {['Unigen Seeds', 'BASF-Nunhems', 'Waller + Heinz', 'Prestomech + Heinz'].map((breederName) => {
+            {/* Explicit ordering: Unigen Seeds, BASF-Nunhems, WALLER + Heinz */}
+            {['Unigen Seeds', 'BASF-Nunhems', 'WALLER + Heinz'].map((breederName) => {
               const varieties = filteredData[breederName] || [];
               if (varieties.length === 0) return null;
 
@@ -177,7 +178,7 @@ export default function HalmozottTermesDashboard() {
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: breederColor }}
                       />
-                      {breederName}
+                      {breederName === 'WALLER + Heinz' && selectedLocation === 'LAKITELEK - 50 TÖVES' ? 'Prestomech + Heinz' : breederName}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
