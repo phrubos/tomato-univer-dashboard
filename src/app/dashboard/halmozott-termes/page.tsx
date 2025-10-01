@@ -158,8 +158,8 @@ export default function HalmozottTermesDashboard() {
         {/* Charts */}
         {!isLoading && selectedLocation && (
           <div className="space-y-8">
-            {/* Explicit ordering: Unigen Seeds, BASF-Nunhems, WALLER + Heinz */}
-            {['Unigen Seeds', 'BASF-Nunhems', 'WALLER + Heinz'].map((breederName) => {
+            {/* Explicit ordering: Unigen Seeds, BASF-Nunhems, WALLER + Heinz, Prestomech + Heinz */}
+            {['Unigen Seeds', 'BASF-Nunhems', 'WALLER + Heinz', 'Prestomech + Heinz'].map((breederName) => {
               const varieties = filteredData[breederName] || [];
               if (varieties.length === 0) return null;
 
@@ -177,7 +177,7 @@ export default function HalmozottTermesDashboard() {
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: breederColor }}
                       />
-                      {breederName === 'WALLER + Heinz' && selectedLocation === 'LAKITELEK - 50 TÖVES' ? 'Prestomech + Heinz' : breederName}
+                      {breederName}
                     </h3>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm text-gray-600 dark:text-gray-400">

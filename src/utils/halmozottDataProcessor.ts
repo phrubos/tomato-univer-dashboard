@@ -24,7 +24,8 @@ export interface CumulativeData {
 export const BREEDER_COLORS = {
   'Unigen Seeds': '#dc2626',
   'BASF-Nunhems': '#d97706',
-  'WALLER + Heinz': '#1e40af'
+  'WALLER + Heinz': '#1e40af',
+  'Prestomech + Heinz': '#1e40af'
 } as const;
 
 // Load and process cumulative yield data
@@ -66,26 +67,39 @@ export function groupHalmozottByBreeder(data: CumulativeData[], locationName?: s
   data.forEach(item => {
     let targetBreeder = item.breeder;
 
-    // Convert Unknown to BASF-Nunhems
-    if (item.breeder === 'Unknown') {
+    // Special handling for LAKITELEK - 50 TÖVES location with Unknown breeder
+    if (locationName === 'LAKITELEK - 50 TÖVES' && item.breeder === 'Unknown') {
+      // Check variety name to determine the correct breeder
+      // Format is "X-VarietyName-I" or "X-VarietyName-II"
+      const parts = item.variety.split('-');
+      const varietyName = parts.length > 1 ? parts[1] : item.variety;
+
+      if (varietyName.startsWith('Prestomech') || varietyName.startsWith('H')) {
+        // Prestomech and H-prefix varieties go to "Prestomech + Heinz"
+        targetBreeder = 'Prestomech + Heinz';
+      } else if (varietyName.startsWith('N')) {
+        // N-prefix varieties go to BASF-Nunhems
+        targetBreeder = 'BASF-Nunhems';
+      } else {
+        // Default for Unknown at this location
+        targetBreeder = 'BASF-Nunhems';
+      }
+    }
+    // Convert Unknown to BASF-Nunhems for other locations
+    else if (item.breeder === 'Unknown') {
       targetBreeder = 'BASF-Nunhems';
     }
-    // Keep Waller + Heinz as is but change to WALLER + Heinz
+    // Keep Waller + Heinz as is but normalize to WALLER + Heinz
     else if (item.breeder === 'Waller + Heinz') {
       targetBreeder = 'WALLER + Heinz';
     }
-
-    // Special handling for LAKITELEK - 50 TŐVES location
-    if (locationName === 'LAKITELEK - 50 TÖVES') {
-      // Move Prestomech varieties to WALLER + Heinz
-      if (item.breeder === 'Prestomech') {
+    // Move Prestomech varieties to appropriate group
+    else if (item.breeder === 'Prestomech') {
+      if (locationName === 'LAKITELEK - 50 TÖVES') {
+        targetBreeder = 'Prestomech + Heinz';
+      } else {
         targetBreeder = 'WALLER + Heinz';
       }
-    }
-
-    // Move N-prefix varieties to BASF-Nunhems
-    if (item.variety.startsWith('N')) {
-      targetBreeder = 'BASF-Nunhems';
     }
 
     if (!grouped[targetBreeder]) {
@@ -132,7 +146,7 @@ export function filterDataByAccessLevel(
         filtered['WALLER + Heinz'] = data['WALLER + Heinz'];
       }
       if (data['Prestomech + Heinz']) {
-        filtered['WALLER + Heinz'] = data['Prestomech + Heinz'];
+        filtered['Prestomech + Heinz'] = data['Prestomech + Heinz'];
       }
       break;
   }
