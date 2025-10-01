@@ -257,7 +257,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
       animation: false
     },
     title: {
-      text: `${breederName === 'WALLER + Heinz' && showOnlyLakitelek ? 'Prestomech + Heinz' : breederName}`,
+      text: breederName,
       style: {
         color: themeColors.titleColor,
         fontSize: '18px',

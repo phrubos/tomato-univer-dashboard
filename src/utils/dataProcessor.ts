@@ -149,19 +149,9 @@ export async function loadL50Data(): Promise<L50Data[]> {
     const lakitelekData = data['LAKITELEK - 50 SOROS'] || [];
 
     return lakitelekData.map((item: any) => {
-      let breeder = item.breeder;
-      let variety = item.variety;
-
-      // Prestomech fajtákat együtt kezeljük a H-s fajtákkal
-      if (breeder === 'Prestomech') {
-        breeder = 'Prestomech + Heinz';
-      } else if (breeder === 'WALLER + Heinz') {
-        breeder = 'Prestomech + Heinz';
-      }
-
       return {
-        variety,
-        breeder,
+        variety: item.variety,
+        breeder: item.breeder,
         romló_I: item.romló_I || 0,
         romló_II: item.romló_II || 0,
         érett_I: item.érett_I || 0,

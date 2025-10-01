@@ -107,30 +107,11 @@ export default function Dashboard() {
       }
     } else if (breederName === 'WALLER + Heinz') {
       if (showL50ForWaller) {
+        // Csak az L50 adatokat használjuk, nem kombináljuk az eredeti adatokkal
         const l50Data = chartType === 'érett' ? l50ErettGrouped['Prestomech + Heinz'] || [] : l50RomloGrouped['Prestomech + Heinz'] || [];
-        const originalData = chartType === 'érett' ? erettGrouped[breederName] || [] : romloGrouped[breederName] || [];
-
-        // Kombináljuk az L50 adatokat (Prestomech) az eredeti Heinz fajtákkal
-        const combinedData = [...l50Data];
-        originalData.forEach(originalItem => {
-          if (originalItem.variety.startsWith('H')) {
-            // Heinz fajták hozzáadása csak L-I és L-II helyszínekkel
-            combinedData.push({
-              ...originalItem,
-              locations: {
-                'M-I': 0,
-                'M-II': 0,
-                'Cs-I': 0,
-                'Cs-II': 0,
-                'L-I': originalItem.locations['L-I'],
-                'L-II': originalItem.locations['L-II']
-              }
-            });
-          }
-        });
 
         return {
-          data: combinedData,
+          data: l50Data,
           isL50: true,
           title: 'Prestomech + Heinz',
           hasL50Available: l50Data.length > 0
