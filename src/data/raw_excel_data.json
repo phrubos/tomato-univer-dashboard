@@ -360,5 +360,398 @@
       "L-I.": 142.0,
       "L-II.": 172.0
     }
+  ],
+  "L_50": [
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "2-N296*",
+      "L-50-I": 1.14,
+      "L-50-II": 1.58
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "3-N507",
+      "L-50-I": 1.31,
+      "L-50-II": 5.08
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "4-N4510",
+      "L-50-I": 1.05,
+      "L-50-II": 2.28
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "5-N4523*",
+      "L-50-I": 1.4,
+      "L-50-II": 1.05
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "1-Prestomech*",
+      "L-50-I": 1.93,
+      "L-50-II": 3.76
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "6-H2361",
+      "L-50-I": 0.175,
+      "L-50-II": 1.58
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "7-H2359",
+      "L-50-I": 1.58,
+      "L-50-II": 2.45
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "8-H2247",
+      "L-50-I": 0.875,
+      "L-50-II": 1.58
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - a romló bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "9-H2128",
+      "L-50-I": 1.23,
+      "L-50-II": 3.5
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "2-N296*",
+      "L-50-I": 152.0,
+      "L-50-II": 186.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "3-N507",
+      "L-50-I": 165.0,
+      "L-50-II": 181.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "4-N4510",
+      "L-50-I": 176.0,
+      "L-50-II": 204.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "5-N4523*",
+      "L-50-I": 141.0,
+      "L-50-II": 172.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "1-Prestomech*",
+      "L-50-I": 120.0,
+      "L-50-II": 189.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "6-H2361",
+      "L-50-I": 143.0,
+      "L-50-II": 179.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "7-H2359",
+      "L-50-I": 115.0,
+      "L-50-II": 169.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "8-H2247",
+      "L-50-I": 127.0,
+      "L-50-II": 164.0
+    },
+    {
+      "diagramhoz": "Tövön tarthatóság - az ép, érett bogyó mennyisége, I. és II. szedés, t/ha",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "9-H2128",
+      "L-50-I": 143.0,
+      "L-50-II": 176.0
+    }
+  ],
+  "brix": [
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Unigen Seeds",
+      "fajta": "UG11227*",
+      "M-I.": 4.656666666666667,
+      "M-II.": 4.77,
+      "Cs-I.": 5.329999999999999,
+      "Cs-II.": 5.31,
+      "L-I.": 4.275,
+      "L-II.": 4.23
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Unigen Seeds",
+      "fajta": "UG8492",
+      "M-I.": 5.743333333333333,
+      "M-II.": 5.13,
+      "Cs-I.": 5.836666666666666,
+      "Cs-II.": 5.88,
+      "L-I.": 4.2275,
+      "L-II.": 4.73
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Unigen Seeds",
+      "fajta": "UG17219",
+      "M-I.": 5.16,
+      "M-II.": 5.39,
+      "Cs-I.": 4.816666666666667,
+      "Cs-II.": 4.8,
+      "L-I.": 4.217499999999999,
+      "L-II.": 4.79
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Unigen Seeds",
+      "fajta": "UG1578",
+      "M-I.": 4.223333333333334,
+      "M-II.": 4.36,
+      "Cs-I.": 4.773333333333333,
+      "Cs-II.": 4.77,
+      "L-I.": 4.1225000000000005,
+      "L-II.": 4.7
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Unigen Seeds",
+      "fajta": "UG13577*",
+      "M-I.": 4.966666666666666,
+      "M-II.": 5.6,
+      "Cs-I.": 5.413333333333334,
+      "Cs-II.": 5.54,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N00541*",
+      "M-I.": 5.359999999999999,
+      "M-II.": 5.46,
+      "Cs-I.": 6.206666666666667,
+      "Cs-II.": 6.5,
+      "L-I.": 5.15,
+      "L-II.": 5.47
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N00530",
+      "M-I.": 5.02,
+      "M-II.": 5.27,
+      "Cs-I.": 5.923333333333333,
+      "Cs-II.": 6.12,
+      "L-I.": 5.237500000000001,
+      "L-II.": 5.37
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N00544",
+      "M-I.": 4.626666666666667,
+      "M-II.": 4.81,
+      "Cs-I.": 4.816666666666666,
+      "Cs-II.": 4.74,
+      "L-I.": 4.2325,
+      "L-II.": 4.08
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N00539",
+      "M-I.": 0.0,
+      "M-II.": 0.0,
+      "Cs-I.": 0.0,
+      "Cs-II.": 0.0,
+      "L-I.": 4.9025,
+      "L-II.": 5.0
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N00339",
+      "M-I.": 5.593333333333334,
+      "M-II.": 5.48,
+      "Cs-I.": 5.023333333333333,
+      "Cs-II.": 5.15,
+      "L-I.": 5.2325,
+      "L-II.": 5.02
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N4510",
+      "M-I.": 6.039999999999999,
+      "M-II.": 5.33,
+      "Cs-I.": 5.116666666666666,
+      "Cs-II.": 5.22,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "N00540*",
+      "M-I.": 5.05,
+      "M-II.": 5.75,
+      "Cs-I.": 0.0,
+      "Cs-II.": 0.0,
+      "L-I.": 0.0,
+      "L-II.": 0.0
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "WALLER + Heinz",
+      "fajta": "WALLER",
+      "M-I.": 5.94,
+      "M-II.": 5.57,
+      "Cs-I.": 5.676666666666667,
+      "Cs-II.": 5.87,
+      "L-I.": 4.8950000000000005,
+      "L-II.": 5.01
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "WALLER + Heinz",
+      "fajta": "H2123*",
+      "M-I.": 5.329999999999999,
+      "M-II.": 5.77,
+      "Cs-I.": 5.34,
+      "Cs-II.": 5.73,
+      "L-I.": 4.6825,
+      "L-II.": 4.62
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "WALLER + Heinz",
+      "fajta": "H2239",
+      "M-I.": 5.12,
+      "M-II.": 4.64,
+      "Cs-I.": 4.57,
+      "Cs-II.": 4.7,
+      "L-I.": 4.405,
+      "L-II.": 4.61
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "WALLER + Heinz",
+      "fajta": "H2249",
+      "M-I.": 4.590000000000001,
+      "M-II.": 4.9,
+      "Cs-I.": 4.956666666666667,
+      "Cs-II.": 5.3,
+      "L-I.": 4.734999999999999,
+      "L-II.": 4.86
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "WALLER + Heinz",
+      "fajta": "H1881",
+      "M-I.": 4.636666666666667,
+      "M-II.": 4.8,
+      "Cs-I.": 5.203333333333333,
+      "Cs-II.": 5.31,
+      "L-I.": 5.2925,
+      "L-II.": 5.05
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "WALLER + Heinz",
+      "fajta": "H2127",
+      "M-I.": 4.95,
+      "M-II.": 4.93,
+      "Cs-I.": 4.836666666666667,
+      "Cs-II.": 5.25,
+      "L-I.": 4.779999999999999,
+      "L-II.": 4.93
+    }
+  ],
+  "brix_l50": [
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "2-N296*",
+      "L-50-I": 4.7125,
+      "L-50-II": 4.6
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "3-N507",
+      "L-50-I": 4.550000000000001,
+      "L-50-II": 4.62
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "4-N4510",
+      "L-50-I": 4.827500000000001,
+      "L-50-II": 4.91
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "BASF-Nunhems",
+      "fajta": "5-N4523*",
+      "L-50-I": 5.557499999999999,
+      "L-50-II": 5.15
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "1-Prestomech*",
+      "L-50-I": 5.0,
+      "L-50-II": 5.07
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "6-H2361",
+      "L-50-I": 4.76,
+      "L-50-II": 5.05
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "7-H2359",
+      "L-50-I": 4.635,
+      "L-50-II": 4.61
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "8-H2247",
+      "L-50-I": 4.635000000000001,
+      "L-50-II": 4.91
+    },
+    {
+      "diagramhoz": "Brix% I. és II. szedés",
+      "nemesítőház": "Prestomech + Heinz",
+      "fajta": "9-H2128",
+      "L-50-I": 4.995,
+      "L-50-II": 5.3
+    }
   ]
 }

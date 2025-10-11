@@ -189,6 +189,12 @@ export default function Dashboard() {
               >
                 📈 Halmozott Termés Diagram
               </button>
+              <button
+                onClick={() => router.push('/dashboard/brix-diagram')}
+                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
+              >
+                🔬 Brix % Diagram
+              </button>
             </div>
           </div>
         </div>
@@ -252,7 +258,7 @@ export default function Dashboard() {
                                 setShowL50ForWaller(!showL50ForWaller);
                               }
                             }}
-                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
+                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
                           >
                             {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
                           </button>
@@ -318,7 +324,7 @@ export default function Dashboard() {
                                 setShowL50ForWaller(!showL50ForWaller);
                               }
                             }}
-                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors duration-200"
+                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
                           >
                             {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
                           </button>

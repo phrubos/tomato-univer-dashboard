@@ -60,10 +60,10 @@ const BreederDataInfoPanel: React.FC<{
         </div>
         <button
           onClick={onClose}
-          className="ml-2 p-1 hover:bg-gray-100 dark:hover:bg-muted rounded-full transition-colors duration-200 flex-shrink-0"
+          className="ml-2 p-1 hover:bg-gray-100 dark:hover:bg-muted rounded-full transition-all duration-200 flex-shrink-0 cursor-pointer hover:scale-110 active:scale-95 group"
           title="Bezárás"
         >
-          <svg className="w-4 h-4 text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-gray-500 dark:text-muted-foreground group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -343,7 +343,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
     },
     yAxis: {
       title: {
-        text: 't/ha',
+        text: title === 'Brix %' ? '%' : 't/ha',
         style: {
           color: themeColors.labelColor
         }
@@ -894,14 +894,16 @@ const BreederChart: React.FC<BreederChartProps> = ({
     <div className="w-full">
       <div className={`flex gap-4 ${currentSelectedData ? 'flex-col xl:flex-row' : ''}`}>
         <div className={`${currentSelectedData ? 'flex-1 min-w-0' : 'w-full'} h-96 relative transition-all duration-300`}>
-          {/* Full-screen button */}
-          <button
-            onClick={() => setIsFullScreenOpen(true)}
-            className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-card/80 hover:bg-white dark:hover:bg-card border border-gray-200 dark:border-border hover:border-primary/50 text-foreground p-2 rounded-lg transition-all duration-200 shadow-lg backdrop-blur-sm"
-            title="Teljes képernyős nézet"
-          >
-            <Maximize2 className="w-5 h-5" />
-          </button>
+          {/* Full-screen button - elrejtve Brix % diagramoknál */}
+          {title !== 'Brix %' && (
+            <button
+              onClick={() => setIsFullScreenOpen(true)}
+              className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-card/80 hover:bg-white dark:hover:bg-card border border-gray-200 dark:border-border hover:border-primary/50 text-foreground p-2 rounded-lg transition-all duration-200 shadow-lg backdrop-blur-sm cursor-pointer hover:scale-110 active:scale-95 group"
+              title="Teljes képernyős nézet"
+            >
+              <Maximize2 className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-primary dark:group-hover:text-primary transition-colors duration-200" />
+            </button>
+          )}
           <div ref={chartRef} className="w-full h-96">
             <HighchartsReact
               highcharts={Highcharts}
@@ -954,17 +956,19 @@ const BreederChart: React.FC<BreederChartProps> = ({
       </div>
 
 
-      {/* Full-screen modal */}
-      <FullScreenChartModal
-        isOpen={isFullScreenOpen}
-        onClose={() => setIsFullScreenOpen(false)}
-        title={title}
-        varieties={varieties}
-        breederColor={breederColor}
-        breederName={breederName}
-        chartOptions={options}
-        colors={colors}
-      />
+      {/* Full-screen modal - elrejtve Brix % diagramoknál */}
+      {title !== 'Brix %' && (
+        <FullScreenChartModal
+          isOpen={isFullScreenOpen}
+          onClose={() => setIsFullScreenOpen(false)}
+          title={title}
+          varieties={varieties}
+          breederColor={breederColor}
+          breederName={breederName}
+          chartOptions={options}
+          colors={colors}
+        />
+      )}
     </div>
   );
 };

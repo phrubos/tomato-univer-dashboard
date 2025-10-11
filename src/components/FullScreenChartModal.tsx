@@ -246,10 +246,10 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
 
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-muted rounded-lg transition-colors duration-200 text-gray-600 dark:text-muted-foreground hover:text-gray-800 dark:hover:text-foreground"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-muted rounded-lg transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 group"
             title="Bezárás (Esc)"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 text-gray-600 dark:text-muted-foreground group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-200 group-hover:rotate-90" />
           </button>
         </div>
 
