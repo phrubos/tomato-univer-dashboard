@@ -353,7 +353,24 @@ const BreederChart: React.FC<BreederChartProps> = ({
           color: themeColors.labelColor
         }
       },
-      gridLineColor: themeColors.gridLineColor
+      gridLineColor: themeColors.gridLineColor,
+      plotLines: title === 'Brix %' ? [{
+        color: '#ef4444', // Piros szín
+        width: 2,
+        value: 5,
+        zIndex: 2, // Az oszlopok mögött legyen (az oszlopok zIndex-e általában 3)
+        label: {
+          text: '5%',
+          align: 'right',
+          style: {
+            color: '#ef4444',
+            fontWeight: 'bold',
+            fontSize: '12px'
+          },
+          x: -5,
+          y: -5
+        }
+      }] : undefined
     },
     legend: {
       enabled: false
