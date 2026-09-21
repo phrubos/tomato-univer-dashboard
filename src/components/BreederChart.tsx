@@ -3,7 +3,17 @@
 import React, { useEffect, useMemo, useId, useState } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { ProcessedData } from '@/utils/dataProcessor';
+import {
+  getChartCategories,
+  getLocationLabel,
+  getSiteBands,
+  getVarietyColor,
+  isMeasuredValue,
+  STATUS_LABELS,
+  type MeasurementStatus,
+  type ProcessedData
+} from '@/utils/dataProcessor';
+import type { LocationDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
 import { useChartPanel } from '@/contexts/ChartPanelContext';
 import FullScreenChartModal from './FullScreenChartModal';
@@ -33,19 +43,13 @@ const BreederDataInfoPanel: React.FC<{
     return null;
   }
 
-  // Statisztikák számítása (0 értékeket kihagyva)
-  const nonZeroValues = displayData.allLocationData.filter((d: any) => d.value > 0).map((d: any) => d.value);
-  const avgValue = nonZeroValues.length > 0 ? nonZeroValues.reduce((sum: number, val: number) => sum + val, 0) / nonZeroValues.length : 0;
-
-  // Helyszín nevek mapping
-  const locationNames: { [key: string]: string } = {
-    'M-I': 'Mezőberény-I',
-    'M-II': 'Mezőberény-II',
-    'Cs-I': 'Csabacsűd-I',
-    'Cs-II': 'Csabacsűd-II',
-    'L-I': 'Lakitelek-I',
-    'L-II': 'Lakitelek-II'
-  };
+  // Statisztikák számítása – csak a ténylegesen mért helyszínekből
+  const measuredValues = displayData.allLocationData
+    .filter((d: LocationDataPoint) => d.status === 'available' && isMeasuredValue(d.value))
+    .map((d: LocationDataPoint) => d.value as number);
+  const avgValue = measuredValues.length > 0
+    ? measuredValues.reduce((sum: number, val: number) => sum + val, 0) / measuredValues.length
+    : null;
 
   return (
     <div className="w-full max-w-sm bg-white/95 dark:bg-card/95 backdrop-blur-sm border border-gray-200 dark:border-border rounded-lg p-4 transition-all duration-300 shadow-lg">
@@ -71,32 +75,39 @@ const BreederDataInfoPanel: React.FC<{
 
       {/* Helyszín adatok - kompakt lista */}
       <div className="space-y-1 mb-3">
-        {displayData.allLocationData.map((data: any, index: number) => {
-          if (data.value === 0) return null; // 0 értékeket kihagyjuk
-
+        {displayData.allLocationData.map((data: LocationDataPoint, index: number) => {
           const isCurrentPoint = data.location === displayData.location;
+          const isMeasured = data.status === 'available' && isMeasuredValue(data.value);
           return (
             <div
               key={index}
               className={`flex justify-between items-center py-1 px-2 rounded text-xs ${
                 isCurrentPoint
                   ? 'bg-primary/20 border border-primary/30 font-medium'
-                  : 'bg-gray-100 dark:bg-muted/30'
+                  : isMeasured
+                    ? 'bg-gray-100 dark:bg-muted/30'
+                    : 'bg-gray-50 dark:bg-muted/10 border border-dashed border-gray-300 dark:border-border'
               }`}
             >
               <span className={isCurrentPoint ? 'text-foreground' : 'text-gray-600 dark:text-muted-foreground'}>
-                {locationNames[data.location] || data.location}
+                {getLocationLabel(data.location)}
               </span>
-              <span className={isCurrentPoint ? 'text-foreground font-semibold' : 'text-foreground'}>
-                {data.value.toFixed(1)}
-              </span>
+              {isMeasured ? (
+                <span className={isCurrentPoint ? 'text-foreground font-semibold' : 'text-foreground'}>
+                  {(data.value as number).toFixed(1)}
+                </span>
+              ) : (
+                <span className="italic text-gray-500 dark:text-muted-foreground">
+                  {STATUS_LABELS[data.status]}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
 
       {/* Átlag - csak ha van nem-nulla érték */}
-      {avgValue > 0 && (
+      {avgValue !== null && (
         <div className="border-t border-gray-200 dark:border-border pt-2">
           <div className="flex justify-between items-center text-xs">
             <span className="text-gray-600 dark:text-muted-foreground">Átlag:</span>
@@ -233,17 +244,24 @@ const BreederChart: React.FC<BreederChartProps> = ({
     return '#' + ((R << 16) | (G << 8) | B).toString(16).padStart(6, '0');
   };
 
-  const colors = generateColorShades(breederColor, varieties.length);
+  const colors = generateColorShades(breederColor, varieties.length)
+    .map((color, index) => getVarietyColor(varieties[index]?.variety ?? '', color));
 
-  // Adatok előkészítése Highcharts számára
-  const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
-  
+  // Adatok előkészítése Highcharts számára – a kategóriák a szezon adataiból jönnek
+  const categories = getChartCategories(varieties);
+
+  // A helyszínenkénti értéklista a panelhez: mért érték vagy állapot (adatra vár / nem vizsgált)
+  const buildLocationData = (variety: ProcessedData | undefined): LocationDataPoint[] =>
+    categories.map(location => ({
+      location,
+      value: variety?.locations[location] ?? null,
+      status: (variety?.status?.[location] ?? 'available') as MeasurementStatus
+    }));
+
   const series = varieties.map((variety, index) => ({
     type: 'column' as const,
     name: variety.variety,
-    data: categories.map(location =>
-      variety.locations[location as keyof typeof variety.locations]
-    ),
+    data: categories.map(location => variety.locations[location] ?? null),
     color: colors[index],
   }));
 
@@ -285,61 +303,19 @@ const BreederChart: React.FC<BreederChartProps> = ({
         color: themeColors.crosshairColor,
         dashStyle: 'Solid' as const
       },
-      plotBands: showOnlyLakitelek ? [
-        {
-          from: -0.5,
-          to: 1.5,
-          color: themeColors.plotBandColor,
-          label: {
-            text: 'Lakitelek 50 töves',
-            style: {
-              color: themeColors.labelColor,
-              fontSize: '12px'
-            },
-            align: 'center'
-          }
+      plotBands: getSiteBands(categories).map((band, index) => ({
+        from: band.from,
+        to: band.to,
+        color: index % 2 === 0 ? themeColors.plotBandColor : themeColors.plotBandColorAlt,
+        label: {
+          text: band.name,
+          style: {
+            color: themeColors.labelColor,
+            fontSize: '12px'
+          },
+          align: 'center' as const
         }
-      ] : [
-        {
-          from: -0.5,
-          to: 1.5,
-          color: themeColors.plotBandColor,
-          label: {
-            text: 'Mezőberény',
-            style: {
-              color: themeColors.labelColor,
-              fontSize: '12px'
-            },
-            align: 'center'
-          }
-        },
-        {
-          from: 1.5,
-          to: 3.5,
-          color: themeColors.plotBandColorAlt,
-          label: {
-            text: 'Csabacsűd',
-            style: {
-              color: themeColors.labelColor,
-              fontSize: '12px'
-            },
-            align: 'center'
-          }
-        },
-        {
-          from: 3.5,
-          to: 5.5,
-          color: themeColors.plotBandColor,
-          label: {
-            text: 'Lakitelek',
-            style: {
-              color: themeColors.labelColor,
-              fontSize: '12px'
-            },
-            align: 'center'
-          }
-        }
-      ]
+      }))
     },
     yAxis: {
       title: {
@@ -403,17 +379,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
               const series = point.series;
               const chart = series.chart;
               const clickedBreedName = series.name;
-              const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
-
               // Összegyűjtjük az adott fajta összes helyszínének adatait
-              const allLocationData = categories.map(location => {
-                const locationIndex = categories.indexOf(location);
-                const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
-                return {
-                  location,
-                  value
-                };
-              });
+              const allLocationData = buildLocationData(varieties.find(v => v.variety === clickedBreedName));
 
               // Ha már van kiválasztott fajta, előbb visszaállítjuk mindent
               if (selectedBreedRef.current) {
@@ -503,16 +470,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
 
               // Ha a panel már nyitva van, akkor frissítjük a hover adatokat
               if (isChartActiveRef.current(chartIdRef.current)) {
-                const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
                 const series = point.series;
-                const allLocationData = categories.map(location => {
-                  const locationIndex = categories.indexOf(location);
-                  const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
-                  return {
-                    location,
-                    value: value || 0
-                  };
-                });
+                const allLocationData = buildLocationData(varieties.find(v => v.variety === varietyName));
 
                 // Hover adat frissítése
                 setHoverDataRef.current({
@@ -877,19 +836,15 @@ const BreederChart: React.FC<BreederChartProps> = ({
       highlightBreed(breedName);
 
       // Panel megnyitása az első helyszín adataival
-      const categories = showOnlyLakitelek ? ['L-I', 'L-II'] : ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
       const selectedVariety = varieties.find(v => v.variety === breedName);
 
       if (selectedVariety) {
-        // Az első helyszín adatait használjuk (M-I)
+        // Az első helyszín adatait használjuk kiinduló pontként
         const firstLocation = categories[0];
-        const firstLocationValue = selectedVariety.locations[firstLocation as keyof typeof selectedVariety.locations];
+        const firstLocationValue = selectedVariety.locations[firstLocation] ?? null;
 
         // Összegyűjtjük az összes helyszín adatait
-        const allLocationData = categories.map(location => ({
-          location,
-          value: selectedVariety.locations[location as keyof typeof selectedVariety.locations] || 0
-        }));
+        const allLocationData = buildLocationData(selectedVariety);
 
         // Megnyitjuk a panelt
         setActiveChart(chartId, {

@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 import CumulativeChart from "@/components/CumulativeChart";
+import YearSelector from "@/components/YearSelector";
+import { getBreeders } from "@/utils/dataProcessor";
 import {
   loadHalmozottData,
   processCumulativeData,
@@ -11,16 +14,30 @@ import {
   filterDataByAccessLevel,
   getLocationDisplayName,
   getAvailableLocationsForAccessLevel,
-  BREEDER_COLORS,
-  type HalmozottLocationData
+  BREEDER_COLORS
 } from "@/utils/halmozottDataProcessor";
+
+// A diagramok sorrendje; az itt nem szereplő nemesítőházak a lista végére kerülnek
+const BREEDER_ORDER = [
+  'Unigen Seeds',
+  'BASF-Nunhems',
+  'WALLER + Heinz',
+  'Prestomech + Heinz',
+  'Syngenta+Heinz',
+  'Heinz'
+];
 
 export default function HalmozottTermesDashboard() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
+  const { year } = useSeason();
   const router = useRouter();
-  const [halmozottData, setHalmozottData] = useState<HalmozottLocationData>({});
-  const [selectedLocation, setSelectedLocation] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
+
+  // A halmozott adatok a seasons.json-ból jönnek, szinkron módon
+  const halmozottData = loadHalmozottData(year);
+  const availableLocations = getAvailableLocationsForAccessLevel(halmozottData, accessLevel);
+
+  const [selectedLocation, setSelectedLocation] = useState<string>(() => availableLocations[0] ?? '');
+  const [locationNotice, setLocationNotice] = useState<string | null>(null);
 
   // Ha nincs autentikálva, irányítson vissza
   useEffect(() => {
@@ -29,30 +46,34 @@ export default function HalmozottTermesDashboard() {
     }
   }, [isAuthenticated, router]);
 
-  // Load data
+  // Szezonváltás után a korábban nézett helyszínt próbáljuk visszaállítani.
+  // Ha az adott évben nincs ilyen helyszín (pl. 2026-ban Mezőberény), jelezzük a váltást.
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const data = await loadHalmozottData();
-        setHalmozottData(data);
+    let stored: string | null = null;
+    try {
+      stored = sessionStorage.getItem('univer-location');
+    } catch {}
+    if (!stored || stored === selectedLocation || availableLocations.length === 0) return;
 
-        // Set default location to first available for this access level
-        const locations = getAvailableLocationsForAccessLevel(data, accessLevel);
-        if (locations.length > 0 && !selectedLocation) {
-          setSelectedLocation(locations[0]);
-        }
-      } catch (error) {
-        console.error('Error loading halmozott data:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    if (availableLocations.includes(stored)) {
+      setSelectedLocation(stored);
+    } else {
+      setLocationNotice(
+        `A(z) ${getLocationDisplayName(stored)} helyszín a ${year}-os szezonban nem szerepel, ` +
+        `ezért a(z) ${getLocationDisplayName(availableLocations[0])} nézet látható.`
+      );
     }
+    // Csak a nézet megnyitásakor fut le, a szezonváltás újra mountolja az oldalt.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    if (isAuthenticated) {
-      fetchData();
-    }
-  }, [isAuthenticated, accessLevel, selectedLocation]);
+  const selectLocation = (location: string) => {
+    setSelectedLocation(location);
+    setLocationNotice(null);
+    try {
+      sessionStorage.setItem('univer-location', location);
+    } catch {}
+  };
 
   // Ha nincs autentikálva, ne jelenítse meg a tartalmat
   if (!isAuthenticated) {
@@ -74,8 +95,12 @@ export default function HalmozottTermesDashboard() {
   const groupedByBreeder = groupHalmozottByBreeder(cumulativeData, selectedLocation);
   const filteredData = filterDataByAccessLevel(groupedByBreeder, accessLevel);
 
-
-  const availableLocations = getAvailableLocationsForAccessLevel(halmozottData, accessLevel);
+  // Csak azok a nemesítőházak, amelyeknek van adatuk ebben a szezonban és nézetben
+  const orderedBreeders = Object.keys(filteredData).sort((a, b) => {
+    const indexA = BREEDER_ORDER.indexOf(a);
+    const indexB = BREEDER_ORDER.indexOf(b);
+    return (indexA === -1 ? BREEDER_ORDER.length : indexA) - (indexB === -1 ? BREEDER_ORDER.length : indexB);
+  });
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
@@ -97,17 +122,19 @@ export default function HalmozottTermesDashboard() {
         <div className="text-center space-y-2">
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
-            🍅 Univer 2025 Dashboard
+            🍅 Univer {year} Dashboard
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground">
             Halmozott Termés Diagram
           </p>
           {accessLevel !== 'total' && (
             <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'WALLER + Heinz'}
+              Megjelenített nézet: {getBreeders(year, accessLevel).map(breeder => breeder.name).join(', ') || '–'}
             </p>
           )}
         </div>
+
+        <YearSelector />
 
         {/* Navigation Tabs */}
         <div className="flex justify-center mb-8">
@@ -143,7 +170,11 @@ export default function HalmozottTermesDashboard() {
               </svg>
               <div className="text-sm text-blue-900 dark:text-blue-100">
                 <p className="font-medium mb-1">Szedési információk:</p>
-                <p><span className="font-semibold">I. és II.:</span> első és második szedés. A szedések augusztus 14. és szeptember 4. között történtek. Ugyanazon fajta két szedési időpontja között mindig 8 nap telt el.</p>
+                <p>
+                  <span className="font-semibold">I. és II.:</span> első és második szedés.
+                  {year === 2025 && ' A szedések augusztus 14. és szeptember 4. között történtek.'}
+                  {' '}Ugyanazon fajta két szedési időpontja között mindig 8 nap telt el.
+                </p>
               </div>
             </div>
           </div>
@@ -156,7 +187,8 @@ export default function HalmozottTermesDashboard() {
               {availableLocations.map((location) => (
                 <button
                   key={location}
-                  onClick={() => setSelectedLocation(location)}
+                  onClick={() => selectLocation(location)}
+                  aria-pressed={selectedLocation === location}
                   className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                     selectedLocation === location
                       ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm'
@@ -170,19 +202,22 @@ export default function HalmozottTermesDashboard() {
           </div>
         </div>
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-lg text-gray-600 dark:text-gray-300">Adatok betöltése...</span>
+        {/* Szezonváltás miatti helyszínváltás jelzése */}
+        {locationNotice && (
+          <div className="flex justify-center mb-6">
+            <p
+              role="status"
+              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-800/30 dark:bg-amber-950/20 dark:text-amber-300"
+            >
+              {locationNotice}
+            </p>
           </div>
         )}
 
         {/* Charts */}
-        {!isLoading && selectedLocation && (
+        {selectedLocation && (
           <div className="space-y-8">
-            {/* Explicit ordering: Unigen Seeds, BASF-Nunhems, WALLER + Heinz, Prestomech + Heinz */}
-            {['Unigen Seeds', 'BASF-Nunhems', 'WALLER + Heinz', 'Prestomech + Heinz'].map((breederName) => {
+            {orderedBreeders.map((breederName) => {
               const varieties = filteredData[breederName] || [];
               if (varieties.length === 0) return null;
 
@@ -249,7 +284,7 @@ export default function HalmozottTermesDashboard() {
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            🍅 Paradicsom fajtakísérlet - 2025 © Minden jog fenntartva
+            🍅 Paradicsom fajtakísérlet - {year} © Minden jog fenntartva
           </p>
         </div>
       </div>

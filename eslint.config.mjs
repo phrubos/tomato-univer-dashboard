@@ -10,7 +10,7 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  // Globális kihagyások: flat configban csak önálló objektumként érvényesek mindenre
   {
     ignores: [
       "node_modules/**",
@@ -19,6 +19,9 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+  },
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  {
     rules: {
       // TypeScript ESLint rules - relaxed for build
       "@typescript-eslint/no-explicit-any": "warn",
@@ -28,6 +31,13 @@ const eslintConfig = [
 
       // General ESLint rules
       "no-unused-vars": "warn",
+    },
+  },
+  {
+    // A node:test futtató tesztek CommonJS-ben készültek
+    files: ["tests/**/*.cjs"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ];

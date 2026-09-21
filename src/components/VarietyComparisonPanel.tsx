@@ -1,7 +1,15 @@
 'use client';
 
 import React from 'react';
-import { ProcessedData } from '@/utils/dataProcessor';
+import {
+  getChartCategories,
+  getLocationLabel,
+  getPairedChanges,
+  isMeasuredValue,
+  STATUS_LABELS,
+  type ProcessedData
+} from '@/utils/dataProcessor';
+import type { LocationDataPoint } from '@/contexts/ChartPanelContext';
 import {
   TrendingUp,
   TrendingDown,
@@ -15,9 +23,9 @@ import {
 interface HoverDataType {
   variety: string;
   location: string;
-  value: number;
+  value: number | null;
   seriesColor: string;
-  allLocationData: Array<{ location: string; value: number }>;
+  allLocationData: LocationDataPoint[];
 }
 
 interface VarietyComparisonPanelProps {
@@ -40,63 +48,37 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
   const varietyData = allVarieties.find(v => v.variety === selectedVariety);
   if (!varietyData) return null;
 
+  // Az átlagolás csak a mért helyszínekre épül (a 0 valódi mérés, a null nem az)
+  const average = (numbers: number[]) =>
+    numbers.length > 0 ? numbers.reduce((sum, val) => sum + val, 0) / numbers.length : 0;
+
   // Calculate statistics
-  const locations = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
-  const values = locations.map(loc => varietyData.locations[loc as keyof typeof varietyData.locations]);
-  const nonZeroValues = values.filter(v => v > 0);
+  const locations = getChartCategories(allVarieties);
+  const measuredValues = locations
+    .map(loc => varietyData.locations[loc])
+    .filter(isMeasuredValue);
 
-  // Calculate vine retention (fruit growth until 2nd harvest)
-  const vineRetention = (() => {
-    const firstHarvests = [varietyData.locations['M-I'], varietyData.locations['Cs-I'], varietyData.locations['L-I']];
-    const secondHarvests = [varietyData.locations['M-II'], varietyData.locations['Cs-II'], varietyData.locations['L-II']];
-
-    let totalDifference = 0;
-    let locationCount = 0;
-
-    for (let i = 0; i < 3; i++) {
-      if (firstHarvests[i] > 0 && secondHarvests[i] > 0) {
-        totalDifference += (secondHarvests[i] - firstHarvests[i]);
-        locationCount++;
-      }
-    }
-
-    return locationCount > 0 ? totalDifference / locationCount : 0;
-  })();
+  // Tövön tarthatóság: a párosított I.–II. szedések átlagos különbsége
+  const vineRetention = average(getPairedChanges(varietyData));
 
   const stats = {
-    average: nonZeroValues.length > 0 ? nonZeroValues.reduce((sum, val) => sum + val, 0) / nonZeroValues.length : 0,
-    max: Math.max(...values),
-    min: Math.min(...nonZeroValues),
-    activeLocations: nonZeroValues.length,
+    average: average(measuredValues),
+    max: measuredValues.length > 0 ? Math.max(...measuredValues) : 0,
+    min: measuredValues.length > 0 ? Math.min(...measuredValues) : 0,
+    activeLocations: measuredValues.length,
     vineRetention: vineRetention
   };
 
   // Compare with other varieties
   const otherVarieties = allVarieties.filter(v => v.variety !== selectedVariety);
-  const allAverages = allVarieties.map(v => {
-    const vals = locations.map(loc => v.locations[loc as keyof typeof v.locations]).filter(val => val > 0);
-    return vals.length > 0 ? vals.reduce((sum, val) => sum + val, 0) / vals.length : 0;
-  });
+  const allAverages = allVarieties.map(v =>
+    average(locations.map(loc => v.locations[loc]).filter(isMeasuredValue))
+  );
 
   const ranking = allAverages.sort((a, b) => isDecayData ? a - b : b - a).indexOf(stats.average) + 1;
 
   // Calculate vine retention for all varieties and rank them
-  const allVineRetentions = allVarieties.map(v => {
-    const firstHarvests = [v.locations['M-I'], v.locations['Cs-I'], v.locations['L-I']];
-    const secondHarvests = [v.locations['M-II'], v.locations['Cs-II'], v.locations['L-II']];
-
-    let totalDifference = 0;
-    let locationCount = 0;
-
-    for (let i = 0; i < 3; i++) {
-      if (firstHarvests[i] > 0 && secondHarvests[i] > 0) {
-        totalDifference += (secondHarvests[i] - firstHarvests[i]);
-        locationCount++;
-      }
-    }
-
-    return locationCount > 0 ? totalDifference / locationCount : 0;
-  });
+  const allVineRetentions = allVarieties.map(v => average(getPairedChanges(v)));
 
 
 
@@ -129,14 +111,6 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
   console.log('================================================');
 
   // Location names mapping
-  const locationNames: { [key: string]: string } = {
-    'M-I': 'Mezőberény-I',
-    'M-II': 'Mezőberény-II',
-    'Cs-I': 'Csabacsűd-I',
-    'Cs-II': 'Csabacsűd-II',
-    'L-I': 'Lakitelek-I',
-    'L-II': 'Lakitelek-II'
-  };
 
 
   return (
@@ -223,9 +197,10 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
               Helyszín teljesítmény
             </h4>
             <div className="space-y-3">
-              {locations.map((location, index) => {
-                const value = values[index];
-                const isActive = value > 0;
+              {locations.map((location) => {
+                const value = varietyData.locations[location];
+                const status = varietyData.status?.[location] ?? 'available';
+                const isActive = status === 'available' && isMeasuredValue(value);
                 const isHovered = hoverData?.location === location;
 
                 return (
@@ -246,12 +221,12 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                           : 'bg-gray-400 dark:bg-gray-600'
                       }`} />
                       <span className={`font-medium ${isActive ? 'text-foreground' : 'text-gray-500 dark:text-muted-foreground'}`}>
-                        {locationNames[location]}
+                        {getLocationLabel(location)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${isActive ? 'text-foreground' : 'text-gray-500 dark:text-muted-foreground'}`}>
-                        {value.toFixed(1)} t/ha
+                      <span className={`font-semibold ${isActive ? 'text-foreground' : 'italic text-gray-500 dark:text-muted-foreground'}`}>
+                        {isActive ? `${(value as number).toFixed(1)} t/ha` : STATUS_LABELS[status]}
                       </span>
                     </div>
                   </div>
@@ -268,8 +243,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
             </h4>
             <div className="space-y-3">
               {otherVarieties.slice(0, 4).map((variety) => {
-                const otherValues = locations.map(loc => variety.locations[loc as keyof typeof variety.locations]).filter(v => v > 0);
-                const otherAvg = otherValues.length > 0 ? otherValues.reduce((sum, val) => sum + val, 0) / otherValues.length : 0;
+                const otherAvg = average(locations.map(loc => variety.locations[loc]).filter(isMeasuredValue));
                 const difference = stats.average - otherAvg;
                 const percentDiff = otherAvg > 0 ? (difference / otherAvg) * 100 : 0;
 
@@ -311,8 +285,11 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 <span className="text-gray-600 dark:text-muted-foreground">Max: {stats.max.toFixed(1)} t/ha</span>
               </div>
               <div className="space-y-2">
-                {locations.map((location, index) => {
-                  const value = values[index];
+                {locations.map((location) => {
+                  const raw = varietyData.locations[location];
+                  const status = varietyData.status?.[location] ?? 'available';
+                  const isMeasured = status === 'available' && isMeasuredValue(raw);
+                  const value = isMeasured ? (raw as number) : 0;
                   const percentage = stats.max > 0 ? (value / stats.max) * 100 : 0;
                   // Ensure minimum width for non-zero values so they are always visible
                   const displayWidth = value > 0 ? Math.max(percentage, 15) : percentage;
@@ -320,19 +297,27 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                   return (
                     <div key={location} className="flex items-center gap-3">
                       <div className="w-20 text-xs text-gray-600 dark:text-muted-foreground">
-                        {locationNames[location]}
+                        {getLocationLabel(location)}
                       </div>
-                      <div className="flex-1 bg-gray-100 dark:bg-muted/30 rounded-full h-6 relative overflow-hidden border border-gray-200 dark:border-border">
-                        <div
-                          className="h-full bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-400 dark:to-green-400 rounded-full transition-all duration-500"
-                          style={{ width: `${displayWidth}%` }}
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-white drop-shadow-sm">
-                          {value.toFixed(1)}
+                      <div className={`flex-1 rounded-full h-6 relative overflow-hidden border ${
+                        isMeasured
+                          ? 'bg-gray-100 dark:bg-muted/30 border-gray-200 dark:border-border'
+                          : 'bg-gray-50 dark:bg-muted/10 border-dashed border-gray-300 dark:border-border'
+                      }`}>
+                        {isMeasured && (
+                          <div
+                            className="h-full bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-400 dark:to-green-400 rounded-full transition-all duration-500"
+                            style={{ width: `${displayWidth}%` }}
+                          />
+                        )}
+                        <div className={`absolute inset-0 flex items-center justify-center text-xs font-medium ${
+                          isMeasured ? 'text-white drop-shadow-sm' : 'italic text-gray-500 dark:text-muted-foreground'
+                        }`}>
+                          {isMeasured ? value.toFixed(1) : STATUS_LABELS[status]}
                         </div>
                       </div>
                       <div className="w-12 text-xs text-gray-600 dark:text-muted-foreground text-right">
-                        {percentage.toFixed(0)}%
+                        {isMeasured ? `${percentage.toFixed(0)}%` : '–'}
                       </div>
                     </div>
                   );
@@ -393,8 +378,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 <h5 className="font-medium text-foreground mb-3">Összehasonlító elemzés</h5>
                 <div className="space-y-2">
                   {allVarieties.map((variety) => {
-                    const varietyValues = locations.map(loc => variety.locations[loc as keyof typeof variety.locations]).filter(v => v > 0);
-                    const varietyAvg = varietyValues.length > 0 ? varietyValues.reduce((sum, val) => sum + val, 0) / varietyValues.length : 0;
+                    const varietyAvg = average(locations.map(loc => variety.locations[loc]).filter(isMeasuredValue));
                     const isSelected = variety.variety === selectedVariety;
                     const percentage = Math.max(...allAverages) > 0 ? (varietyAvg / Math.max(...allAverages)) * 100 : 0;
 

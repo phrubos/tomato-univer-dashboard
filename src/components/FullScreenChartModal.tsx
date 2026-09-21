@@ -4,7 +4,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
-import { ProcessedData } from '@/utils/dataProcessor';
+import {
+  getChartCategories,
+  type MeasurementStatus,
+  type ProcessedData
+} from '@/utils/dataProcessor';
+import type { LocationDataPoint, SelectedBreederDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
 import VarietyComparisonPanel from './VarietyComparisonPanel';
 import { X } from 'lucide-react';
@@ -35,19 +40,23 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<Highcharts.Chart | null>(null);
 
-  interface HoverDataType {
-  variety: string;
-  location: string;
-  value: number;
-  seriesColor: string;
-  allLocationData: Array<{ location: string; value: number }>;
-}
 
 // Hover data for enhanced information panel
-const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
+const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null);
 
   // Selected variety for persistent highlighting
   const [selectedVariety, setSelectedVariety] = useState<string | null>(null);
+
+  // A kategóriák a szezon adataiból jönnek (2025: 6 helyszín, 2026: 4, L-50: 2)
+  const categories = getChartCategories(varieties);
+
+  // Helyszínenkénti értéklista: mért érték vagy állapot (adatra vár / nem vizsgált)
+  const buildLocationData = (variety: ProcessedData | undefined): LocationDataPoint[] =>
+    categories.map(location => ({
+      location,
+      value: variety?.locations[location] ?? null,
+      status: (variety?.status?.[location] ?? 'available') as MeasurementStatus
+    }));
 
   // Legend highlight functions
   const highlightBreed = (breedName: string) => {
@@ -139,19 +148,15 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
       highlightBreed(breedName);
 
       // Panel megnyitása az első helyszín adataival
-      const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
       const selectedVarietyData = varieties.find(v => v.variety === breedName);
 
       if (selectedVarietyData) {
-        // Az első helyszín adatait használjuk (M-I)
+        // Az első helyszín adatait használjuk kiinduló pontként
         const firstLocation = categories[0];
-        const firstLocationValue = selectedVarietyData.locations[firstLocation as keyof typeof selectedVarietyData.locations];
+        const firstLocationValue = selectedVarietyData.locations[firstLocation] ?? null;
 
         // Összegyűjtjük az összes helyszín adatait
-        const allLocationData = categories.map(location => ({
-          location,
-          value: selectedVarietyData.locations[location as keyof typeof selectedVarietyData.locations] || 0
-        }));
+        const allLocationData = buildLocationData(selectedVarietyData);
 
         // Megnyitjuk a panelt
         setHoverData({
@@ -188,15 +193,11 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
   useEffect(() => {
     if (isOpen && varieties.length > 0) {
       const firstVariety = varieties[0];
-      const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
       const firstLocation = categories[0];
-      const firstLocationValue = firstVariety.locations[firstLocation as keyof typeof firstVariety.locations];
+      const firstLocationValue = firstVariety.locations[firstLocation] ?? null;
 
       // Összegyűjtjük az összes helyszín adatait
-      const allLocationData = categories.map(location => ({
-        location,
-        value: firstVariety.locations[location as keyof typeof firstVariety.locations] || 0
-      }));
+      const allLocationData = buildLocationData(firstVariety);
 
       // Beállítjuk az alapértelmezett hover adatot
       setHoverData({
@@ -353,7 +354,6 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
                               const series = point.series;
                               const chart = series.chart;
                               const clickedBreedName = series.name;
-                              const categories = ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'];
 
                               // Ha már van kiválasztott fajta, előbb visszaállítjuk mindent
                               if (selectedVariety) {
@@ -381,14 +381,7 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
                               }
 
                               // Összegyűjtjük az adott fajta összes helyszínének adatait
-                              const allLocationData = categories.map(location => {
-                                const locationIndex = categories.indexOf(location);
-                                const value = series.data[locationIndex] ? series.data[locationIndex].y : 0;
-                                return {
-                                  location,
-                                  value
-                                };
-                              });
+                              const allLocationData = buildLocationData(varieties.find(v => v.variety === clickedBreedName));
 
                               // Beállítjuk a kiválasztott fajtát
                               setSelectedVariety(clickedBreedName);
@@ -442,12 +435,9 @@ const [hoverData, setHoverData] = useState<HoverDataType | null>(null);
                               setHoverData({
                                 variety: series.name,
                                 location: String(point.category || ''),
-                                value: point.y || 0,
+                                value: point.y ?? null,
                                 seriesColor: String(series.color || '#000000'),
-                                allLocationData: allLocationData.map(item => ({
-                                  location: item.location,
-                                  value: item.value || 0
-                                }))
+                                allLocationData
                               });
                             },
                             mouseOut: function(this: Highcharts.Point) {

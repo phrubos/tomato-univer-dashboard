@@ -1,13 +1,20 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import type { MeasurementStatus } from '@/utils/dataProcessor';
 
-interface SelectedBreederDataPoint {
+export interface LocationDataPoint {
+  location: string;
+  value: number | null;
+  status: MeasurementStatus;
+}
+
+export interface SelectedBreederDataPoint {
   variety: string;
   location: string;
-  value: number;
+  value: number | null;
   seriesColor: string;
-  allLocationData: { location: string; value: number }[];
+  allLocationData: LocationDataPoint[];
 }
 
 interface ChartPanelContextType {

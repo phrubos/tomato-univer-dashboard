@@ -3,49 +3,45 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import BreederChart from "@/components/BreederChart";
+import YearSelector from "@/components/YearSelector";
+import PendingDataNotice from "@/components/PendingDataNotice";
 import {
   processBrixData,
   groupDataByBreeder,
-  BREEDERS,
+  getBreeders,
+  getL50Breeder,
+  isMeasuredValue,
   loadBrixL50Data,
-  processBrixL50DataForChart,
-  type BrixL50Data
+  processBrixL50DataForChart
 } from "@/utils/dataProcessor";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSeason } from "@/contexts/SeasonContext";
 
 export default function BrixDiagram() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
+  const { year } = useSeason();
   const router = useRouter();
-  const [brixL50Data, setBrixL50Data] = useState<BrixL50Data[]>([]);
-  const [isLoadingL50, setIsLoadingL50] = useState(true);
-  const [showL50ForBasf, setShowL50ForBasf] = useState(false);
-  const [showL50ForWaller, setShowL50ForWaller] = useState(false);
 
-  // Brix adatok feldolgozása
-  const brixData = processBrixData();
+  // Melyik nemesítőházaknál van bekapcsolva a Lakitelek 50 töves nézet
+  const [l50Breeders, setL50Breeders] = useState<string[]>([]);
+  const toggleL50 = (breederName: string) =>
+    setL50Breeders(current =>
+      current.includes(breederName)
+        ? current.filter(name => name !== breederName)
+        : [...current, breederName]
+    );
+
+  // Brix adatok feldolgozása a kiválasztott szezonra
+  const brixData = processBrixData(year);
   const brixGrouped = groupDataByBreeder(brixData);
 
-  // Brix L50 adatok betöltése
-  useEffect(() => {
-    async function fetchBrixL50Data() {
-      try {
-        const data = loadBrixL50Data();
-        setBrixL50Data(data);
-      } catch (error) {
-        console.error('Error loading Brix L50 data:', error);
-      } finally {
-        setIsLoadingL50(false);
-      }
-    }
-
-    if (isAuthenticated) {
-      fetchBrixL50Data();
-    }
-  }, [isAuthenticated]);
-
-  // Brix L50 adatok feldolgozása
-  const brixL50Processed = brixL50Data.length > 0 ? processBrixL50DataForChart(brixL50Data) : [];
+  const brixL50Processed = processBrixL50DataForChart(loadBrixL50Data(year));
   const brixL50Grouped = groupDataByBreeder(brixL50Processed);
+
+  // A szezonban mértek-e már egyáltalán Brix-értéket
+  const hasBrixMeasurements = [...brixData, ...brixL50Processed].some(row =>
+    Object.values(row.locations).some(isMeasuredValue)
+  );
 
   // Ha nincs autentikálva, irányítson a landing page-re
   useEffect(() => {
@@ -59,76 +55,23 @@ export default function BrixDiagram() {
     return null;
   }
 
-  // Nemesítőházak szűrése access level alapján
-  const getFilteredBreeders = () => {
-    if (!accessLevel || accessLevel === 'total') {
-      return BREEDERS;
-    }
-
-    switch (accessLevel) {
-      case 'unigen':
-        return BREEDERS.filter(breeder => breeder.name === 'Unigen Seeds');
-      case 'nunhems':
-        return BREEDERS.filter(breeder => breeder.name === 'BASF-Nunhems');
-      case 'waller_heinz':
-        return BREEDERS.filter(breeder => breeder.name === 'WALLER + Heinz');
-      default:
-        return [];
-    }
-  };
 
   // Adatok kiválasztása a toggle state alapján
   const getDataForBreeder = (breederName: string) => {
-    if (breederName === 'BASF-Nunhems') {
-      if (showL50ForBasf) {
-        const l50Data = brixL50Grouped['BASF-Nunhems'] || [];
-        return {
-          data: l50Data,
-          isL50: true,
-          title: 'BASF-Nunhems',
-          hasL50Available: l50Data.length > 0
-        };
-      } else {
-        const originalData = brixGrouped[breederName] || [];
-        const l50Data = brixL50Grouped['BASF-Nunhems'] || [];
-        return {
-          data: originalData,
-          isL50: false,
-          title: breederName,
-          hasL50Available: l50Data.length > 0
-        };
-      }
-    } else if (breederName === 'WALLER + Heinz') {
-      if (showL50ForWaller) {
-        const l50Data = brixL50Grouped['Prestomech + Heinz'] || [];
-        return {
-          data: l50Data,
-          isL50: true,
-          title: 'Prestomech + Heinz',
-          hasL50Available: l50Data.length > 0
-        };
-      } else {
-        const originalData = brixGrouped[breederName] || [];
-        const l50Data = brixL50Grouped['Prestomech + Heinz'] || [];
-        return {
-          data: originalData,
-          isL50: false,
-          title: breederName,
-          hasL50Available: l50Data.length > 0
-        };
-      }
-    } else {
-      const originalData = brixGrouped[breederName] || [];
-      return {
-        data: originalData,
-        isL50: false,
-        title: breederName,
-        hasL50Available: false
-      };
-    }
+    // Az L50 táblában a nemesítőház más néven szerepelhet (pl. WALLER + Heinz -> Prestomech + Heinz)
+    const l50Name = getL50Breeder(breederName);
+    const l50Rows = brixL50Grouped[l50Name] ?? [];
+    const showL50 = l50Breeders.includes(breederName) && l50Rows.length > 0;
+
+    return {
+      data: showL50 ? l50Rows : brixGrouped[breederName] ?? [],
+      isL50: showL50,
+      title: showL50 ? l50Name : breederName,
+      hasL50Available: l50Rows.length > 0
+    };
   };
 
-  const filteredBreeders = getFilteredBreeders();
+  const filteredBreeders = getBreeders(year, accessLevel);
 
   const handleLogout = () => {
     logout();
@@ -155,17 +98,19 @@ export default function BrixDiagram() {
         <div className="text-center space-y-2">
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
-            🍅 Univer 2025 Dashboard
+            🍅 Univer {year} Dashboard
           </h1>
           <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground">
             Brix % elemzés nemesítőházak szerint
           </p>
           {accessLevel !== 'total' && (
             <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {accessLevel === 'unigen' ? 'Unigen Seeds' : accessLevel === 'nunhems' ? 'BASF-Nunhems' : 'WALLER + Heinz'}
+              Megjelenített nézet: {filteredBreeders.map(breeder => breeder.name).join(', ') || '–'}
             </p>
           )}
         </div>
+
+        <YearSelector />
 
         {/* Navigation Tabs */}
         <div className="flex justify-center mb-8">
@@ -201,7 +146,10 @@ export default function BrixDiagram() {
               </svg>
               <div className="text-sm text-blue-900 dark:text-blue-100">
                 <p className="font-medium mb-1">Brix % mérési információk:</p>
-                <p><span className="font-semibold">I. és II.:</span> első és második szedés Brix % értékei. A szedések augusztus 14. és szeptember 4. között történtek.</p>
+                <p>
+                  <span className="font-semibold">I. és II.:</span> első és második szedés Brix % értékei.
+                  {year === 2025 && ' A szedések augusztus 14. és szeptember 4. között történtek.'}
+                </p>
               </div>
             </div>
           </div>
@@ -218,6 +166,12 @@ export default function BrixDiagram() {
             </p>
           </div>
 
+          {!hasBrixMeasurements ? (
+            <PendingDataNotice
+              title={`A ${year}-os szezon Brix-adatai még nem érkeztek meg`}
+              description="A cukortartalom-mérés a szedések lezárása után készül el. Amint a laboreredmények beérkeznek, a diagramok automatikusan megjelennek itt."
+            />
+          ) : (
           <div className="space-y-6">
             {filteredBreeders.map((breeder) => {
               const breederData = getDataForBreeder(breeder.name);
@@ -232,7 +186,7 @@ export default function BrixDiagram() {
                       <div className="flex items-center gap-3">
                         <div
                           className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: breederData.isL50 && breeder.name === 'WALLER + Heinz' ? '#1e40af' : breeder.color }}
+                          style={{ backgroundColor: breederData.isL50 ? '#1e40af' : breeder.color }}
                         />
                         <h3 className="text-lg sm:text-xl font-semibold text-foreground">
                           {breederData.title}
@@ -240,15 +194,10 @@ export default function BrixDiagram() {
                       </div>
 
                       {/* Toggle gomb csak akkor jelenik meg, ha van L50 adat */}
-                      {breederData.hasL50Available && !isLoadingL50 && (
+                      {breederData.hasL50Available && (
                         <button
-                          onClick={() => {
-                            if (breeder.name === 'BASF-Nunhems') {
-                              setShowL50ForBasf(!showL50ForBasf);
-                            } else if (breeder.name === 'WALLER + Heinz') {
-                              setShowL50ForWaller(!showL50ForWaller);
-                            }
-                          }}
+                          onClick={() => toggleL50(breeder.name)}
+                          aria-pressed={breederData.isL50}
                           className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
                         >
                           {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
@@ -262,7 +211,7 @@ export default function BrixDiagram() {
                   <BreederChart
                     title="Brix %"
                     varieties={varieties}
-                    breederColor={breederData.isL50 && breeder.name === 'WALLER + Heinz' ? '#1e40af' : breeder.color}
+                    breederColor={breederData.isL50 ? '#1e40af' : breeder.color}
                     breederName={breederData.title}
                     allVarietiesData={breederData.isL50 ? [...brixData, ...brixL50Processed] : brixData}
                     showOnlyLakitelek={breederData.isL50}
@@ -271,12 +220,13 @@ export default function BrixDiagram() {
               );
             })}
           </div>
+          )}
         </div>
 
         {/* Footer */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-border text-center">
           <p className="text-sm text-gray-600 dark:text-muted-foreground">
-            🍅 Paradicsom fajtakísérlet - 2025 © Minden jog fenntartva
+            🍅 Paradicsom fajtakísérlet - {year} © Minden jog fenntartva
           </p>
         </div>
       </div>

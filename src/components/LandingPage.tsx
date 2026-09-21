@@ -51,10 +51,13 @@ export default function LandingPage() {
             <span className="text-3xl">🍅</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Univer 2025
+            Univer
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
             Paradicsom fajtakísérlet dashboard
+          </p>
+          <p className="mt-2 font-mono text-sm tracking-[0.2em] text-gray-500 tabular-nums dark:text-gray-400">
+            2025 &middot; 2026
           </p>
         </div>
 
@@ -111,7 +114,7 @@ export default function LandingPage() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              © 2025 Univer Dashboard - Bizalmas adatok
+              © Univer Dashboard - Bizalmas adatok
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Kérjük adja meg a hozzáférési jelszót

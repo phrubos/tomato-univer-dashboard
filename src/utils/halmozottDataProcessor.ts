@@ -1,3 +1,5 @@
+import { BREEDER_ACCESS, getSeason, type SeasonYear } from './dataProcessor';
+
 export interface HalmozottVarietyData {
   variety: string;
   breeder: string;
@@ -25,19 +27,14 @@ export const BREEDER_COLORS = {
   'Unigen Seeds': '#dc2626',
   'BASF-Nunhems': '#d97706',
   'WALLER + Heinz': '#1e40af',
-  'Prestomech + Heinz': '#1e40af'
+  'Prestomech + Heinz': '#1e40af',
+  'Syngenta+Heinz': '#1e40af',
+  'Heinz': '#1e40af'
 } as const;
 
 // Load and process cumulative yield data
-export async function loadHalmozottData(): Promise<HalmozottLocationData> {
-  try {
-    const response = await fetch('/data/halmozott_data.json');
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error loading halmozott data:', error);
-    return {};
-  }
+export function loadHalmozottData(year: SeasonYear = 2025): HalmozottLocationData {
+  return getSeason(year).cumulative;
 }
 
 // Process data for cumulative charts
@@ -124,41 +121,17 @@ export function filterDataByAccessLevel(
   data: { [breeder: string]: CumulativeData[] },
   accessLevel: string | null
 ): { [breeder: string]: CumulativeData[] } {
-  if (!accessLevel || accessLevel === 'total') {
-    return data;
-  }
-
-  const filtered: { [breeder: string]: CumulativeData[] } = {};
-
-  switch (accessLevel) {
-    case 'unigen':
-      if (data['Unigen Seeds']) {
-        filtered['Unigen Seeds'] = data['Unigen Seeds'];
-      }
-      break;
-    case 'nunhems':
-      if (data['BASF-Nunhems']) {
-        filtered['BASF-Nunhems'] = data['BASF-Nunhems'];
-      }
-      break;
-    case 'waller_heinz':
-      if (data['WALLER + Heinz']) {
-        filtered['WALLER + Heinz'] = data['WALLER + Heinz'];
-      }
-      if (data['Prestomech + Heinz']) {
-        filtered['Prestomech + Heinz'] = data['Prestomech + Heinz'];
-      }
-      break;
-  }
-
-  return filtered;
+  if (accessLevel === 'total') return data;
+  return Object.fromEntries(Object.entries(data).filter(([breeder]) =>
+    accessLevel !== null && BREEDER_ACCESS[breeder] === accessLevel
+  ));
 }
 
 // Get location display name
 export function getLocationDisplayName(location: string): string {
   const displayNames: { [key: string]: string } = {
     'LAKITELEK - 4 SOROS': 'Lakitelek - 4 soros',
-    'LAKITELEK - 50 TŐVES': 'Lakitelek - 50 tőves',
+    'LAKITELEK - 50 TÖVES': 'Lakitelek - 50 töves',
     'MEZŐBERÉNY - 2 SOROS': 'Mezőberény - 2 soros',
     'CSABACSŰD - 2 SOROS': 'Csabacsűd - 2 soros'
   };

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "🍅 Univer 2025 Dashboard",
+  title: "🍅 Univer Dashboard",
   description: "Modern dashboard with tomato plantation theme and Highcharts integration",
 };
 
