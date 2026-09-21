@@ -306,8 +306,8 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                       }`}>
                         {isMeasured && (
                           <div
-                            className="h-full bg-gradient-to-r from-blue-500 to-green-500 dark:from-blue-400 dark:to-green-400 rounded-full transition-all duration-500"
-                            style={{ width: `${displayWidth}%` }}
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${displayWidth}%`, backgroundColor: breederColor }}
                           />
                         )}
                         <div className={`absolute inset-0 flex items-center justify-center text-xs font-medium ${

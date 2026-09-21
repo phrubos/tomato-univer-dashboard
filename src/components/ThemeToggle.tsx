@@ -4,26 +4,23 @@ import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
-export function ThemeToggle() {
+/**
+ * Témaváltó. Semleges felületű ikongomb, hogy a kijelentkezéssel egy klasztert
+ * alkosson – a zöld a felületen az aktív nézetet jelenti, nem a megjelenést.
+ */
+export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
-
-  const handleToggle = () => {
-    console.log('Theme toggle clicked, current theme:', theme);
-    toggleTheme();
-    console.log('Theme toggled to:', theme === 'dark' ? 'light' : 'dark');
-  };
+  const label = theme === 'dark' ? 'Váltás világos módra' : 'Váltás sötét módra';
 
   return (
     <button
-      onClick={handleToggle}
-      className="fixed top-4 right-4 z-50 p-3 rounded-full bg-green-600 hover:bg-green-700 transition-colors shadow-lg"
-      title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      type="button"
+      onClick={toggleTheme}
+      aria-label={label}
+      title={label}
+      className={`flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-gray-200 text-gray-700 transition-colors duration-200 cursor-pointer hover:bg-gray-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 ${className}`}
     >
-      {theme === 'dark' ? (
-        <Sun className="w-6 h-6 text-white" />
-      ) : (
-        <Moon className="w-6 h-6 text-white" />
-      )}
+      {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
     </button>
   );
 }

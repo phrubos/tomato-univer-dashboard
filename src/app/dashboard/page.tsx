@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import BreederChart from "@/components/BreederChart";
-import YearSelector from "@/components/YearSelector";
+import BreederCard from "@/components/BreederCard";
+import DashboardShell from "@/components/DashboardShell";
 import {
   processChartData,
   groupDataByBreeder,
@@ -77,219 +77,82 @@ export default function Dashboard() {
 
   const filteredBreeders = getBreeders(year, accessLevel);
 
+  // A vezérlősávba kerülő rövid szedési információ
+  const harvestInfo = year === 2025
+    ? 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.'
+    : 'I. és II. szedés · 8 nap eltéréssel';
+  const visibleBreeders = filteredBreeders.map(breeder => breeder.name).join(', ') || '–';
+
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
-  return (
-    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-[1920px] mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-between items-center mb-4">
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors duration-200 flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Kijelentkezés
-            </button>
-          </div>
+  // A két oszlop szerkezete azonos, csak a vizsgált jellemző más
+  const renderColumn = (
+    chartType: 'érett' | 'romló',
+    heading: string,
+    description: string,
+    baseData: typeof erettData,
+    l50Data: typeof l50ErettData
+  ) => {
+    const cards = filteredBreeders
+      .map(breeder => ({ breeder, breederData: getDataForBreeder(breeder.name, chartType) }))
+      .filter(entry => entry.breederData.data.length > 0);
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
-            🍅 Univer {year} Dashboard
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground">
-            Tövön tarthatóság elemzés nemesítőházak szerint
-          </p>
-          {accessLevel !== 'total' && (
-            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {filteredBreeders.map(breeder => breeder.name).join(', ') || '–'}
-            </p>
-          )}
-        </div>
+    return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold text-foreground sm:text-2xl">{heading}</h2>
+        <p className="mt-1 text-sm text-gray-600 dark:text-muted-foreground">{description}</p>
+      </div>
 
-        <YearSelector />
-
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex space-x-1">
-              <button
-                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm"
-              >
-                📊 Tövön Tarthatóság Diagram
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/halmozott-termes')}
-                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-              >
-                📈 Halmozott Termés Diagram
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/brix-diagram')}
-                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-              >
-                🔬 Brix % Diagram
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Harvest Info Note */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-xl p-4 max-w-3xl">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div className="text-sm text-blue-900 dark:text-blue-100">
-                <p className="font-medium mb-1">Szedési információk:</p>
-                <p>
-                  <span className="font-semibold">I. és II.:</span> első és második szedés.
-                  {year === 2025 && ' A szedések augusztus 14. és szeptember 4. között történtek.'}
-                  {' '}Ugyanazon fajta két szedési időpontja között mindig 8 nap telt el.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bal-jobb oldali elrendezés */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Bal oldal - Érett bogyó mennyisége szekció */}
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
-                Érett bogyó mennyisége (t/ha)
-              </h2>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
-                Az ép, érett bogyó mennyisége az I. és II. szedés során
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {filteredBreeders.map((breeder) => {
-                const breederData = getDataForBreeder(breeder.name, 'érett');
-                const varieties = breederData.data;
-
-                if (varieties.length === 0) return null;
-
-                return (
-                  <div key={`erett-${breeder.name}`} className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 shadow-sm">
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: breederData.isL50 ? '#1e40af' : breeder.color }}
-                          />
-                          <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                            {breederData.title}
-                          </h3>
-                        </div>
-
-                        {/* Toggle gomb csak akkor jelenik meg, ha van L50 adat */}
-                        {breederData.hasL50Available && (
-                          <button
-                            onClick={() => toggleL50(breeder.name)}
-                            aria-pressed={breederData.isL50}
-                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
-                          >
-                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                        {varieties.length} fajta adatai{breederData.isL50 ? ' • Lakitelek 50 töves' : ''}
-                      </p>
-                    </div>
-                    <BreederChart
-                      title="Érett bogyó mennyisége"
-                      varieties={varieties}
-                      breederColor={breederData.isL50 ? '#1e40af' : breeder.color}
-                      breederName={breederData.title}
-                      allVarietiesData={breederData.isL50 ? [...erettData, ...l50ErettData] : erettData}
-                      showOnlyLakitelek={breederData.isL50}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Jobb oldal - Romló bogyó mennyisége szekció */}
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground">
-                Romló bogyó mennyisége (t/ha)
-              </h2>
-              <p className="text-sm sm:text-base text-gray-600 dark:text-muted-foreground">
-                A romló bogyó mennyisége az I. és II. szedés során
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {filteredBreeders.map((breeder) => {
-                const breederData = getDataForBreeder(breeder.name, 'romló');
-                const varieties = breederData.data;
-
-                if (varieties.length === 0) return null;
-
-                return (
-                  <div key={`romlo-${breeder.name}`} className="w-full bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 shadow-sm">
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-4 h-4 rounded-full"
-                            style={{ backgroundColor: breederData.isL50 ? '#1e40af' : breeder.color }}
-                          />
-                          <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                            {breederData.title}
-                          </h3>
-                        </div>
-
-                        {/* Toggle gomb csak akkor jelenik meg, ha van L50 adat */}
-                        {breederData.hasL50Available && (
-                          <button
-                            onClick={() => toggleL50(breeder.name)}
-                            aria-pressed={breederData.isL50}
-                            className="px-3 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
-                          >
-                            {breederData.isL50 ? '← Vissza' : '→ Lakitelek 50 töves'}
-                          </button>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                        {varieties.length} fajta adatai{breederData.isL50 ? ' • Lakitelek 50 töves' : ''}
-                      </p>
-                    </div>
-                    <BreederChart
-                      title="Romló bogyó mennyisége"
-                      varieties={varieties}
-                      breederColor={breederData.isL50 ? '#1e40af' : breeder.color}
-                      breederName={breederData.title}
-                      allVarietiesData={breederData.isL50 ? [...romloData, ...l50RomloData] : romloData}
-                      showOnlyLakitelek={breederData.isL50}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-border text-center">
-          <p className="text-sm text-gray-600 dark:text-muted-foreground">
-            🍅 Paradicsom fajtakísérlet - {year} © Minden jog fenntartva
-          </p>
-        </div>
+      <div className="space-y-6">
+        {cards.map(({ breeder, breederData }) => {
+          const color = breederData.isL50 ? '#1e40af' : breeder.color;
+          return (
+            <BreederCard
+              key={`${chartType}-${breeder.name}`}
+              title={breederData.title}
+              color={color}
+              metric={heading.replace(' (t/ha)', '')}
+              varieties={breederData.data}
+              allVarietiesData={breederData.isL50 ? [...baseData, ...l50Data] : baseData}
+              showOnlyLakitelek={breederData.isL50}
+              l50={breederData.hasL50Available
+                ? { active: breederData.isL50, onToggle: () => toggleL50(breeder.name) }
+                : undefined}
+            />
+          );
+        })}
       </div>
     </div>
+    );
+  };
+
+  return (
+    <DashboardShell
+      subtitle="Tövön tarthatóság elemzés nemesítőházak szerint"
+      info={harvestInfo}
+      visibleBreeders={accessLevel !== 'total' ? visibleBreeders : undefined}
+      onLogout={handleLogout}
+    >
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {renderColumn(
+          'érett',
+          'Érett bogyó mennyisége (t/ha)',
+          'Az ép, érett bogyó mennyisége az I. és II. szedés során',
+          erettData,
+          l50ErettData
+        )}
+        {renderColumn(
+          'romló',
+          'Romló bogyó mennyisége (t/ha)',
+          'A romló bogyó mennyisége az I. és II. szedés során',
+          romloData,
+          l50RomloData
+        )}
+      </div>
+    </DashboardShell>
   );
 }

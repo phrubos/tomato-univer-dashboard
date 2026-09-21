@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChartPanelProvider } from "@/contexts/ChartPanelContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 
@@ -34,7 +33,6 @@ export default function RootLayout({
         <ThemeProvider>
           <ChartPanelProvider>
             <AuthProvider>
-              <ThemeToggle />
               {children}
             </AuthProvider>
           </ChartPanelProvider>

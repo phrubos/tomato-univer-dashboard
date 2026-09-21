@@ -17,7 +17,6 @@ import type { LocationDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
 import { useChartPanel } from '@/contexts/ChartPanelContext';
 import FullScreenChartModal from './FullScreenChartModal';
-import { Maximize2 } from 'lucide-react';
 
 interface BreederChartProps {
   title: string;
@@ -26,6 +25,8 @@ interface BreederChartProps {
   breederName: string;
   allVarietiesData?: ProcessedData[]; // Az összes fajta adatai a tooltip-hez
   showOnlyLakitelek?: boolean; // Csak Lakitelek helyszíneket mutassa
+  isFullScreenOpen?: boolean; // A teljes képernyős nézetet a kártyafejléc nyitja
+  onCloseFullScreen?: () => void;
 }
 
 // Információs panel komponens a BreederChart-hoz
@@ -57,7 +58,7 @@ const BreederDataInfoPanel: React.FC<{
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center flex-1 min-w-0">
           <div
-            className="w-3 h-3 rounded-full mr-2 flex-shrink-0"
+            className="w-3 h-3 rounded-full mr-2 flex-shrink-0 ring-1 ring-gray-900/20 dark:ring-white/25"
             style={{ backgroundColor: displayData.seriesColor }}
           ></div>
           <h3 className="text-sm font-semibold text-foreground truncate">{displayData.variety}</h3>
@@ -124,7 +125,9 @@ const BreederChart: React.FC<BreederChartProps> = ({
   varieties,
   breederColor,
   breederName,
-  showOnlyLakitelek = false
+  showOnlyLakitelek = false,
+  isFullScreenOpen = false,
+  onCloseFullScreen
 }) => {
   const chartRef = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -143,7 +146,6 @@ const BreederChart: React.FC<BreederChartProps> = ({
   const [selectedBreed, setSelectedBreed] = React.useState<string | null>(null);
 
   // Full-screen modal state
-  const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
   // Ref-ek a Highcharts eseménykezelőkhöz
   const setHoverDataRef = React.useRef(setHoverData);
@@ -169,15 +171,6 @@ const BreederChart: React.FC<BreederChartProps> = ({
       resetHighlight();
     }
   }, [isChartActive, chartId, selectedBreed]);
-
-  // Modulok betöltése komponens betöltéskor (egyszerűsített)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Egyszerűen beállítjuk a Highcharts alapbeállításokat
-      // Az export funkciók automatikusan működnek
-      console.log('Highcharts initialized with export support');
-    }
-  }, []);
 
   // Dinamikus színek a téma alapján - külön színek sötét és világos módhoz
   const themeColors = useMemo(() => {
@@ -238,9 +231,10 @@ const BreederChart: React.FC<BreederChartProps> = ({
 
   const adjustColorBrightness = (hex: string, factor: number): string => {
     const num = parseInt(hex.replace('#', ''), 16);
-    const R = Math.round((num >> 16) * factor);
-    const G = Math.round(((num >> 8) & 0x00FF) * factor);
-    const B = Math.round((num & 0x0000FF) * factor);
+    const clamp = (value: number) => Math.min(255, Math.max(0, Math.round(value * factor)));
+    const R = clamp(num >> 16);
+    const G = clamp((num >> 8) & 0x00FF);
+    const B = clamp(num & 0x0000FF);
     return '#' + ((R << 16) | (G << 8) | B).toString(16).padStart(6, '0');
   };
 
@@ -274,21 +268,11 @@ const BreederChart: React.FC<BreederChartProps> = ({
       },
       animation: false
     },
-    title: {
-      text: breederName,
-      style: {
-        color: themeColors.titleColor,
-        fontSize: '18px',
-        fontWeight: '600'
-      }
-    },
-    subtitle: {
-      text: title,
-      style: {
-        color: themeColors.subtitleColor,
-        fontSize: '14px'
-      }
-    },
+    // A kártyafejléc (és teljes képernyőn a modál fejléce) már kiírja a
+    // nemesítőházat és a mértéket, ezért a diagram nem ismétli meg.
+    // Az exportált képen viszont nincs kártyafejléc: oda visszatesszük.
+    title: { text: '' },
+    subtitle: { text: '' },
     xAxis: {
       categories: categories,
       labels: {
@@ -719,6 +703,24 @@ const BreederChart: React.FC<BreederChartProps> = ({
     },
     exporting: {
       enabled: true,
+      // Csak a letöltött képre kerül vissza a cím, a képernyőn maradna duplikátum
+      chartOptions: {
+        title: {
+          text: breederName,
+          style: {
+            color: themeColors.titleColor,
+            fontSize: '18px',
+            fontWeight: '600'
+          }
+        },
+        subtitle: {
+          text: title,
+          style: {
+            color: themeColors.subtitleColor,
+            fontSize: '14px'
+          }
+        }
+      },
       buttons: {
         contextButton: {
           enabled: true,
@@ -866,16 +868,6 @@ const BreederChart: React.FC<BreederChartProps> = ({
     <div className="w-full">
       <div className={`flex gap-4 ${currentSelectedData ? 'flex-col xl:flex-row' : ''}`}>
         <div className={`${currentSelectedData ? 'flex-1 min-w-0' : 'w-full'} h-96 relative transition-all duration-300`}>
-          {/* Full-screen button - elrejtve Brix % diagramoknál */}
-          {title !== 'Brix %' && (
-            <button
-              onClick={() => setIsFullScreenOpen(true)}
-              className="absolute top-2 right-2 z-10 bg-white/80 dark:bg-card/80 hover:bg-white dark:hover:bg-card border border-gray-200 dark:border-border hover:border-primary/50 text-foreground p-2 rounded-lg transition-all duration-200 shadow-lg backdrop-blur-sm cursor-pointer hover:scale-110 active:scale-95 group"
-              title="Teljes képernyős nézet"
-            >
-              <Maximize2 className="w-5 h-5 text-gray-700 dark:text-gray-300 group-hover:text-primary dark:group-hover:text-primary transition-colors duration-200" />
-            </button>
-          )}
           <div ref={chartRef} className="w-full h-96">
             <HighchartsReact
               highcharts={Highcharts}
@@ -906,19 +898,19 @@ const BreederChart: React.FC<BreederChartProps> = ({
           <button
             key={variety.variety}
             onClick={() => handleLegendClick(variety.variety)}
-            className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 ${
+            className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 cursor-pointer ${
               selectedBreed === variety.variety
-                ? 'bg-blue-100 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-600'
+                ? 'bg-gray-200 dark:bg-muted border border-gray-300 dark:border-border'
                 : 'hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
             }`}
           >
             <div
-              className="w-3 h-3 rounded-full"
+              className="w-3 h-3 rounded-full ring-1 ring-gray-900/20 dark:ring-white/25"
               style={{ backgroundColor: colors[index] }}
             ></div>
             <span className={`text-sm ${
               selectedBreed === variety.variety
-                ? 'font-semibold text-blue-800 dark:text-blue-200'
+                ? 'font-semibold text-foreground'
                 : 'text-foreground'
             }`}>
               {variety.variety}
@@ -928,11 +920,11 @@ const BreederChart: React.FC<BreederChartProps> = ({
       </div>
 
 
-      {/* Full-screen modal - elrejtve Brix % diagramoknál */}
-      {title !== 'Brix %' && (
+      {/* Teljes képernyős nézet – a kártyafejléc gombja nyitja */}
+      {isFullScreenOpen && (
         <FullScreenChartModal
-          isOpen={isFullScreenOpen}
-          onClose={() => setIsFullScreenOpen(false)}
+          isOpen
+          onClose={() => onCloseFullScreen?.()}
           title={title}
           varieties={varieties}
           breederColor={breederColor}

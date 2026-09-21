@@ -278,20 +278,9 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
                         }
                       }
                     },
-                    title: {
-                      ...chartOptions.title,
-                      style: {
-                        ...chartOptions.title?.style,
-                        fontSize: '24px'
-                      }
-                    },
-                    subtitle: {
-                      ...chartOptions.subtitle,
-                      style: {
-                        ...chartOptions.subtitle?.style,
-                        fontSize: '16px'
-                      }
-                    },
+                    // A modál saját fejléce írja ki a nemesítőházat és a mértéket
+                    title: { text: '' },
+                    subtitle: { text: '' },
                     plotOptions: {
                       ...chartOptions.plotOptions,
                       column: {

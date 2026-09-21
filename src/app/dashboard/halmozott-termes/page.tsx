@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import CumulativeChart from "@/components/CumulativeChart";
-import YearSelector from "@/components/YearSelector";
+import DashboardShell from "@/components/DashboardShell";
 import { getBreeders } from "@/utils/dataProcessor";
 import {
   loadHalmozottData,
@@ -80,6 +80,12 @@ export default function HalmozottTermesDashboard() {
     return null;
   }
 
+  // A vezérlősávba kerülő rövid szedési információ
+  const harvestInfo = year === 2025
+    ? 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.'
+    : 'I. és II. szedés · 8 nap eltéréssel';
+  const visibleBreeders = getBreeders(year, accessLevel).map(breeder => breeder.name).join(', ') || '–';
+
   const handleLogout = () => {
     logout();
     router.push('/');
@@ -103,96 +109,26 @@ export default function HalmozottTermesDashboard() {
   });
 
   return (
-    <div className="min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
-      {/* Kijelentkezés gomb - teljes szélesség, bal szélen */}
-      <div className="mb-4">
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors duration-200 flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Kijelentkezés
-        </button>
-      </div>
-
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground">
-            🍅 Univer {year} Dashboard
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground">
-            Halmozott Termés Diagram
-          </p>
-          {accessLevel !== 'total' && (
-            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-              Megjelenített nézet: {getBreeders(year, accessLevel).map(breeder => breeder.name).join(', ') || '–'}
-            </p>
-          )}
-        </div>
-
-        <YearSelector />
-
-        {/* Navigation Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex space-x-1">
-              <button
-                onClick={navigateToErettRomlo}
-                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-              >
-                📊 Tövön Tarthatóság Diagram
-              </button>
-              <button
-                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-sm"
-              >
-                📈 Halmozott Termés Diagram
-              </button>
-              <button
-                onClick={() => router.push('/dashboard/brix-diagram')}
-                className="px-6 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
-              >
-                🔬 Brix % Diagram
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Harvest Info Note */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-xl p-4 max-w-3xl">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div className="text-sm text-blue-900 dark:text-blue-100">
-                <p className="font-medium mb-1">Szedési információk:</p>
-                <p>
-                  <span className="font-semibold">I. és II.:</span> első és második szedés.
-                  {year === 2025 && ' A szedések augusztus 14. és szeptember 4. között történtek.'}
-                  {' '}Ugyanazon fajta két szedési időpontja között mindig 8 nap telt el.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
+    <DashboardShell
+      subtitle="Halmozott termés diagram"
+      info={harvestInfo}
+      visibleBreeders={accessLevel !== 'total' ? visibleBreeders : undefined}
+      onLogout={handleLogout}
+    >
         {/* Location Selector */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-1 shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="flex mb-6">
+          {/* Süllyesztett sáv, kiemelt aktív chip – a szezonválasztóval azonos kezelés */}
+          <div className="rounded-xl border border-gray-200 bg-gray-100 p-1 dark:border-gray-700 dark:bg-gray-900">
             <div className="flex flex-wrap gap-1">
               {availableLocations.map((location) => (
                 <button
                   key={location}
                   onClick={() => selectLocation(location)}
                   aria-pressed={selectedLocation === location}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`min-h-11 px-4 py-2 text-sm rounded-lg transition-all duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 ${
                     selectedLocation === location
-                      ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-white font-semibold text-gray-900 shadow-md ring-1 ring-gray-300 dark:bg-muted dark:text-foreground dark:ring-border'
+                      : 'font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800'
                   }`}
                 >
                   {getLocationDisplayName(location)}
@@ -204,7 +140,7 @@ export default function HalmozottTermesDashboard() {
 
         {/* Szezonváltás miatti helyszínváltás jelzése */}
         {locationNotice && (
-          <div className="flex justify-center mb-6">
+          <div className="flex mb-6">
             <p
               role="status"
               className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-800/30 dark:bg-amber-950/20 dark:text-amber-300"
@@ -281,13 +217,6 @@ export default function HalmozottTermesDashboard() {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            🍅 Paradicsom fajtakísérlet - {year} © Minden jog fenntartva
-          </p>
-        </div>
-      </div>
-    </div>
+    </DashboardShell>
   );
 }
