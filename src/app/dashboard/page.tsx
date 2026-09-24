@@ -103,7 +103,8 @@ export default function Dashboard() {
 
       <div className="space-y-6">
         {cards.map(({ breeder, breederData }) => {
-          const color = breederData.isL50 ? '#1e40af' : breeder.color;
+          // Az 50 töves chart is a nemesítőház saját színét kapja
+          const color = breeder.color;
           return (
             <BreederCard
               key={`${chartType}-${breeder.name}-${breederData.isL50 ? 'l50' : 'base'}`}

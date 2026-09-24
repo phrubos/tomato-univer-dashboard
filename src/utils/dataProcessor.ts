@@ -106,7 +106,7 @@ export const BREEDER_ACCESS: Record<string, string> = {
   'BASF-Nunhems': 'nunhems',
   'WALLER + Heinz': 'waller_heinz',
   'Prestomech + Heinz': 'waller_heinz',
-  'Syngenta+Heinz': 'waller_heinz',
+  'Heinz+Syngenta': 'waller_heinz',
   'Heinz': 'waller_heinz'
 };
 
@@ -118,7 +118,7 @@ export function getBreeders(year: SeasonYear, accessLevel: string | null = 'tota
 }
 
 export function getL50Breeder(name: string): string {
-  return name === 'WALLER + Heinz' ? 'Prestomech + Heinz' : name === 'Syngenta+Heinz' ? 'Heinz' : name;
+  return name === 'WALLER + Heinz' ? 'Prestomech + Heinz' : name === 'Heinz+Syngenta' ? 'Heinz' : name;
 }
 
 // Helyszínek csoportosítása

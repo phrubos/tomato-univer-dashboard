@@ -322,6 +322,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
         }
       },
       gridLineColor: themeColors.gridLineColor,
+      // Az 5%-os vonal fölött maradjon hely, különben a felirata lelóg a diagramról
+      softMax: title === 'Brix %' ? 5.5 : undefined,
       plotLines: title === 'Brix %' ? [{
         color: '#ef4444', // Piros szín
         width: 2,

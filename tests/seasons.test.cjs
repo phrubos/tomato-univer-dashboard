@@ -23,7 +23,7 @@ test('2026 main data has correct sites, roster and missing values', () => {
   assert.deepEqual(data.getChartCategories(rows), ['Cs-I', 'Cs-II', 'L-I', 'L-II']);
   assert.equal(rows.find(r => r.variety === 'UG10162').locations['Cs-I'], null);
   assert.equal(rows.find(r => r.variety === 'UG10162').locations['L-I'], 108);
-  assert.equal(rows.find(r => r.variety === 'REDIX*').breeder, 'Syngenta+Heinz');
+  assert.equal(rows.find(r => r.variety === 'REDIX*').breeder, 'Heinz+Syngenta');
   assert.equal(rows.find(r => r.variety === 'REDIX*').locations['L-II'], 146);
 });
 
@@ -73,9 +73,9 @@ test('2026 Brix is measured where sampled and stays not-tested elsewhere', () =>
 
 test('access groups preserve the agreed 2026 Syngenta/Heinz mapping', () => {
   assert.deepEqual(data.getBreeders(2026, 'unigen').map(r => r.name), ['Unigen Seeds']);
-  assert.deepEqual(data.getBreeders(2026, 'waller_heinz').map(r => r.name), ['Syngenta+Heinz']);
+  assert.deepEqual(data.getBreeders(2026, 'waller_heinz').map(r => r.name), ['Heinz+Syngenta']);
   assert.deepEqual(data.getBreeders(2026, 'unknown'), []);
-  assert.deepEqual(cumulative.filterDataByAccessLevel({Heinz: [], 'Syngenta+Heinz': [], 'Unigen Seeds': []}, 'waller_heinz'), {Heinz: [], 'Syngenta+Heinz': []});
+  assert.deepEqual(cumulative.filterDataByAccessLevel({Heinz: [], 'Heinz+Syngenta': [], 'Unigen Seeds': []}, 'waller_heinz'), {Heinz: [], 'Heinz+Syngenta': []});
 });
 
 test('both seasons have complete cumulative data with matching ripe/rotten values', async () => {

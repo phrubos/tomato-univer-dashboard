@@ -97,7 +97,7 @@ async function main() {
     'Csabacsűd|Lakitelek',
     '2026 helyszín-sávok'
   );
-  assert.ok(await evaluate(`document.body.innerText.includes('Syngenta+Heinz')`), '2026 nemesítőház');
+  assert.ok(await evaluate(`document.body.innerText.includes('Heinz+Syngenta')`), '2026 nemesítőház');
   assert.ok(await evaluate(`!document.body.innerText.includes('Mezőberény')`), '2026-ban nincs Mezőberény');
   assert.ok(await evaluate(`document.body.innerText.includes('Univer 2026 Dashboard')`), '2026 cím');
   await screenshot('app-2026-retention.png');

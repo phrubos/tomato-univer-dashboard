@@ -31,7 +31,7 @@ export const BREEDER_COLORS = {
   'BASF-Nunhems': '#d97706',
   'WALLER + Heinz': '#1e40af',
   'Prestomech + Heinz': '#1e40af',
-  'Syngenta+Heinz': '#1e40af',
+  'Heinz+Syngenta': '#1e40af',
   'Heinz': '#1e40af'
 } as const;
 

@@ -25,7 +25,7 @@ const BREEDER_ORDER = [
   'BASF-Nunhems',
   'WALLER + Heinz',
   'Prestomech + Heinz',
-  'Syngenta+Heinz',
+  'Heinz+Syngenta',
   'Heinz'
 ];
 
