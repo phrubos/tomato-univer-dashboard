@@ -6,9 +6,9 @@ import { SEASON_YEARS, type SeasonYear } from '@/utils/dataProcessor';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const TABS = [
-  { href: '/dashboard', label: 'Tövön tarthatóság' },
   { href: '/dashboard/halmozott-termes', label: 'Halmozott termés' },
-  { href: '/dashboard/brix-diagram', label: 'Brix %' }
+  { href: '/dashboard/brix-diagram', label: 'Brix %' },
+  { href: '/dashboard', label: 'Tövön tarthatóság' }
 ];
 
 interface DashboardHeaderProps {

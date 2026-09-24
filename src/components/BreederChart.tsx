@@ -17,6 +17,8 @@ import type { LocationDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
 import { useChartPanel } from '@/contexts/ChartPanelContext';
 import FullScreenChartModal from './FullScreenChartModal';
+import EarlyVarietyNote from './EarlyVarietyNote';
+import { markLegendHover } from '@/utils/legendHover';
 
 interface BreederChartProps {
   title: string;
@@ -130,6 +132,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
   onCloseFullScreen
 }) => {
   const chartRef = React.useRef<HTMLDivElement>(null);
+  const legendRef = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const { setActiveChart, closePanel, isChartActive, selectedData } = useChartPanel();
 
@@ -291,13 +294,18 @@ const BreederChart: React.FC<BreederChartProps> = ({
         from: band.from,
         to: band.to,
         color: index % 2 === 0 ? themeColors.plotBandColor : themeColors.plotBandColorAlt,
+        // A helyszínnév a diagram fő tagolása, ezért hangsúlyos
         label: {
-          text: band.name,
+          // Az 50 töves kísérletet a kártyafejléc jelzi, a sávon elég a helyszín
+          text: band.name.replace(/ 50 töves$/, '').toUpperCase(),
           style: {
-            color: themeColors.labelColor,
-            fontSize: '12px'
+            color: themeColors.titleColor,
+            fontSize: '15px',
+            fontWeight: '700',
+            letterSpacing: '0.08em'
           },
-          align: 'center' as const
+          align: 'center' as const,
+          y: 20
         }
       }))
     },
@@ -452,6 +460,9 @@ const BreederChart: React.FC<BreederChartProps> = ({
               const point = this;
               const varietyName = point.series.name;
 
+              // A legendben is kiemeljük a fajtát, mintha rákattintottak volna
+              markLegendHover(legendRef.current, varietyName);
+
               // Ha a panel már nyitva van, akkor frissítjük a hover adatokat
               if (isChartActiveRef.current(chartIdRef.current)) {
                 const series = point.series;
@@ -486,63 +497,6 @@ const BreederChart: React.FC<BreederChartProps> = ({
                 chart.redraw();
                 return; // Megakadályozzuk a további hover logikát
               }
-
-              // Legend highlighting - series.legendItem használata
-              const highlightLegend = () => {
-                try {
-                  chart.series.forEach((s: any) => {
-                    if (s && s.legendItem && s.name === varietyName) {
-                      // Aktív fajta kiemelése
-                      if (s.legendItem.css) {
-                        s.legendItem.css({
-                          'font-weight': 'bold',
-                          'fill': '#ffffff',
-                          'opacity': 1
-                        });
-                      }
-
-                      // Kék háttér hozzáadása
-                      if (!s.legendItem.highlightRect && s.legendItem.element) {
-                        const bbox = s.legendItem.element.getBBox();
-                        s.legendItem.highlightRect = chart.renderer.rect(
-                          bbox.x - 2,
-                          bbox.y - 1,
-                          bbox.width + 4,
-                          bbox.height + 2,
-                          2
-                        ).attr({
-                          fill: '#007acc',
-                          'stroke-width': 0
-                        }).add(s.legendItem.element.parentNode);
-
-                        // Háttér mögé tesszük a szöveget
-                        if (s.legendItem.element.parentNode) {
-                          s.legendItem.element.parentNode.insertBefore(
-                            s.legendItem.highlightRect.element,
-                            s.legendItem.element
-                          );
-                        }
-                      }
-                    } else if (s && s.legendItem) {
-                      // Többi fajta elhalványítása
-                      if (s.legendItem.css) {
-                        s.legendItem.css({
-                          'opacity': 0.5
-                        });
-                      }
-                    }
-                  });
-                } catch (error) {
-                  // Silently handle legendItem errors to prevent crashes
-                  console.warn('Legend highlighting failed:', error);
-                }
-              };
-
-              // Azonnali próbálkozás
-              highlightLegend();
-
-              // Második próbálkozás egy kis késleltetéssel
-              setTimeout(highlightLegend, 50);
 
               // Kiemeljük az összes ugyanolyan fajta oszlopot - CSAK ha nincs kiválasztott fajta
               if (!selectedBreedRef.current && chart && chart.series) {
@@ -596,30 +550,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
               // Hover adat törlése
               setHoverDataRef.current(null);
 
-              // Legend highlighting visszaállítása
-              try {
-                chart.series.forEach((s: any) => {
-                  if (s && s.legendItem) {
-                    // Eredeti színek visszaállítása
-                    if (s.legendItem.css) {
-                      s.legendItem.css({
-                        'font-weight': 'normal',
-                        'fill': themeColors.labelColor,
-                        'opacity': 1
-                      });
-                    }
-
-                    // Háttér rect eltávolítása
-                    if ((s.legendItem as any).highlightRect) {
-                      (s.legendItem as any).highlightRect.destroy();
-                      delete (s.legendItem as any).highlightRect;
-                    }
-                  }
-                });
-              } catch (error) {
-                // Silently handle legendItem errors to prevent crashes
-                console.warn('Legend reset failed:', error);
-              }
+              // Legend kiemelés visszaállítása
+              markLegendHover(legendRef.current, null);
 
               // Ha van kiválasztott fajta, azt megtartjuk, különben visszaállítjuk
               if (chart && chart.series) {
@@ -893,31 +825,33 @@ const BreederChart: React.FC<BreederChartProps> = ({
       </div>
 
       {/* Egyedi Legend - a diagram alatt */}
-      <div className="flex flex-wrap gap-2 mt-4 justify-center">
+      {/* A diagram feletti hover (data-hovered) ugyanúgy emeli ki, mint a kattintás */}
+      <div ref={legendRef} className="flex flex-wrap gap-2 mt-4 justify-center">
         {varieties.map((variety, index) => (
           <button
             key={variety.variety}
+            data-variety={variety.variety}
             onClick={() => handleLegendClick(variety.variety)}
-            className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 cursor-pointer ${
+            className={`group flex items-center gap-2 px-3 py-2 rounded border transition-all duration-200 cursor-pointer data-[hovered]:bg-gray-200 data-[hovered]:border-gray-300 dark:data-[hovered]:bg-muted dark:data-[hovered]:border-border ${
               selectedBreed === variety.variety
-                ? 'bg-gray-200 dark:bg-muted border border-gray-300 dark:border-border'
-                : 'hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+                ? 'bg-gray-200 dark:bg-muted border-gray-300 dark:border-border'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent'
             }`}
           >
             <div
               className="w-3 h-3 rounded-full ring-1 ring-gray-900/20 dark:ring-white/25"
               style={{ backgroundColor: colors[index] }}
             ></div>
-            <span className={`text-sm ${
-              selectedBreed === variety.variety
-                ? 'font-semibold text-foreground'
-                : 'text-foreground'
+            <span className={`text-sm text-foreground group-data-[hovered]:font-semibold ${
+              selectedBreed === variety.variety ? 'font-semibold' : ''
             }`}>
               {variety.variety}
             </span>
           </button>
         ))}
       </div>
+
+      <EarlyVarietyNote varietyNames={varieties.map(variety => variety.variety)} />
 
 
       {/* Teljes képernyős nézet – a kártyafejléc gombja nyitja */}

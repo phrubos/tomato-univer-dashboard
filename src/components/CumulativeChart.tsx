@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useId } from 'react';
 import Highcharts from 'highcharts';
 import { CumulativeData } from '@/utils/halmozottDataProcessor';
 import { useTheme } from './ThemeProvider';
+import EarlyVarietyNote from './EarlyVarietyNote';
 
 interface CumulativeChartProps {
   varieties: CumulativeData[];
@@ -291,6 +292,11 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
                     <span>Összesen: </span>
                     <span>${total.toFixed(1)} t/ha</span>
                   </div>
+                  ${variety.harvestDate ? `
+                  <div class="mt-3 pt-2 border-t border-dashed ${borderClass} flex justify-between items-center text-xs italic opacity-75">
+                    <span>szedve:</span>
+                    <span class="font-medium tabular-nums">${variety.harvestDate}</span>
+                  </div>` : ''}
                 </div>
               </div>
             </div>
@@ -332,6 +338,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
   return (
     <div className="w-full">
       <div id={containerId} className="w-full" />
+      <EarlyVarietyNote varietyNames={varieties.map(variety => variety.variety)} />
     </div>
   );
 };

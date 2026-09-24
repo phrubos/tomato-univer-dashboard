@@ -19,11 +19,32 @@ interface SeasonData {
   sources: string[];
   main: SeasonVariety[];
   l50: SeasonVariety[];
-  cumulative: Record<string, Array<{ variety: string; breeder: string; érett: number; sárga: number; zöld: number; romló: number }>>;
+  cumulative: Record<string, Array<{ variety: string; breeder: string; érett: number; sárga: number; zöld: number; romló: number; harvestDate?: string }>>;
 }
 
 export function getSeason(year: SeasonYear): SeasonData {
   return (seasons as Record<string, SeasonData>)[String(year)];
+}
+
+const MONTH_ABBREVIATIONS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+
+/**
+ * A szezon szedési időszaka a mintákhoz rögzített szedési napokból, pl. 'szedés: aug. 11 – szept. 2.'.
+ * Ha a szezonhoz nincsenek szedési napok (2025), a megadott szöveget adja vissza.
+ */
+export function getHarvestPeriod(year: SeasonYear, fallback: string): string {
+  // '2026.08.11.' -> '2026-08-11': így a szöveges rendezés időrendi
+  const dates = Object.values(getSeason(year).cumulative)
+    .flat()
+    .flatMap(row => (row.harvestDate ? [row.harvestDate.replace(/\.$/, '').replaceAll('.', '-')] : []))
+    .sort();
+  if (dates.length === 0) return fallback;
+
+  const format = (date: string) => {
+    const [, month, day] = date.split('-').map(Number);
+    return `${MONTH_ABBREVIATIONS[month - 1]} ${day}`;
+  };
+  return `szedés: ${format(dates[0])} – ${format(dates[dates.length - 1])}.`;
 }
 
 export interface ChartDataPoint {

@@ -12,6 +12,8 @@ import {
 import type { LocationDataPoint, SelectedBreederDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
 import VarietyComparisonPanel from './VarietyComparisonPanel';
+import EarlyVarietyNote from './EarlyVarietyNote';
+import { markLegendHover } from '@/utils/legendHover';
 import { X } from 'lucide-react';
 
 interface FullScreenChartModalProps {
@@ -39,6 +41,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<Highcharts.Chart | null>(null);
+  const legendRef = useRef<HTMLDivElement>(null);
 
 
 // Hover data for enhanced information panel
@@ -293,6 +296,9 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
                               const chart = series.chart;
                               const varietyName = series.name;
 
+                              // A legendben is kiemeljük a fajtát, mintha rákattintottak volna
+                              markLegendHover(legendRef.current, varietyName);
+
                               // CSAK a kiemelési logika fut, hover adatok NINCS frissítve
                               if (!selectedVariety && chart && chart.series) {
                                 // Theme alapján kiválasztjuk a border színt
@@ -432,6 +438,8 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
                             mouseOut: function(this: Highcharts.Point) {
                               const chart = this.series.chart;
 
+                              markLegendHover(legendRef.current, null);
+
                               // Ha van kiválasztott fajta, azt megtartjuk, különben visszaállítjuk
                               if (selectedVariety && chart && chart.series) {
                                 // Theme alapján kiválasztjuk a border színt
@@ -502,22 +510,24 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
               </div>
 
               {/* Egyedi Legend - a diagram alatt */}
-              <div className="flex flex-wrap gap-2 justify-center px-6">
+              {/* A diagram feletti hover (data-hovered) ugyanúgy emeli ki, mint a kattintás */}
+              <div ref={legendRef} className="flex flex-wrap gap-2 justify-center px-6">
                 {varieties.map((variety, index) => (
                   <button
                     key={variety.variety}
+                    data-variety={variety.variety}
                     onClick={() => handleLegendClick(variety.variety)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 ${
+                    className={`group flex items-center gap-2 px-3 py-2 rounded border transition-all duration-200 data-[hovered]:bg-blue-100 data-[hovered]:border-blue-300 dark:data-[hovered]:bg-blue-900/50 dark:data-[hovered]:border-blue-600 ${
                       selectedVariety === variety.variety
-                        ? 'bg-blue-100 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-600'
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 border border-transparent'
+                        ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-600'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent'
                     }`}
                   >
                     <div
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: colors[index] || breederColor }}
                     ></div>
-                    <span className={`text-sm ${
+                    <span className={`text-sm group-data-[hovered]:font-semibold group-data-[hovered]:text-blue-800 dark:group-data-[hovered]:text-blue-200 ${
                       selectedVariety === variety.variety
                         ? 'font-semibold text-blue-800 dark:text-blue-200'
                         : 'text-foreground'
@@ -528,14 +538,7 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
                 ))}
               </div>
 
-              {/* Explanation text for asterisks - only in full screen */}
-              {varieties.some(variety => variety.variety.includes('*')) && (
-                <div className="mt-3 text-center">
-                  <p className="text-xs text-gray-600 dark:text-muted-foreground">
-                    *= korai, középkorai fajta
-                  </p>
-                </div>
-              )}
+              <EarlyVarietyNote varietyNames={varieties.map(variety => variety.variety)} />
             </div>
 
             {/* Enhanced Variety Comparison Panel - always visible when there's hoverData */}

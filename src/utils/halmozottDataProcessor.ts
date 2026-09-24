@@ -7,6 +7,8 @@ export interface HalmozottVarietyData {
   sárga: number;
   zöld: number;
   romló: number;
+  /** A szedés napja, pl. '2026.08.11.' (2026-tól a kézi szedési eredményekből). */
+  harvestDate?: string;
 }
 
 export interface HalmozottLocationData {
@@ -21,6 +23,7 @@ export interface CumulativeData {
   zöld: number;
   romló: number;
   total: number;
+  harvestDate?: string;
 }
 
 export const BREEDER_COLORS = {
@@ -52,7 +55,8 @@ export function processCumulativeData(varieties: HalmozottVarietyData[]): Cumula
       sárga: sárga,
       zöld: zöld,
       romló: romló,
-      total: érett + sárga + zöld + romló
+      total: érett + sárga + zöld + romló,
+      harvestDate: variety.harvestDate
     };
   });
 }

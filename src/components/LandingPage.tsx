@@ -12,10 +12,10 @@ export default function LandingPage() {
   const { login, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  // Ha már be van jelentkezve, irányítson a dashboard-hoz
+  // Ha már be van jelentkezve, irányítson a dashboard első nézetéhez (Halmozott termés)
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard');
+      router.push('/dashboard/halmozott-termes');
     }
   }, [isAuthenticated, router]);
 
@@ -28,7 +28,7 @@ export default function LandingPage() {
     await new Promise(resolve => setTimeout(resolve, 300));
 
     if (login(password)) {
-      router.push('/dashboard');
+      router.push('/dashboard/halmozott-termes');
     } else {
       setError('Hibás jelszó! Kérjük próbálja újra.');
       setPassword('');

@@ -6,7 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
 import CumulativeChart from "@/components/CumulativeChart";
 import DashboardShell from "@/components/DashboardShell";
-import { getBreeders } from "@/utils/dataProcessor";
+import { getBreeders,
+  getHarvestPeriod
+} from "@/utils/dataProcessor";
 import {
   loadHalmozottData,
   processCumulativeData,
@@ -81,9 +83,7 @@ export default function HalmozottTermesDashboard() {
   }
 
   // A vezérlősávba kerülő rövid szedési információ
-  const harvestInfo = year === 2025
-    ? 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.'
-    : 'I. és II. szedés · 8 nap eltéréssel';
+  const harvestInfo = getHarvestPeriod(year, 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.');
   const visibleBreeders = getBreeders(year, accessLevel).map(breeder => breeder.name).join(', ') || '–';
 
   const handleLogout = () => {

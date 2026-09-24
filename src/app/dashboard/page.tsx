@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import BreederCard from "@/components/BreederCard";
 import DashboardShell from "@/components/DashboardShell";
@@ -10,7 +10,8 @@ import {
   getBreeders,
   getL50Breeder,
   loadL50Data,
-  processL50DataForChart
+  processL50DataForChart,
+  getHarvestPeriod
 } from "@/utils/dataProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
@@ -19,15 +20,6 @@ export default function Dashboard() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
   const { year } = useSeason();
   const router = useRouter();
-
-  // Melyik nemesítőházaknál van bekapcsolva a Lakitelek 50 töves nézet
-  const [l50Breeders, setL50Breeders] = useState<string[]>([]);
-  const toggleL50 = (breederName: string) =>
-    setL50Breeders(current =>
-      current.includes(breederName)
-        ? current.filter(name => name !== breederName)
-        : [...current, breederName]
-    );
 
   // Adatok feldolgozása a kiválasztott szezonra
   const erettData = processChartData('érett', year);
@@ -57,30 +49,32 @@ export default function Dashboard() {
   }
 
 
-  // Adatok kiválasztása a toggle state alapján
-  const getDataForBreeder = (breederName: string, chartType: 'érett' | 'romló') => {
+  // Egy nemesítőház kísérletei: a 2 és 4 soros, alatta külön a Lakitelek 50 töves
+  const getExperimentsForBreeder = (breederName: string, chartType: 'érett' | 'romló') => {
     // Az L50 táblában a nemesítőház más néven szerepelhet (pl. WALLER + Heinz -> Prestomech + Heinz)
     const l50Name = getL50Breeder(breederName);
     const l50Grouped = chartType === 'érett' ? l50ErettGrouped : l50RomloGrouped;
-    const l50Rows = l50Grouped[l50Name] ?? [];
-    const showL50 = l50Breeders.includes(breederName) && l50Rows.length > 0;
 
-    return {
-      data: showL50
-        ? l50Rows
-        : (chartType === 'érett' ? erettGrouped : romloGrouped)[breederName] ?? [],
-      isL50: showL50,
-      title: showL50 ? l50Name : breederName,
-      hasL50Available: l50Rows.length > 0
-    };
+    return [
+      {
+        data: (chartType === 'érett' ? erettGrouped : romloGrouped)[breederName] ?? [],
+        isL50: false,
+        title: breederName,
+        experiment: '2 és 4 soros kísérletek'
+      },
+      {
+        data: l50Grouped[l50Name] ?? [],
+        isL50: true,
+        title: l50Name,
+        experiment: 'Lakitelek 50 töves kísérlet'
+      }
+    ].filter(entry => entry.data.length > 0);
   };
 
   const filteredBreeders = getBreeders(year, accessLevel);
 
   // A vezérlősávba kerülő rövid szedési információ
-  const harvestInfo = year === 2025
-    ? 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.'
-    : 'I. és II. szedés · 8 nap eltéréssel';
+  const harvestInfo = getHarvestPeriod(year, 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.');
   const visibleBreeders = filteredBreeders.map(breeder => breeder.name).join(', ') || '–';
 
   const handleLogout = () => {
@@ -96,9 +90,9 @@ export default function Dashboard() {
     baseData: typeof erettData,
     l50Data: typeof l50ErettData
   ) => {
-    const cards = filteredBreeders
-      .map(breeder => ({ breeder, breederData: getDataForBreeder(breeder.name, chartType) }))
-      .filter(entry => entry.breederData.data.length > 0);
+    const cards = filteredBreeders.flatMap(breeder =>
+      getExperimentsForBreeder(breeder.name, chartType).map(breederData => ({ breeder, breederData }))
+    );
 
     return (
     <div className="space-y-6">
@@ -112,16 +106,14 @@ export default function Dashboard() {
           const color = breederData.isL50 ? '#1e40af' : breeder.color;
           return (
             <BreederCard
-              key={`${chartType}-${breeder.name}`}
+              key={`${chartType}-${breeder.name}-${breederData.isL50 ? 'l50' : 'base'}`}
               title={breederData.title}
               color={color}
               metric={heading.replace(' (t/ha)', '')}
+              experiment={breederData.experiment}
               varieties={breederData.data}
               allVarietiesData={breederData.isL50 ? [...baseData, ...l50Data] : baseData}
               showOnlyLakitelek={breederData.isL50}
-              l50={breederData.hasL50Available
-                ? { active: breederData.isL50, onToggle: () => toggleL50(breeder.name) }
-                : undefined}
             />
           );
         })}
