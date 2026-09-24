@@ -38,7 +38,8 @@ const BreederDataInfoPanel: React.FC<{
   varieties: ProcessedData[];
   theme: string;
   onClose: () => void;
-}> = ({ selectedData, hoverData, onClose }) => {
+  decimals: number; // Brix: 2 tizedes, t/ha: 1 tizedes
+}> = ({ selectedData, hoverData, onClose, decimals }) => {
   // Ha van hover adat, azt mutatjuk, egyébként a kiválasztott adatot
   const displayData = hoverData || selectedData;
 
@@ -97,7 +98,7 @@ const BreederDataInfoPanel: React.FC<{
               </span>
               {isMeasured ? (
                 <span className={isCurrentPoint ? 'text-foreground font-semibold' : 'text-foreground'}>
-                  {(data.value as number).toFixed(1)}
+                  {(data.value as number).toFixed(decimals)}
                 </span>
               ) : (
                 <span className="italic text-gray-500 dark:text-muted-foreground">
@@ -114,7 +115,7 @@ const BreederDataInfoPanel: React.FC<{
         <div className="border-t border-gray-200 dark:border-border pt-2">
           <div className="flex justify-between items-center text-xs">
             <span className="text-gray-600 dark:text-muted-foreground">Átlag:</span>
-            <span className="font-semibold text-foreground">{avgValue.toFixed(1)}</span>
+            <span className="font-semibold text-foreground">{avgValue.toFixed(decimals)}</span>
           </div>
         </div>
       )}
@@ -820,6 +821,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
               hoverData={hoverData}
               varieties={varieties}
               theme={theme}
+              decimals={title === 'Brix %' ? 2 : 1}
               onClose={closePanel}
             />
           </div>
