@@ -122,20 +122,32 @@ async function main() {
   await screenshot('app-2025-retention.png');
   console.log('PASS szezonváltó: 2025 regresszió és URL-állapot');
 
-  // --- Brix: 2026-ban még nincs mérés ---
+  // --- Brix: a 2026-os mérések megérkeztek ---
   await goto(`${ORIGIN}/dashboard/brix-diagram?year=2026`);
   await new Promise(r => setTimeout(r, 600));
-  assert.ok(await evaluate(`document.body.innerText.includes('Brix-adatai még nem érkeztek meg')`), 'Brix üres állapot');
-  assert.equal(await evaluate(`document.querySelectorAll('.highcharts-container').length`), 0, '2026-ban nincs Brix diagram');
-  await screenshot('app-2026-brix-pending.png');
+  assert.ok(await evaluate(`!document.body.innerText.includes('Brix-adatai még nem érkeztek meg')`), '2026 Brix már nincs függőben');
+  assert.equal(await evaluate(`document.querySelectorAll('.highcharts-container').length`), 3, '2026 Brix diagram nemesítőházanként');
+  assert.deepEqual(await xLabels(0), ['Cs-I', 'Cs-II', 'L-I', 'L-II'], '2026 Brix kategóriák');
+  assert.ok(await evaluate(`document.querySelector('.highcharts-container')?.querySelector('.highcharts-yaxis .highcharts-axis-title')?.textContent === '%'`), 'Brix tengelyfelirat');
+  assert.ok(await evaluate(`[...document.querySelectorAll('.highcharts-container text')].some(t=>t.textContent.trim()==='5%')`), '5%-os referenciavonal');
+  await screenshot('app-2026-brix.png');
+  console.log('PASS 2026 Brix diagramok kategóriákkal és referenciavonallal');
 
-  await evaluate(`[...document.querySelectorAll('button')].find(b=>b.textContent.includes('-os adatok megtekintése'))?.click()`);
+  // Lakitelek 50 töves Brix ugyanebben a szezonban
+  await evaluate(`[...document.querySelectorAll('button')].find(b=>b.textContent.includes('50 töves'))?.click()`);
   for (let i = 0; i < 60; i++) {
-    if (await evaluate(`document.querySelectorAll('.highcharts-container').length > 0`)) break;
+    if ((await xLabels(0)).length === 2) break;
     await new Promise(r => setTimeout(r, 150));
   }
-  assert.ok(await evaluate(`document.querySelectorAll('.highcharts-container').length > 0`), 'visszalépés a 2025-ös Brixre');
-  console.log('PASS Brix üres állapot és visszalépés a mért szezonra');
+  assert.deepEqual(await xLabels(0), ['L-50-I', 'L-50-II'], '2026 Brix L-50 kategóriák');
+  await screenshot('app-2026-brix-l50.png');
+  console.log('PASS 2026 Brix L-50 nézet');
+
+  // Szezonváltás: a 2025-ös Brix továbbra is a hat helyszínt rajzolja
+  await goto(`${ORIGIN}/dashboard/brix-diagram?year=2025`);
+  await new Promise(r => setTimeout(r, 600));
+  assert.deepEqual(await xLabels(0), ['M-I', 'M-II', 'Cs-I', 'Cs-II', 'L-I', 'L-II'], '2025 Brix kategóriák');
+  console.log('PASS 2025 Brix regresszió');
 
   // --- Halmozott termés ---
   await goto(`${ORIGIN}/dashboard/halmozott-termes?year=2025`);

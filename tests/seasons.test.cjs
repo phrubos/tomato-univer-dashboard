@@ -52,13 +52,23 @@ test('L50 data retains Unigen and Heinz membership and genuine measurements', as
   assert.equal((await data.loadL50Data(2025)).length, 9);
 });
 
-test('pending Brix is not zero and is distinct from not-tested', () => {
+test('2026 Brix is measured where sampled and stays not-tested elsewhere', () => {
   const rows = data.processBrixData(2026);
-  assert.ok(rows.every(r => Object.values(r.locations).every(v => v === null)));
+  assert.equal(rows.length, 15);
+  assert.deepEqual(data.getChartCategories(rows), ['Cs-I', 'Cs-II', 'L-I', 'L-II']);
+  assert.equal(rows.find(r => r.variety === 'UG8492').locations['Cs-I'], 6.39);
+  assert.equal(rows.find(r => r.variety === 'H2249').locations['Cs-II'], 7.02);
+  // A nem vizsgált helyszín nullája hiányzó érték marad, nem 0% Brix
   const row = rows.find(r => r.variety === 'UG10162');
+  assert.equal(row.locations['Cs-I'], null);
   assert.equal(row.status['Cs-I'], 'not-tested');
-  assert.equal(row.status['L-I'], 'pending');
-  assert.ok(data.loadBrixL50Data(2026).every(r => r['L-50-I'] === null));
+  assert.equal(row.locations['L-I'], 5.46);
+  assert.equal(row.status['L-I'], 'available');
+  // Minden megszedett helyszínhez tartozik Brix-érték, tehát nincs függőben lévő mérés
+  assert.ok(rows.every(r => Object.values(r.status).every(s => s !== 'pending')));
+  const l50 = data.loadBrixL50Data(2026);
+  assert.equal(l50.find(r => r.variety === '7-N296*')['L-50-I'], 4.335);
+  assert.ok(l50.every(r => r['L-50-I'] !== null && r['L-50-II'] !== null));
 });
 
 test('access groups preserve the agreed 2026 Syngenta/Heinz mapping', () => {
