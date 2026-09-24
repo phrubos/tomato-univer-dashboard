@@ -15,10 +15,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const PASSWORD_MAP = {
-  'univer_2025_total': 'total',
-  'unigen_2025': 'unigen',
-  'nunhems_2025': 'nunhems',
-  'waller_heinz_2025': 'waller_heinz'
+  'univer_2026_total': 'total',
+  'unigen_2026': 'unigen',
+  'nunhems_2026': 'nunhems',
+  'heinz_syngenta_2026': 'waller_heinz'
 } as const;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
