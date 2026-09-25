@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useId } from 'react';
 import Highcharts from 'highcharts';
 import { CumulativeData } from '@/utils/halmozottDataProcessor';
+import { toIsoDate } from '@/utils/dataProcessor';
 import { useTheme } from './ThemeProvider';
+import { useLanguage } from '@/contexts/LanguageContext';
 import EarlyVarietyNote from './EarlyVarietyNote';
 
 interface CumulativeChartProps {
@@ -18,6 +20,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
   const chartId = useId();
   const containerId = `cumulative-chart-${chartId}`;
   const { theme } = useTheme();
+  const { t } = useLanguage();
 
   // Theme colors matching BreederChart
   const themeColors = useMemo(() => {
@@ -112,6 +115,8 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
       'isSpacing' in item ? null : (item.romló || 0)
     );
 
+    const labels = t.cumulative.categories;
+    const unit = t.common.unitTha;
 
     return {
       chart: {
@@ -165,7 +170,9 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
           borderWidth: 0,
           pointPadding: 0.05, // Smaller padding within variety pairs
           groupPadding: 0.2,  // Larger padding between different variety groups
-          borderRadius: 2
+          borderRadius: 2,
+          // Kevés fajtánál (pl. egyetlen Syngenta-fajta) se legyenek aránytalanul vastagok a sávok
+          maxPointWidth: 32
         },
         bar: {
           dataLabels: {
@@ -176,25 +183,25 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
       series: [
         {
           type: 'bar' as const,
-          name: 'Romló',
+          name: labels.rotten,
           data: romloData,
           color: '#6B7280'
         },
         {
           type: 'bar' as const,
-          name: 'Zöld',
+          name: labels.green,
           data: zoldData,
           color: '#10B981'
         },
         {
           type: 'bar' as const,
-          name: 'Sárga',
+          name: labels.yellow,
           data: sargaData,
           color: '#F59E0B'
         },
         {
           type: 'bar' as const,
-          name: 'Érett',
+          name: labels.ripe,
           data: erettData,
           color: '#DC2626'
         }
@@ -208,7 +215,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
         }],
         min: 0,
         title: {
-          text: 'Termés mennyisége (t/ha)',
+          text: t.cumulative.axisTitle,
           style: {
             fontSize: '12px',
             color: themeColors.titleColor,
@@ -262,40 +269,40 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
                 <div class="flex justify-between items-center">
                   <span class="flex items-center">
                     <span class="w-3 h-3 bg-red-600 rounded-sm mr-2"></span>
-                    Érett:
+                    ${labels.ripe}:
                   </span>
-                  <span class="font-medium">${variety.érett.toFixed(1)} t/ha</span>
+                  <span class="font-medium">${variety.érett.toFixed(1)} ${unit}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="flex items-center">
                     <span class="w-3 h-3 bg-amber-500 rounded-sm mr-2"></span>
-                    Sárga:
+                    ${labels.yellow}:
                   </span>
-                  <span class="font-medium">${variety.sárga.toFixed(1)} t/ha</span>
+                  <span class="font-medium">${variety.sárga.toFixed(1)} ${unit}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="flex items-center">
                     <span class="w-3 h-3 bg-emerald-500 rounded-sm mr-2"></span>
-                    Zöld:
+                    ${labels.green}:
                   </span>
-                  <span class="font-medium">${variety.zöld.toFixed(1)} t/ha</span>
+                  <span class="font-medium">${variety.zöld.toFixed(1)} ${unit}</span>
                 </div>
                 <div class="flex justify-between items-center">
                   <span class="flex items-center">
                     <span class="w-3 h-3 bg-gray-500 rounded-sm mr-2"></span>
-                    Romló:
+                    ${labels.rotten}:
                   </span>
-                  <span class="font-medium">${variety.romló.toFixed(1)} t/ha</span>
+                  <span class="font-medium">${variety.romló.toFixed(1)} ${unit}</span>
                 </div>
                 <div class="border-t ${borderClass} pt-2 mt-2">
                   <div class="flex justify-between items-center font-semibold">
-                    <span>Összesen: </span>
-                    <span>${total.toFixed(1)} t/ha</span>
+                    <span>${t.cumulative.total} </span>
+                    <span>${total.toFixed(1)} ${unit}</span>
                   </div>
                   ${variety.harvestDate ? `
-                  <div class="mt-3 pt-2 border-t border-dashed ${borderClass} flex justify-between items-center text-xs italic opacity-75">
-                    <span>szedve:</span>
-                    <span class="font-medium tabular-nums">${variety.harvestDate}</span>
+                  <div class="mt-3 pt-2 border-t border-dashed ${borderClass} flex justify-between items-center gap-3 text-xs italic opacity-75">
+                    <span>${t.harvest.harvested}</span>
+                    <span class="font-medium tabular-nums">${t.harvest.date(toIsoDate(variety.harvestDate))}</span>
                   </div>` : ''}
                 </div>
               </div>
@@ -310,7 +317,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
         enabled: false
       }
     };
-  }, [varieties, breederName, locationName, themeColors, theme]);
+  }, [varieties, breederName, locationName, themeColors, theme, t]);
 
   useEffect(() => {
     if (varieties.length === 0) return;
@@ -330,7 +337,7 @@ const CumulativeChart: React.FC<CumulativeChartProps> = ({
   if (varieties.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800 rounded-lg">
-        <p className="text-gray-500 dark:text-gray-400">Nincs adat ehhez a nemesítőházhoz</p>
+        <p className="text-gray-500 dark:text-gray-400">{t.cumulative.noDataForBreeder}</p>
       </div>
     );
   }

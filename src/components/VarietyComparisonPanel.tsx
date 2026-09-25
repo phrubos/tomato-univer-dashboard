@@ -6,10 +6,10 @@ import {
   getLocationLabel,
   getPairedChanges,
   isMeasuredValue,
-  STATUS_LABELS,
   type ProcessedData
 } from '@/utils/dataProcessor';
 import type { LocationDataPoint } from '@/contexts/ChartPanelContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   TrendingUp,
   TrendingDown,
@@ -43,6 +43,9 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
   breederColor,
   isDecayData = false
 }) => {
+  const { t } = useLanguage();
+  const a = t.analysis;
+  const unit = t.common.unitTha;
 
   // Find the selected variety data
   const varietyData = allVarieties.find(v => v.variety === selectedVariety);
@@ -80,8 +83,6 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
   // Calculate vine retention for all varieties and rank them
   const allVineRetentions = allVarieties.map(v => average(getPairedChanges(v)));
 
-
-
   // Calculate vine retention percentage relative to maximum value
   const maxVineRetention = Math.max(...allVineRetentions);
   const minVineRetention = Math.min(...allVineRetentions);
@@ -96,28 +97,31 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
         ? (stats.vineRetention / maxVineRetention) * 100
         : 0;
 
-  // Debug: Log vine retention values for analysis
-  console.log('=== TÖVÖN TARTHATÓSÁG/ROMLÁSI TRENDEK DEBUG ===');
-  console.log('Kiválasztott fajta:', selectedVariety);
-  console.log('Romló bogyó mód:', isDecayData);
-  console.log('Kiválasztott fajta értéke:', stats.vineRetention.toFixed(3));
-  console.log('Maximum érték:', maxVineRetention.toFixed(3));
-  console.log('Minimum érték:', minVineRetention.toFixed(3));
-  console.log('Számított százalék:', vineRetentionPercentage.toFixed(1) + '%');
-  console.log('Kategória:',
-    vineRetentionPercentage > 66 ? 'JÓ' :
-    vineRetentionPercentage >= 33 ? 'KÖZEPES' : 'GYENGE'
-  );
-  console.log('================================================');
+  const changeLabel = isDecayData ? a.decayRate : a.fieldStorage;
 
-  // Location names mapping
-
+  const recommendation = isDecayData
+    ? (stats.average < Math.min(...allAverages) * 1.2
+        ? a.advice.decayExcellent
+        : vineRetentionPercentage > 66
+          ? a.advice.decayGood
+          : vineRetentionPercentage >= 33
+            ? a.advice.decayModerate
+            : a.advice.decayWeak
+      )
+    : (stats.average > Math.max(...allAverages) * 0.8
+        ? a.advice.ripeExcellent
+        : vineRetentionPercentage > 66
+          ? a.advice.ripeGood
+          : vineRetentionPercentage >= 33
+            ? a.advice.ripeModerate
+            : a.advice.ripeWeak
+      );
 
   return (
     <div
       className="h-full flex flex-col bg-gray-50 dark:bg-background"
       role="region"
-      aria-label={`Fajta elemzés: ${selectedVariety}`}
+      aria-label={a.title(selectedVariety)}
     >
       {/* Sticky Header - mindig látható */}
       <div className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gray-200 dark:border-border shadow-lg">
@@ -129,7 +133,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                 style={{ backgroundColor: breederColor }}
               />
               <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                Fajta elemzés: {selectedVariety}
+                {a.title(selectedVariety)}
               </h3>
             </div>
           </div>
@@ -145,46 +149,46 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
         <div
           className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4"
           role="group"
-          aria-label="Fő teljesítmény mutatók"
+          aria-label={a.kpiGroup}
         >
 
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
             role="article"
-            aria-label={`Átlag: ${stats.average.toFixed(1)} tonna per hektár`}
+            aria-label={a.meanAria(stats.average.toFixed(1))}
           >
             <div className="flex items-center gap-2 mb-2">
               <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Átlagos romló bogyó' : 'Átlagos érett bogyótömeg'}</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? a.meanRotten : a.meanRipe}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">{stats.average.toFixed(1)}</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">t/ha</div>
+            <div className="text-xs text-gray-500 dark:text-muted-foreground">{unit}</div>
           </div>
 
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
             role="article"
-            aria-label={`Helyezés: ${ranking}. hely`}
+            aria-label={a.rankAria(ranking)}
           >
             <div className="flex items-center gap-2 mb-2">
               <Award className="w-4 h-4 text-yellow-600 dark:text-yellow-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Helyezés</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{a.rank}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">#{ranking}</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">{allVarieties.length} fajtából</div>
+            <div className="text-xs text-gray-500 dark:text-muted-foreground">{a.rankOf(allVarieties.length)}</div>
           </div>
 
           <div
             className="bg-white/80 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border hover:bg-white dark:hover:bg-card/70 transition-colors shadow-sm"
             role="article"
-            aria-label={`${isDecayData ? 'Romlás mértéke' : 'Tövön tarthatóság'}: ${stats.vineRetention.toFixed(1)} tonna per hektár különbség`}
+            aria-label={a.changeAria(changeLabel, stats.vineRetention.toFixed(1))}
           >
             <div className="flex items-center gap-2 mb-2">
               <Activity className="w-4 h-4 text-green-600 dark:text-green-400" aria-hidden="true" />
-              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{isDecayData ? 'Romlás mértéke' : 'Tövön tarthatóság'}</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{changeLabel}</span>
             </div>
             <div className="text-2xl font-bold text-foreground">{stats.vineRetention >= 0 ? '+' : ''}{stats.vineRetention.toFixed(1)}</div>
-            <div className="text-xs text-gray-500 dark:text-muted-foreground">{isDecayData ? 't/ha átlagos változás a II. szedésig' : 't/ha átlagos növekedés a II. szedésig'}</div>
+            <div className="text-xs text-gray-500 dark:text-muted-foreground">{isDecayData ? a.decayChange : a.ripeChange}</div>
           </div>
         </div>
 
@@ -194,7 +198,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
           <div className="bg-white/90 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border shadow-sm">
             <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <MapPin className="w-4 h-4" />
-              Helyszín teljesítmény
+              {a.sitePerformance}
             </h4>
             <div className="space-y-3">
               {locations.map((location) => {
@@ -221,12 +225,12 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                           : 'bg-gray-400 dark:bg-gray-600'
                       }`} />
                       <span className={`font-medium ${isActive ? 'text-foreground' : 'text-gray-500 dark:text-muted-foreground'}`}>
-                        {getLocationLabel(location)}
+                        {getLocationLabel(location, t.sites)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`font-semibold ${isActive ? 'text-foreground' : 'italic text-gray-500 dark:text-muted-foreground'}`}>
-                        {isActive ? `${(value as number).toFixed(1)} t/ha` : STATUS_LABELS[status]}
+                        {isActive ? `${(value as number).toFixed(1)} ${unit}` : t.status[status]}
                       </span>
                     </div>
                   </div>
@@ -239,9 +243,15 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
           <div className="bg-white/90 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border shadow-sm">
             <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
               <Zap className="w-4 h-4" />
-              Összehasonlítás
+              {a.comparison}
             </h4>
             <div className="space-y-3">
+              {/* Egyetlen fajtát tartalmazó nézetben (pl. Syngenta) nincs mihez hasonlítani */}
+              {otherVarieties.length === 0 && (
+                <p className="rounded-lg border border-dashed border-gray-300 p-3 text-sm text-gray-600 dark:border-border dark:text-muted-foreground">
+                  {a.noComparison}
+                </p>
+              )}
               {otherVarieties.slice(0, 4).map((variety) => {
                 const otherAvg = average(locations.map(loc => variety.locations[loc]).filter(isMeasuredValue));
                 const difference = stats.average - otherAvg;
@@ -251,7 +261,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                   <div key={variety.variety} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-muted/20 hover:bg-gray-100 dark:hover:bg-muted/30 transition-colors border border-transparent hover:border-gray-300 dark:hover:border-border">
                     <span className="font-medium text-foreground">{variety.variety}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600 dark:text-muted-foreground">{otherAvg.toFixed(1)} t/ha</span>
+                      <span className="text-sm text-gray-600 dark:text-muted-foreground">{otherAvg.toFixed(1)} {unit}</span>
                       <div className={`flex items-center gap-1 text-xs font-medium ${
                         difference > 0
                           ? 'text-green-600 dark:text-green-400'
@@ -276,13 +286,13 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
 
         {/* Visual Performance Chart */}
         <div className="mt-6 bg-white/90 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border shadow-sm">
-          <h4 className="font-semibold text-foreground mb-4">Teljesítmény vizualizáció</h4>
+          <h4 className="font-semibold text-foreground mb-4">{a.overview}</h4>
           <div className="space-y-4">
             {/* Performance Bar Chart */}
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600 dark:text-muted-foreground">Helyszínenkénti teljesítmény</span>
-                <span className="text-gray-600 dark:text-muted-foreground">Max: {stats.max.toFixed(1)} t/ha</span>
+                <span className="text-gray-600 dark:text-muted-foreground">{a.bySite}</span>
+                <span className="text-gray-600 dark:text-muted-foreground">{a.max} {stats.max.toFixed(1)} {unit}</span>
               </div>
               <div className="space-y-2">
                 {locations.map((location) => {
@@ -297,7 +307,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                   return (
                     <div key={location} className="flex items-center gap-3">
                       <div className="w-20 text-xs text-gray-600 dark:text-muted-foreground">
-                        {getLocationLabel(location)}
+                        {getLocationLabel(location, t.sites)}
                       </div>
                       <div className={`flex-1 rounded-full h-6 relative overflow-hidden border ${
                         isMeasured
@@ -313,7 +323,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                         <div className={`absolute inset-0 flex items-center justify-center text-xs font-medium ${
                           isMeasured ? 'text-white drop-shadow-sm' : 'italic text-gray-500 dark:text-muted-foreground'
                         }`}>
-                          {isMeasured ? value.toFixed(1) : STATUS_LABELS[status]}
+                          {isMeasured ? value.toFixed(1) : t.status[status]}
                         </div>
                       </div>
                       <div className="w-12 text-xs text-gray-600 dark:text-muted-foreground text-right">
@@ -328,11 +338,11 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
             {/* Performance Radar */}
             <div className="grid lg:grid-cols-2 gap-4 mt-6">
               <div>
-                <h5 className="font-medium text-foreground mb-3">Teljesítmény mutatók</h5>
+                <h5 className="font-medium text-foreground mb-3">{a.indicators}</h5>
                 <div className="space-y-3">
                   {[
-                    { label: isDecayData ? 'Átlagos romló bogyótömeg' : 'Átlagos érett bogyótömeg', value: stats.average, max: Math.max(...allAverages), unit: 't/ha' },
-                    { label: isDecayData ? 'Romlás mértéke (átlagos változás a II. szedésig)' : 'Tövön tarthatóság (átlagos növekedés a II. szedésig)', value: stats.vineRetention, max: Math.max(...allVineRetentions), unit: 't/ha', allowNegative: true, isDecayMetric: isDecayData }
+                    { label: isDecayData ? a.meanRottenMass : a.meanRipe, value: stats.average, max: Math.max(...allAverages), unit },
+                    { label: isDecayData ? a.decayIndicator : a.retentionIndicator, value: stats.vineRetention, max: Math.max(...allVineRetentions), unit, allowNegative: true, isDecayMetric: isDecayData }
                   ].map((metric, index) => {
                     let percentage;
                     if (index === 0) {
@@ -355,7 +365,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
                         <div className="flex justify-between text-xs">
                           <span className="text-gray-600 dark:text-muted-foreground">{metric.label}</span>
                           <span className="text-foreground font-medium">
-                            {metric.allowNegative && metric.value >= 0 ? '+' : ''}{metric.value.toFixed(1)}{metric.unit}
+                            {metric.allowNegative && metric.value >= 0 ? '+' : ''}{metric.value.toFixed(1)} {metric.unit}
                           </span>
                         </div>
                         <div className="w-full bg-gray-100 dark:bg-muted/30 rounded-full h-2 border border-gray-200 dark:border-border">
@@ -375,7 +385,7 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
               </div>
 
               <div>
-                <h5 className="font-medium text-foreground mb-3">Összehasonlító elemzés</h5>
+                <h5 className="font-medium text-foreground mb-3">{a.comparative}</h5>
                 <div className="space-y-2">
                   {allVarieties.map((variety) => {
                     const varietyAvg = average(locations.map(loc => variety.locations[loc]).filter(isMeasuredValue));
@@ -411,46 +421,29 @@ const VarietyComparisonPanel: React.FC<VarietyComparisonPanelProps> = ({
 
         {/* Performance Insights */}
         <div className="bg-white/90 dark:bg-card/50 rounded-lg p-4 border border-gray-200 dark:border-border shadow-sm">
-          <h4 className="font-semibold text-foreground mb-3">Teljesítmény értékelés</h4>
+          <h4 className="font-semibold text-foreground mb-3">{a.assessment}</h4>
           <div className="grid lg:grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="font-medium text-foreground">Erősségek:</span>
+              <span className="font-medium text-foreground">{a.strengths}</span>
               <ul className="mt-1 text-gray-600 dark:text-muted-foreground">
-                {(isDecayData ? stats.average === Math.min(...allAverages) : stats.max === Math.max(...allAverages)) && <li>• Legjobb teljesítmény</li>}
-                {vineRetentionPercentage > 66 && <li>• {isDecayData ? 'Jó romlási trendek' : 'Jó tövön tarthatóság'}</li>}
-                {vineRetentionPercentage >= 33 && vineRetentionPercentage <= 66 && <li>• {isDecayData ? 'Közepes romlási trendek' : 'Közepes tövön tarthatóság'}</li>}
-                {ranking <= Math.ceil(allVarieties.length / 4) && <li>• Átlagosnál jobb {isDecayData ? 'romló bogyó' : 'termés'} eredmény</li>}
+                {(isDecayData ? stats.average === Math.min(...allAverages) : stats.max === Math.max(...allAverages)) && <li>• {a.best}</li>}
+                {vineRetentionPercentage > 66 && <li>• {a.good(isDecayData)}</li>}
+                {vineRetentionPercentage >= 33 && vineRetentionPercentage <= 66 && <li>• {a.moderate(isDecayData)}</li>}
+                {ranking <= Math.ceil(allVarieties.length / 4) && <li>• {a.aboveAverage(isDecayData)}</li>}
               </ul>
             </div>
             <div>
-              <span className="font-medium text-foreground">Fejlesztési területek:</span>
+              <span className="font-medium text-foreground">{a.improvements}</span>
               <ul className="mt-1 text-gray-600 dark:text-muted-foreground">
-                {vineRetentionPercentage < 33 && <li>• {isDecayData ? 'Gyenge romlási trendek' : 'Gyenge tövön tarthatóság'}</li>}
-                {ranking > allAverages.length / 2 && <li>• Átlagosnál rosszabb {isDecayData ? 'romló bogyó' : 'termés'} eredmény</li>}
-                {stats.min === 0 && <li>• Hiányzó helyszín adatok</li>}
+                {vineRetentionPercentage < 33 && <li>• {a.weak(isDecayData)}</li>}
+                {ranking > allAverages.length / 2 && <li>• {a.belowAverage(isDecayData)}</li>}
+                {stats.min === 0 && <li>• {a.missingSites}</li>}
               </ul>
             </div>
             <div>
-              <span className="font-medium text-foreground">Ajánlás:</span>
+              <span className="font-medium text-foreground">{a.recommendation}</span>
               <p className="mt-1 text-gray-600 dark:text-muted-foreground">
-                {isDecayData
-                  ? (stats.average < Math.min(...allAverages) * 1.2
-                      ? "Kiváló választás további termesztésre. Alacsony romló bogyó mennyiségű és megbízható fajta."
-                      : vineRetentionPercentage > 66
-                        ? "Jó romlási trendekkel rendelkező fajta közepes romló bogyó értékekkel. Megfontolható választás."
-                        : vineRetentionPercentage >= 33
-                          ? "Közepes romlási trendekkel rendelkező fajta. További megfigyelés szükséges."
-                          : "Gyenge romlási trendek. További fejlesztés és optimalizálás szükséges."
-                    )
-                  : (stats.average > Math.max(...allAverages) * 0.8
-                      ? "Kiváló választás további termesztésre. Magas hozamú és megbízható fajta."
-                      : vineRetentionPercentage > 66
-                        ? "Jó tövön tarthatóságú fajta közepes teljesítménnyel. Megfontolandó választás."
-                        : vineRetentionPercentage >= 33
-                          ? "Közepes tövön tarthatóságú fajta. További megfigyelés szükséges."
-                          : "Gyenge tövön tarthatóság. További fejlesztés és optimalizálás szükséges."
-                    )
-                }
+                {recommendation}
               </p>
             </div>
           </div>

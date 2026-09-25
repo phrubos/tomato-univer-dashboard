@@ -1,4 +1,4 @@
-import { BREEDER_ACCESS, getSeason, type SeasonYear } from './dataProcessor';
+import { canAccessBreeder, getSeason, type SeasonYear } from './dataProcessor';
 
 export interface HalmozottVarietyData {
   variety: string;
@@ -25,15 +25,6 @@ export interface CumulativeData {
   total: number;
   harvestDate?: string;
 }
-
-export const BREEDER_COLORS = {
-  'Unigen Seeds': '#dc2626',
-  'BASF-Nunhems': '#d97706',
-  'WALLER + Heinz': '#1e40af',
-  'Prestomech + Heinz': '#1e40af',
-  'Heinz+Syngenta': '#1e40af',
-  'Heinz': '#1e40af'
-} as const;
 
 // Load and process cumulative yield data
 export function loadHalmozottData(year: SeasonYear = 2025): HalmozottLocationData {
@@ -126,20 +117,19 @@ export function filterDataByAccessLevel(
   accessLevel: string | null
 ): { [breeder: string]: CumulativeData[] } {
   if (accessLevel === 'total') return data;
-  return Object.fromEntries(Object.entries(data).filter(([breeder]) =>
-    accessLevel !== null && BREEDER_ACCESS[breeder] === accessLevel
-  ));
+  return Object.fromEntries(Object.entries(data).filter(([breeder]) => canAccessBreeder(breeder, accessLevel)));
 }
 
-// Get location display name
-export function getLocationDisplayName(location: string): string {
-  const displayNames: { [key: string]: string } = {
-    'LAKITELEK - 4 SOROS': 'Lakitelek - 4 soros',
-    'LAKITELEK - 50 TÖVES': 'Lakitelek - 50 töves',
-    'MEZŐBERÉNY - 2 SOROS': 'Mezőberény - 2 soros',
-    'CSABACSŰD - 2 SOROS': 'Csabacsűd - 2 soros'
-  };
+// A halmozott adatok helyszínkulcsainak megjelenített neve (a fordítás saját táblát ad át)
+export const LOCATION_DISPLAY_NAMES: Record<string, string> = {
+  'LAKITELEK - 4 SOROS': 'Lakitelek - 4 soros',
+  'LAKITELEK - 50 TÖVES': 'Lakitelek - 50 töves',
+  'MEZŐBERÉNY - 2 SOROS': 'Mezőberény - 2 soros',
+  'CSABACSŰD - 2 SOROS': 'Csabacsűd - 2 soros'
+};
 
+// Get location display name
+export function getLocationDisplayName(location: string, displayNames: Record<string, string> = LOCATION_DISPLAY_NAMES): string {
   return displayNames[location] || location;
 }
 

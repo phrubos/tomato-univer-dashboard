@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function LandingPage() {
   const [password, setPassword] = useState('');
@@ -11,6 +13,7 @@ export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
 
   // Ha már be van jelentkezve, irányítson a dashboard első nézetéhez (Halmozott termés)
   useEffect(() => {
@@ -30,7 +33,7 @@ export default function LandingPage() {
     if (login(password)) {
       router.push('/dashboard/halmozott-termes');
     } else {
-      setError('Hibás jelszó! Kérjük próbálja újra.');
+      setError(t.login.error);
       setPassword('');
     }
 
@@ -46,7 +49,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex justify-end gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
         {/* Logo and Header */}
@@ -58,7 +62,7 @@ export default function LandingPage() {
             Univer
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Paradicsom fajtakísérlet dashboard
+            {t.login.subtitle}
           </p>
           <p className="mt-2 font-mono text-sm tracking-[0.2em] text-gray-500 tabular-nums dark:text-gray-400">
             2025 &middot; 2026
@@ -70,7 +74,7 @@ export default function LandingPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                Jelszó megadása
+                {t.login.passwordLabel}
               </label>
               <div className="relative">
                 <input
@@ -80,7 +84,7 @@ export default function LandingPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="w-full px-4 py-3 text-lg border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white transition-all duration-200"
-                  placeholder="Adja meg a jelszót..."
+                  placeholder={t.login.placeholder}
                   disabled={isLoading}
                   autoFocus
                 />
@@ -107,10 +111,10 @@ export default function LandingPage() {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Bejelentkezés...
+                  {t.login.signingIn}
                 </div>
               ) : (
-                'Belépés a Dashboard-ba'
+                t.login.submit
               )}
             </button>
           </form>
@@ -118,10 +122,10 @@ export default function LandingPage() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              © Univer Dashboard - Bizalmas adatok
+              {t.login.footer}
             </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Kérjük adja meg a hozzáférési jelszót
+              {t.login.footerHint}
             </p>
           </div>
         </div>

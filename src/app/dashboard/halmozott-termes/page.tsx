@@ -4,9 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import CumulativeChart from "@/components/CumulativeChart";
 import DashboardShell from "@/components/DashboardShell";
-import { getBreeders,
+import {
+  compareBreeders,
+  getBreederColor,
+  getBreeders,
   getHarvestPeriod
 } from "@/utils/dataProcessor";
 import {
@@ -15,31 +19,23 @@ import {
   groupHalmozottByBreeder,
   filterDataByAccessLevel,
   getLocationDisplayName,
-  getAvailableLocationsForAccessLevel,
-  BREEDER_COLORS
+  getAvailableLocationsForAccessLevel
 } from "@/utils/halmozottDataProcessor";
-
-// A diagramok sorrendje; az itt nem szereplő nemesítőházak a lista végére kerülnek
-const BREEDER_ORDER = [
-  'Unigen Seeds',
-  'BASF-Nunhems',
-  'WALLER + Heinz',
-  'Prestomech + Heinz',
-  'Heinz+Syngenta',
-  'Heinz'
-];
 
 export default function HalmozottTermesDashboard() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
   const { year } = useSeason();
+  const { t } = useLanguage();
   const router = useRouter();
 
   // A halmozott adatok a seasons.json-ból jönnek, szinkron módon
   const halmozottData = loadHalmozottData(year);
   const availableLocations = getAvailableLocationsForAccessLevel(halmozottData, accessLevel);
+  const locationName = (location: string) => getLocationDisplayName(location, t.cumulativeSites);
 
   const [selectedLocation, setSelectedLocation] = useState<string>(() => availableLocations[0] ?? '');
-  const [locationNotice, setLocationNotice] = useState<string | null>(null);
+  // A korábban nézett, de ebben a szezonban nem szereplő helyszín kulcsa (nyelvváltáskor is újrafordul)
+  const [missingLocation, setMissingLocation] = useState<string | null>(null);
 
   // Ha nincs autentikálva, irányítson vissza
   useEffect(() => {
@@ -60,10 +56,7 @@ export default function HalmozottTermesDashboard() {
     if (availableLocations.includes(stored)) {
       setSelectedLocation(stored);
     } else {
-      setLocationNotice(
-        `A(z) ${getLocationDisplayName(stored)} helyszín a ${year}-os szezonban nem szerepel, ` +
-        `ezért a(z) ${getLocationDisplayName(availableLocations[0])} nézet látható.`
-      );
+      setMissingLocation(stored);
     }
     // Csak a nézet megnyitásakor fut le, a szezonváltás újra mountolja az oldalt.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,7 +64,7 @@ export default function HalmozottTermesDashboard() {
 
   const selectLocation = (location: string) => {
     setSelectedLocation(location);
-    setLocationNotice(null);
+    setMissingLocation(null);
     try {
       sessionStorage.setItem('univer-location', location);
     } catch {}
@@ -83,16 +76,13 @@ export default function HalmozottTermesDashboard() {
   }
 
   // A vezérlősávba kerülő rövid szedési információ
-  const harvestInfo = getHarvestPeriod(year, 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.');
+  const period = getHarvestPeriod(year, accessLevel);
+  const harvestInfo = period ? t.harvest.period(period.first, period.last) : t.harvest.fallback;
   const visibleBreeders = getBreeders(year, accessLevel).map(breeder => breeder.name).join(', ') || '–';
 
   const handleLogout = () => {
     logout();
     router.push('/');
-  };
-
-  const navigateToErettRomlo = () => {
-    router.push('/dashboard');
   };
 
   // Process data for current location
@@ -102,15 +92,11 @@ export default function HalmozottTermesDashboard() {
   const filteredData = filterDataByAccessLevel(groupedByBreeder, accessLevel);
 
   // Csak azok a nemesítőházak, amelyeknek van adatuk ebben a szezonban és nézetben
-  const orderedBreeders = Object.keys(filteredData).sort((a, b) => {
-    const indexA = BREEDER_ORDER.indexOf(a);
-    const indexB = BREEDER_ORDER.indexOf(b);
-    return (indexA === -1 ? BREEDER_ORDER.length : indexA) - (indexB === -1 ? BREEDER_ORDER.length : indexB);
-  });
+  const orderedBreeders = Object.keys(filteredData).sort(compareBreeders);
 
   return (
     <DashboardShell
-      subtitle="Halmozott termés diagram"
+      subtitle={t.cumulative.subtitle}
       info={harvestInfo}
       visibleBreeders={accessLevel !== 'total' ? visibleBreeders : undefined}
       onLogout={handleLogout}
@@ -131,7 +117,7 @@ export default function HalmozottTermesDashboard() {
                       : 'font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/60 dark:hover:bg-gray-800'
                   }`}
                 >
-                  {getLocationDisplayName(location)}
+                  {locationName(location)}
                 </button>
               ))}
             </div>
@@ -139,13 +125,13 @@ export default function HalmozottTermesDashboard() {
         </div>
 
         {/* Szezonváltás miatti helyszínváltás jelzése */}
-        {locationNotice && (
+        {missingLocation && availableLocations.length > 0 && (
           <div className="flex mb-6">
             <p
               role="status"
               className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-800/30 dark:bg-amber-950/20 dark:text-amber-300"
             >
-              {locationNotice}
+              {t.cumulative.locationNotice(locationName(missingLocation), year, locationName(availableLocations[0]))}
             </p>
           </div>
         )}
@@ -161,7 +147,7 @@ export default function HalmozottTermesDashboard() {
               const totalErett = varieties.reduce((sum, v) => sum + (v.érett || 0), 0);
               const averageErett = totalErett / varieties.length;
 
-              const breederColor = BREEDER_COLORS[breederName as keyof typeof BREEDER_COLORS] || '#6B7280';
+              const breederColor = getBreederColor(breederName);
 
               return (
                 <div key={breederName} className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-700">
@@ -173,9 +159,9 @@ export default function HalmozottTermesDashboard() {
                       />
                       {breederName}
                     </h3>
-                    <div className="flex items-center justify-between mt-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mt-1">
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {Math.ceil(varieties.length / 2)} fajta • {getLocationDisplayName(selectedLocation)}
+                        {t.cumulative.varietySummary(Math.ceil(varieties.length / 2), locationName(selectedLocation))}
                       </p>
                       <div className="flex items-center gap-3 bg-red-50 dark:bg-red-950/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-800/30">
                         <div className="flex items-center gap-2">
@@ -183,7 +169,7 @@ export default function HalmozottTermesDashboard() {
                           <div className="w-1 h-1 bg-red-600 rounded-full"></div>
                         </div>
                         <p className="text-sm font-semibold text-red-700 dark:text-red-400">
-                          Átlagos érett érték: <span className="font-bold">{averageErett.toFixed(1)} t/ha</span>
+                          {t.cumulative.meanRipe} <span className="font-bold">{averageErett.toFixed(1)} {t.common.unitTha}</span>
                         </p>
                       </div>
                     </div>
@@ -192,7 +178,7 @@ export default function HalmozottTermesDashboard() {
                   <CumulativeChart
                     varieties={varieties}
                     breederName={breederName}
-                    locationName={getLocationDisplayName(selectedLocation)}
+                    locationName={locationName(selectedLocation)}
                   />
                 </div>
               );
@@ -206,10 +192,10 @@ export default function HalmozottTermesDashboard() {
                     <span className="text-2xl">📊</span>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Nincs adat
+                    {t.cumulative.noData}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400">
-                    Ehhez a helyszínhez nem található adat.
+                    {t.cumulative.noDataForSite}
                   </p>
                 </div>
               </div>

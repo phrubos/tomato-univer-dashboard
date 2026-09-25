@@ -2,16 +2,19 @@
 
 import { useState } from 'react';
 import { Maximize2 } from 'lucide-react';
-import BreederChart from '@/components/BreederChart';
+import BreederChart, { type MetricKind } from '@/components/BreederChart';
 import type { ProcessedData } from '@/utils/dataProcessor';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BreederCardProps {
   /** A kártyafejlécben megjelenő nemesítőház-név. */
   title: string;
   /** A nemesítőház színe (L50 nézetben a sorozat saját színe). */
   color: string;
-  /** A mért jellemző, pl. „Érett bogyó mennyisége”. */
+  /** A mért jellemző megjelenített neve, pl. „Érett bogyó mennyisége”. */
   metric: string;
+  /** A mért jellemző típusa: ettől függ a tengely, a tizedesjegyek és az értékelés iránya. */
+  kind: MetricKind;
   /** A kísérlet megnevezése a fejléc közepén, pl. „2 és 4 soros kísérletek”. */
   experiment: string;
   varieties: ProcessedData[];
@@ -32,6 +35,7 @@ export default function BreederCard({
   title,
   color,
   metric,
+  kind,
   experiment,
   varieties,
   allVarietiesData,
@@ -39,6 +43,7 @@ export default function BreederCard({
   expandable = true
 }: BreederCardProps) {
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <section className="w-full rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-border dark:bg-card">
@@ -52,7 +57,7 @@ export default function BreederCard({
           <div>
             <h3 className="text-lg font-semibold text-foreground sm:text-xl">{title}</h3>
             <p className="text-sm text-gray-600 dark:text-muted-foreground">
-              {varieties.length} fajta adatai
+              {t.breederCard.varietyCount(varieties.length)}
             </p>
           </div>
         </div>
@@ -65,8 +70,8 @@ export default function BreederCard({
           <button
             type="button"
             onClick={() => setIsFullScreenOpen(true)}
-            aria-label="Teljes képernyős nézet"
-            title="Teljes képernyős nézet"
+            aria-label={t.common.fullScreen}
+            title={t.common.fullScreen}
             className={ACTION_CLASS}
           >
             <Maximize2 className="h-4 w-4" />
@@ -76,6 +81,7 @@ export default function BreederCard({
 
       <BreederChart
         title={metric}
+        kind={kind}
         varieties={varieties}
         breederColor={color}
         breederName={title}

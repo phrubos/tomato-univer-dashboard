@@ -1,7 +1,7 @@
 'use client';
 
 import { useSeason } from '@/contexts/SeasonContext';
-import { SEASON_YEARS } from '@/utils/dataProcessor';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PendingDataNoticeProps {
   title: string;
@@ -13,8 +13,9 @@ interface PendingDataNoticeProps {
  * A szaggatott keret és a milliméterpapír-háttér a kitöltetlen mintalapot idézi.
  */
 export default function PendingDataNotice({ title, description }: PendingDataNoticeProps) {
-  const { year, setYear } = useSeason();
-  const previousYear = [...SEASON_YEARS].reverse().find(value => value !== year);
+  const { year, setYear, seasonYears } = useSeason();
+  const { t } = useLanguage();
+  const previousYear = [...seasonYears].reverse().find(value => value !== year);
 
   return (
     <div className="relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-300 bg-white/60 px-6 py-14 text-center dark:border-border dark:bg-card/40">
@@ -60,7 +61,7 @@ export default function PendingDataNotice({ title, description }: PendingDataNot
 
         <span className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
           <span aria-hidden className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
-          Adatra vár
+          {t.pending.badge}
         </span>
 
         {previousYear !== undefined && (
@@ -72,9 +73,7 @@ export default function PendingDataNotice({ title, description }: PendingDataNot
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span>
-              <span className="font-mono tabular-nums">{previousYear}</span>-os adatok megtekintése
-            </span>
+            <span className="tabular-nums">{t.pending.viewYear(previousYear)}</span>
           </button>
         )}
       </div>

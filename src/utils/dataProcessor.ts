@@ -26,25 +26,24 @@ export function getSeason(year: SeasonYear): SeasonData {
   return (seasons as Record<string, SeasonData>)[String(year)];
 }
 
-const MONTH_ABBREVIATIONS = ['jan.', 'febr.', 'márc.', 'ápr.', 'máj.', 'jún.', 'júl.', 'aug.', 'szept.', 'okt.', 'nov.', 'dec.'];
+/** '2026.08.11.' -> '2026-08-11': így a szöveges rendezés időrendi. */
+export function toIsoDate(date: string): string {
+  return date.replace(/\.$/, '').replaceAll('.', '-');
+}
 
 /**
- * A szezon szedési időszaka a mintákhoz rögzített szedési napokból, pl. 'szedés: aug. 11 – szept. 2.'.
- * Ha a szezonhoz nincsenek szedési napok (2025), a megadott szöveget adja vissza.
+ * A szezon szedési időszaka (első és utolsó szedési nap, ISO formában) a mintákhoz
+ * rögzített szedési napokból; ha a szezonhoz nincsenek szedési napok (2025), null.
+ * Korlátozott hozzáférésnél csak a belépett nemesítőház mintái számítanak, így
+ * mindenki a saját szedési időszakát látja. A megjelenített szöveget a fordítás állítja elő.
  */
-export function getHarvestPeriod(year: SeasonYear, fallback: string): string {
-  // '2026.08.11.' -> '2026-08-11': így a szöveges rendezés időrendi
+export function getHarvestPeriod(year: SeasonYear, accessLevel: string | null = 'total'): { first: string; last: string } | null {
   const dates = Object.values(getSeason(year).cumulative)
     .flat()
-    .flatMap(row => (row.harvestDate ? [row.harvestDate.replace(/\.$/, '').replaceAll('.', '-')] : []))
+    .filter(row => canAccessBreeder(row.breeder, accessLevel))
+    .flatMap(row => (row.harvestDate ? [toIsoDate(row.harvestDate)] : []))
     .sort();
-  if (dates.length === 0) return fallback;
-
-  const format = (date: string) => {
-    const [, month, day] = date.split('-').map(Number);
-    return `${MONTH_ABBREVIATIONS[month - 1]} ${day}`;
-  };
-  return `szedés: ${format(dates[0])} – ${format(dates[dates.length - 1])}.`;
+  return dates.length === 0 ? null : { first: dates[0], last: dates[dates.length - 1] };
 }
 
 export interface ChartDataPoint {
@@ -82,63 +81,71 @@ export interface BrixL50Data {
   'L-50-II': number | null;
 }
 
-// Nemesítőházak definíciója
-export const BREEDERS: BreederGroup[] = [
-  {
-    name: 'Unigen Seeds',
-    color: '#dc2626', // Piros
-    varieties: ['UG11227*', 'UG8492', 'UG17219', 'UG1578', 'UG13577*']
-  },
-  {
-    name: 'BASF-Nunhems',
-    color: '#d97706', // Mustár narancssárga
-    varieties: ['N00541*', 'N00530', 'N00544', 'N00539', 'N00339', 'N4510', 'N00540*']
-  },
-  {
-    name: 'WALLER + Heinz',
-    color: '#1e40af', // Királykék
-    varieties: ['WALLER', 'H2123*', 'H2239', 'H2249', 'H1881', 'H2127']
-  }
-];
+// Nemesítőházak színe, egyben a diagramok sorrendje. A 2025-ös Heinz-csoportok
+// (WALLER + Heinz, Prestomech + Heinz) a Heinz színét és hozzáférését kapják;
+// a Syngenta 2026-tól önálló nemesítőház saját diagramokkal.
+export const BREEDER_COLORS: Record<string, string> = {
+  'Unigen Seeds': '#dc2626', // Piros
+  'BASF-Nunhems': '#d97706', // Mustár narancssárga
+  'WALLER + Heinz': '#1e40af', // Királykék
+  'Prestomech + Heinz': '#1e40af',
+  'Heinz': '#1e40af',
+  'Syngenta': '#6b7a00' // Syngenta olajzöld (márkaszín)
+};
 
+/** Nemesítőház -> a hozzá tartozó korlátozott hozzáférési szint. */
 export const BREEDER_ACCESS: Record<string, string> = {
   'Unigen Seeds': 'unigen',
   'BASF-Nunhems': 'nunhems',
-  'WALLER + Heinz': 'waller_heinz',
-  'Prestomech + Heinz': 'waller_heinz',
-  'Heinz+Syngenta': 'waller_heinz',
-  'Heinz': 'waller_heinz'
+  'WALLER + Heinz': 'heinz',
+  'Prestomech + Heinz': 'heinz',
+  'Heinz': 'heinz',
+  'Syngenta': 'syngenta'
 };
+
+const BREEDER_ORDER = Object.keys(BREEDER_COLORS);
+
+/** Rendezés a BREEDER_COLORS sorrendje szerint; az ismeretlen nemesítőházak a végére kerülnek. */
+export function compareBreeders(a: string, b: string): number {
+  const rank = (name: string) => {
+    const index = BREEDER_ORDER.indexOf(name);
+    return index === -1 ? BREEDER_ORDER.length : index;
+  };
+  return rank(a) - rank(b);
+}
+
+export function canAccessBreeder(breeder: string, accessLevel: string | null): boolean {
+  return accessLevel === 'total' || (accessLevel !== null && BREEDER_ACCESS[breeder] === accessLevel);
+}
 
 export function getBreeders(year: SeasonYear, accessLevel: string | null = 'total'): BreederGroup[] {
   const rows = getSeason(year).main;
   return [...new Set(rows.map(row => row.breeder))]
-    .filter(name => accessLevel === 'total' || (accessLevel !== null && BREEDER_ACCESS[name] === accessLevel))
+    .filter(name => canAccessBreeder(name, accessLevel))
+    .sort(compareBreeders)
     .map(name => ({ name, color: getBreederColor(name), varieties: rows.filter(row => row.breeder === name).map(row => row.variety) }));
 }
 
-export function getL50Breeder(name: string): string {
-  return name === 'WALLER + Heinz' ? 'Prestomech + Heinz' : name === 'Heinz+Syngenta' ? 'Heinz' : name;
+/** Azok a szezonok, amelyekben a hozzáférési szinthez tartozik adat (a Syngenta pl. csak 2026-ban szerepel). */
+export function getSeasonYearsForAccess(accessLevel: string | null): SeasonYear[] {
+  return SEASON_YEARS.filter(year => {
+    const season = getSeason(year);
+    return [...season.main, ...season.l50].some(row => canAccessBreeder(row.breeder, accessLevel));
+  });
 }
 
-// Helyszínek csoportosítása
-export const LOCATION_GROUPS = [
-  { name: 'Mezőberény', locations: ['M-I', 'M-II'], color: '#8b5cf6' },
-  { name: 'Csabacsűd', locations: ['Cs-I', 'Cs-II'], color: '#06b6d4' },
-  { name: 'Lakitelek', locations: ['L-I', 'L-II'], color: '#84cc16' }
-];
-
-export function getBreederForVariety(variety: string, year: SeasonYear = 2025): string {
-  return getSeason(year).main.find(row => row.variety === variety)?.breeder ?? 'Ismeretlen';
+export function getL50Breeder(name: string): string {
+  // 2025-ben a Heinz 50 töves fajtái Prestomech + Heinz néven szerepelnek
+  return name === 'WALLER + Heinz' ? 'Prestomech + Heinz' : name;
 }
 
 export function getBreederColor(breederName: string): string {
-  const breeder = BREEDERS.find(b => b.name === breederName);
-  return breeder?.color ?? (BREEDER_ACCESS[breederName] === 'waller_heinz' ? '#1e40af' : '#6b7280');
+  return BREEDER_COLORS[breederName] ?? '#6b7280';
 }
 
+/** A 2025-ös WALLER kontrollfajta zöld kiemelést kap, a többi fajta a nemesítőház árnyalatát. */
 export function getVarietyColor(variety: string, fallback: string): string {
-  return ['WALLER', 'REDIX'].includes(variety.trim().toUpperCase().replace(/\*$/, '')) ? '#16a34a' : fallback;
+  return variety.trim().toUpperCase().replace(/\*$/, '') === 'WALLER' ? '#16a34a' : fallback;
 }
 
 export function getChartCategories(varieties: ProcessedData[]): string[] {
@@ -280,7 +287,9 @@ export function processBrixL50DataForChart(varieties: BrixL50Data[]): ProcessedD
   }));
 }
 
-// --- Helyszín- és állapotcímkék (szezonfüggetlen, a kategóriákból származtatva) ---
+// --- Helyszíncímkék (szezonfüggetlen, a kategóriákból származtatva) ---
+// A megjelenített neveket a fordítás adja át (t.sites), az alapértelmezés a magyar.
+// A mérési állapotok feliratai (adatra vár / nem vizsgált) a fordításban vannak (t.status).
 
 export const SITE_NAMES: Record<string, string> = {
   'M': 'Mezőberény',
@@ -289,29 +298,26 @@ export const SITE_NAMES: Record<string, string> = {
   'L-50': 'Lakitelek 50 töves'
 };
 
-export const STATUS_LABELS: Record<MeasurementStatus, string> = {
-  available: '',
-  pending: 'Adatra vár',
-  'not-tested': 'Nem vizsgált'
-};
-
 /** 'Cs-II' -> 'Cs', 'L-50-I' -> 'L-50' */
 export function getSiteKey(location: string): string {
   return location.replace(/-(I{1,2})$/, '');
 }
 
 /** 'Cs-II' -> 'Csabacsűd-II' */
-export function getLocationLabel(location: string): string {
+export function getLocationLabel(location: string, siteNames: Record<string, string> = SITE_NAMES): string {
   const site = getSiteKey(location);
-  const name = SITE_NAMES[site];
+  const name = siteNames[site];
   return name ? `${name}-${location.slice(site.length + 1)}` : location;
 }
 
 /** A diagram kategóriáiból egybefüggő helyszín-sávokat képez a Highcharts plotBands-hez. */
-export function getSiteBands(categories: string[]): Array<{ name: string; from: number; to: number }> {
+export function getSiteBands(
+  categories: string[],
+  siteNames: Record<string, string> = SITE_NAMES
+): Array<{ name: string; from: number; to: number }> {
   const bands: Array<{ name: string; from: number; to: number }> = [];
   categories.forEach((location, index) => {
-    const name = SITE_NAMES[getSiteKey(location)] ?? getSiteKey(location);
+    const name = siteNames[getSiteKey(location)] ?? getSiteKey(location);
     const last = bands[bands.length - 1];
     if (last && last.name === name && last.to === index - 0.5) last.to = index + 0.5;
     else bands.push({ name, from: index - 0.5, to: index + 0.5 });

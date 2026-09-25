@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 
-export type AccessLevel = 'total' | 'unigen' | 'nunhems' | 'waller_heinz' | null;
+export type AccessLevel = 'total' | 'unigen' | 'nunhems' | 'heinz' | 'syngenta' | null;
 
 interface AuthContextType {
   accessLevel: AccessLevel;
@@ -14,11 +14,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// A Heinz és a Syngenta külön jelszót kap. A korábbi közös 'heinz_syngenta_2026' jelszó
+// és a hozzá tartozó 'waller_heinz' szint megszűnt: az így mentett munkamenetek
+// a következő betöltéskor érvénytelenek, és újra be kell jelentkezni.
 const PASSWORD_MAP = {
   'univer_2026_total': 'total',
   'unigen_2026': 'unigen',
   'nunhems_2026': 'nunhems',
-  'heinz_syngenta_2026': 'waller_heinz'
+  'heinz_2026': 'heinz',
+  'syngenta_2026': 'syngenta'
 } as const;
 
 export function AuthProvider({ children }: { children: ReactNode }) {

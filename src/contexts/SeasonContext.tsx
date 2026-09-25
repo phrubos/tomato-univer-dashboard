@@ -1,17 +1,36 @@
 'use client';
 
-import { createContext, Fragment, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, Fragment, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { DEFAULT_YEAR, SEASON_YEARS, type SeasonYear } from '@/utils/dataProcessor';
+import { DEFAULT_YEAR, getSeasonYearsForAccess, SEASON_YEARS, type SeasonYear } from '@/utils/dataProcessor';
 import { useChartPanel } from '@/contexts/ChartPanelContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-const SeasonContext = createContext<{ year: SeasonYear; setYear: (year: SeasonYear) => void } | null>(null);
+interface SeasonContextType {
+  year: SeasonYear;
+  setYear: (year: SeasonYear) => void;
+  /** A belépett felhasználó számára elérhető szezonok (ahol van adata). */
+  seasonYears: SeasonYear[];
+}
+
+const SeasonContext = createContext<SeasonContextType | null>(null);
 
 export function SeasonProvider({ children }: { children: ReactNode }) {
-  const [year, updateYear] = useState<SeasonYear>(DEFAULT_YEAR);
+  const [requestedYear, updateYear] = useState<SeasonYear>(DEFAULT_YEAR);
   const [ready, setReady] = useState(false);
   const pathname = usePathname();
   const { closePanel } = useChartPanel();
+  const { accessLevel } = useAuth();
+  const { t } = useLanguage();
+
+  // Korlátozott hozzáférésnél csak azok a szezonok választhatók, amelyekben a
+  // nemesítőháznak van adata (pl. a Syngenta 2026-tól szerepel önállóan).
+  const seasonYears = useMemo(() => {
+    const years = accessLevel ? getSeasonYearsForAccess(accessLevel) : [];
+    return years.length > 0 ? years : SEASON_YEARS;
+  }, [accessLevel]);
+  const year = seasonYears.includes(requestedYear) ? requestedYear : seasonYears[seasonYears.length - 1];
 
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get('year');
@@ -44,13 +63,17 @@ export function SeasonProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setYear = (nextYear: SeasonYear) => {
-    if (!SEASON_YEARS.includes(nextYear)) return;
+    if (!seasonYears.includes(nextYear)) return;
     closePanel();
     updateYear(nextYear);
   };
 
-  if (!ready) return <div role="status" className="p-8 text-center text-foreground">Szezon betöltése…</div>;
-  return <SeasonContext.Provider value={{ year, setYear }}><Fragment key={year}>{children}</Fragment></SeasonContext.Provider>;
+  if (!ready) return <div role="status" className="p-8 text-center text-foreground">{t.common.loadingSeason}</div>;
+  return (
+    <SeasonContext.Provider value={{ year, setYear, seasonYears }}>
+      <Fragment key={year}>{children}</Fragment>
+    </SeasonContext.Provider>
+  );
 }
 
 export function useSeason() {

@@ -11,8 +11,10 @@ import {
 } from '@/utils/dataProcessor';
 import type { LocationDataPoint, SelectedBreederDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
+import { useLanguage } from '@/contexts/LanguageContext';
 import VarietyComparisonPanel from './VarietyComparisonPanel';
 import EarlyVarietyNote from './EarlyVarietyNote';
+import type { MetricKind } from './BreederChart';
 import { markLegendHover } from '@/utils/legendHover';
 import { X } from 'lucide-react';
 
@@ -20,6 +22,7 @@ interface FullScreenChartModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  kind: MetricKind;
   varieties: ProcessedData[];
   breederColor: string;
   breederName: string;
@@ -31,6 +34,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
   isOpen,
   onClose,
   title,
+  kind,
   varieties,
   breederColor,
   breederName,
@@ -38,6 +42,7 @@ const FullScreenChartModal: React.FC<FullScreenChartModalProps> = ({
   colors = []
 }) => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const modalRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstanceRef = useRef<Highcharts.Chart | null>(null);
@@ -251,7 +256,8 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-muted rounded-lg transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 group"
-            title="Bezárás (Esc)"
+            title={t.common.closeEsc}
+            aria-label={t.common.closeEsc}
           >
             <X className="w-5 h-5 text-gray-600 dark:text-muted-foreground group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-200 group-hover:rotate-90" />
           </button>
@@ -549,7 +555,7 @@ const [hoverData, setHoverData] = useState<SelectedBreederDataPoint | null>(null
                   hoverData={hoverData}
                   allVarieties={varieties}
                   breederColor={breederColor}
-                  isDecayData={title.includes("Romló bogyó")}
+                  isDecayData={kind === 'rotten'}
                 />
               </div>
             )}

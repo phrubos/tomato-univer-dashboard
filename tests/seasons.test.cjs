@@ -16,6 +16,7 @@ require.extensions['.ts'] = (module, filename) => {
 };
 const data = require('../src/utils/dataProcessor.ts');
 const cumulative = require('../src/utils/halmozottDataProcessor.ts');
+const i18n = require('../src/i18n/translations.ts');
 
 test('2026 main data has correct sites, roster and missing values', () => {
   const rows = data.processChartData('érett', 2026);
@@ -23,8 +24,24 @@ test('2026 main data has correct sites, roster and missing values', () => {
   assert.deepEqual(data.getChartCategories(rows), ['Cs-I', 'Cs-II', 'L-I', 'L-II']);
   assert.equal(rows.find(r => r.variety === 'UG10162').locations['Cs-I'], null);
   assert.equal(rows.find(r => r.variety === 'UG10162').locations['L-I'], 108);
-  assert.equal(rows.find(r => r.variety === 'REDIX*').breeder, 'Heinz+Syngenta');
+  assert.equal(rows.find(r => r.variety === 'REDIX*').breeder, 'Syngenta');
   assert.equal(rows.find(r => r.variety === 'REDIX*').locations['L-II'], 146);
+});
+
+test('2026 Syngenta is split off: REDIX is its only variety and Heinz keeps only H varieties', () => {
+  const rows = data.processChartData('érett', 2026);
+  assert.deepEqual(rows.filter(r => r.breeder === 'Syngenta').map(r => r.variety), ['REDIX*']);
+  const heinz = rows.filter(r => r.breeder === 'Heinz').map(r => r.variety);
+  assert.deepEqual(heinz, ['H2123*', 'H2239', 'H2249', 'H2766*', 'H2480*', 'H2646']);
+  assert.ok(rows.every(r => !r.breeder.includes('+Syngenta') && !r.breeder.includes('Syngenta+')));
+  // A halmozott termésben is ugyanez a felosztás
+  for (const rowsAtSite of Object.values(cumulative.loadHalmozottData(2026))) {
+    for (const row of rowsAtSite) {
+      assert.equal(row.breeder === 'Syngenta', row.variety.startsWith('REDIX'), row.variety);
+    }
+  }
+  // A Syngentának nincs 50 töves kísérlete
+  assert.ok(data.loadL50Data(2026).every(r => r.breeder !== 'Syngenta'));
 });
 
 test('2025 regression keeps values, labels and missing-site semantics', () => {
@@ -36,9 +53,11 @@ test('2025 regression keeps values, labels and missing-site semantics', () => {
   assert.equal(data.processBrixData(2025).find(r => r.variety === 'UG11227*').locations['M-I'], 4.656666666666667);
 });
 
-test('REDIX inherits the green WALLER highlight without renaming either variety', () => {
-  for (const name of ['WALLER', 'REDIX', 'REDIX*']) assert.equal(data.getVarietyColor(name, '#123456'), '#16a34a');
-  assert.equal(data.getVarietyColor('H2249', '#123456'), '#123456');
+test('only the 2025 WALLER control keeps the green highlight; REDIX uses the Syngenta colour', () => {
+  assert.equal(data.getVarietyColor('WALLER', '#123456'), '#16a34a');
+  for (const name of ['REDIX', 'REDIX*', 'H2249']) assert.equal(data.getVarietyColor(name, '#123456'), '#123456');
+  assert.equal(data.getBreederColor('Syngenta'), '#6b7a00');
+  assert.equal(data.getBreederColor('Heinz'), data.getBreederColor('WALLER + Heinz'));
 });
 
 test('L50 data retains Unigen and Heinz membership and genuine measurements', async () => {
@@ -71,11 +90,67 @@ test('2026 Brix is measured where sampled and stays not-tested elsewhere', () =>
   assert.ok(l50.every(r => r['L-50-I'] !== null && r['L-50-II'] !== null));
 });
 
-test('access groups preserve the agreed 2026 Syngenta/Heinz mapping', () => {
+test('Heinz and Syngenta have separate access groups that never see each other', () => {
   assert.deepEqual(data.getBreeders(2026, 'unigen').map(r => r.name), ['Unigen Seeds']);
-  assert.deepEqual(data.getBreeders(2026, 'waller_heinz').map(r => r.name), ['Heinz+Syngenta']);
+  assert.deepEqual(data.getBreeders(2026, 'heinz').map(r => r.name), ['Heinz']);
+  assert.deepEqual(data.getBreeders(2026, 'syngenta').map(r => r.name), ['Syngenta']);
+  assert.deepEqual(data.getBreeders(2025, 'heinz').map(r => r.name), ['WALLER + Heinz']);
+  assert.deepEqual(data.getBreeders(2025, 'syngenta'), []);
+  // A megszűnt közös szint semmit sem lát
+  assert.deepEqual(data.getBreeders(2026, 'waller_heinz'), []);
   assert.deepEqual(data.getBreeders(2026, 'unknown'), []);
-  assert.deepEqual(cumulative.filterDataByAccessLevel({Heinz: [], 'Heinz+Syngenta': [], 'Unigen Seeds': []}, 'waller_heinz'), {Heinz: [], 'Heinz+Syngenta': []});
+  // Teljes hozzáférésnél rögzített sorrend: a Syngenta a Heinz után
+  assert.deepEqual(data.getBreeders(2026, 'total').map(r => r.name), ['Unigen Seeds', 'BASF-Nunhems', 'Heinz', 'Syngenta']);
+  const groups = {Heinz: [], Syngenta: [], 'Prestomech + Heinz': [], 'Unigen Seeds': []};
+  assert.deepEqual(cumulative.filterDataByAccessLevel(groups, 'heinz'), {Heinz: [], 'Prestomech + Heinz': []});
+  assert.deepEqual(cumulative.filterDataByAccessLevel(groups, 'syngenta'), {Syngenta: []});
+});
+
+test('restricted users are only offered seasons in which their breeder has data', () => {
+  assert.deepEqual(data.getSeasonYearsForAccess('total'), [2025, 2026]);
+  assert.deepEqual(data.getSeasonYearsForAccess('heinz'), [2025, 2026]);
+  assert.deepEqual(data.getSeasonYearsForAccess('syngenta'), [2026]);
+  const sites = cumulative.getAvailableLocationsForAccessLevel(cumulative.loadHalmozottData(2026), 'syngenta');
+  assert.deepEqual(sites, ['CSABACSŰD - 2 SOROS', 'LAKITELEK - 4 SOROS']);
+});
+
+test('harvest period is language-neutral and formatted by the dictionary', () => {
+  assert.equal(data.getHarvestPeriod(2025), null);
+  const period = data.getHarvestPeriod(2026);
+  assert.match(period.first, /^2026-\d{2}-\d{2}$/);
+  assert.ok(period.first <= period.last);
+  // Nemesítőházanként a saját minták szedési napjai számítanak
+  assert.deepEqual(data.getHarvestPeriod(2026, 'syngenta'), {first: '2026-08-11', last: '2026-08-26'});
+  for (const access of ['unigen', 'nunhems', 'heinz', 'syngenta']) {
+    const own = Object.values(cumulative.loadHalmozottData(2026)).flat()
+      .filter(r => data.canAccessBreeder(r.breeder, access)).map(r => data.toIsoDate(r.harvestDate)).sort();
+    assert.deepEqual(data.getHarvestPeriod(2026, access), {first: own[0], last: own[own.length - 1]}, access);
+  }
+  assert.equal(data.getHarvestPeriod(2026, 'unknown'), null);
+  assert.match(i18n.translations.hu.harvest.period('2026-08-11', '2026-09-02'), /^szedés: aug\. 11 – szept\. 2\.$/);
+  assert.equal(i18n.translations.en.harvest.period('2026-08-11', '2026-09-02'), 'Harvest: 11 Aug – 2 Sep');
+  assert.equal(i18n.translations.hu.harvest.date('2026-08-11'), '2026.08.11.');
+  assert.equal(i18n.translations.en.harvest.date('2026-08-11'), '11 Aug 2026');
+});
+
+test('English dictionary covers every Hungarian key and uses the agreed terminology', () => {
+  const shape = value => typeof value === 'object' && value !== null
+    ? Object.fromEntries(Object.keys(value).sort().map(key => [key, shape(value[key])]))
+    : typeof value;
+  assert.deepEqual(shape(i18n.translations.en), shape(i18n.translations.hu));
+  assert.equal(i18n.translations.en.header.tabs.retention, 'Field Storage');
+  assert.equal(i18n.translations.hu.header.tabs.retention, 'Tövön tarthatóság');
+  assert.equal(i18n.DEFAULT_LANGUAGE, 'hu');
+  // Az angol szövegekben ne maradjon magyar felirat (a helységnevek kivételével)
+  const strings = [];
+  const collect = value => typeof value === 'string' ? strings.push(value) : typeof value === 'object' && Object.values(value).forEach(collect);
+  collect({...i18n.translations.en, sites: {}, cumulativeSites: {}});
+  assert.deepEqual(strings.filter(s => /[áéíóöőúüű]/i.test(s)), []);
+});
+
+test('Hungarian year adjectives follow vowel harmony', () => {
+  const adjective = i18n.hungarianYearAdjective;
+  assert.deepEqual([2025, 2026, 2020, 2000, 2023, 2031].map(adjective), ['2025-ös', '2026-os', '2020-as', '2000-es', '2023-as', '2031-es']);
 });
 
 test('both seasons have complete cumulative data with matching ripe/rotten values', async () => {

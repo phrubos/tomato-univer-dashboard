@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ChartPanelProvider } from "@/contexts/ChartPanelContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "🍅 Univer Dashboard",
-  description: "Modern dashboard with tomato plantation theme and Highcharts integration",
+  description: "Univer paradicsom fajtakísérlet dashboard · Univer tomato variety trial dashboard",
 };
 
 export default function RootLayout({
@@ -26,16 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    // Alapértelmezett nyelv a magyar; a LanguageProvider a választott nyelvre állítja át
+    <html lang="hu" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <ChartPanelProvider>
-            <AuthProvider>
-              {children}
-            </AuthProvider>
-          </ChartPanelProvider>
+          <LanguageProvider>
+            <ChartPanelProvider>
+              <AuthProvider>
+                {children}
+              </AuthProvider>
+            </ChartPanelProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

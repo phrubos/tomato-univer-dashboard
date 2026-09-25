@@ -9,19 +9,24 @@ import {
   getSiteBands,
   getVarietyColor,
   isMeasuredValue,
-  STATUS_LABELS,
   type MeasurementStatus,
   type ProcessedData
 } from '@/utils/dataProcessor';
 import type { LocationDataPoint } from '@/contexts/ChartPanelContext';
 import { useTheme } from './ThemeProvider';
 import { useChartPanel } from '@/contexts/ChartPanelContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import FullScreenChartModal from './FullScreenChartModal';
 import EarlyVarietyNote from './EarlyVarietyNote';
 import { markLegendHover } from '@/utils/legendHover';
 
+/** A diagram mért jellemzője; ettől függ a tengely, a tizedesjegyek és az értékelés iránya. */
+export type MetricKind = 'ripe' | 'rotten' | 'brix';
+
 interface BreederChartProps {
+  /** A mért jellemző megjelenített (lefordított) neve. */
   title: string;
+  kind: MetricKind;
   varieties: ProcessedData[];
   breederColor: string;
   breederName: string;
@@ -40,6 +45,7 @@ const BreederDataInfoPanel: React.FC<{
   onClose: () => void;
   decimals: number; // Brix: 2 tizedes, t/ha: 1 tizedes
 }> = ({ selectedData, hoverData, onClose, decimals }) => {
+  const { t } = useLanguage();
   // Ha van hover adat, azt mutatjuk, egyébként a kiválasztott adatot
   const displayData = hoverData || selectedData;
 
@@ -69,7 +75,8 @@ const BreederDataInfoPanel: React.FC<{
         <button
           onClick={onClose}
           className="ml-2 p-1 hover:bg-gray-100 dark:hover:bg-muted rounded-full transition-all duration-200 flex-shrink-0 cursor-pointer hover:scale-110 active:scale-95 group"
-          title="Bezárás"
+          title={t.common.close}
+          aria-label={t.common.close}
         >
           <svg className="w-4 h-4 text-gray-500 dark:text-muted-foreground group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-200 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -94,7 +101,7 @@ const BreederDataInfoPanel: React.FC<{
               }`}
             >
               <span className={isCurrentPoint ? 'text-foreground' : 'text-gray-600 dark:text-muted-foreground'}>
-                {getLocationLabel(data.location)}
+                {getLocationLabel(data.location, t.sites)}
               </span>
               {isMeasured ? (
                 <span className={isCurrentPoint ? 'text-foreground font-semibold' : 'text-foreground'}>
@@ -102,7 +109,7 @@ const BreederDataInfoPanel: React.FC<{
                 </span>
               ) : (
                 <span className="italic text-gray-500 dark:text-muted-foreground">
-                  {STATUS_LABELS[data.status]}
+                  {t.status[data.status]}
                 </span>
               )}
             </div>
@@ -114,7 +121,7 @@ const BreederDataInfoPanel: React.FC<{
       {avgValue !== null && (
         <div className="border-t border-gray-200 dark:border-border pt-2">
           <div className="flex justify-between items-center text-xs">
-            <span className="text-gray-600 dark:text-muted-foreground">Átlag:</span>
+            <span className="text-gray-600 dark:text-muted-foreground">{t.chart.mean}</span>
             <span className="font-semibold text-foreground">{avgValue.toFixed(decimals)}</span>
           </div>
         </div>
@@ -125,6 +132,7 @@ const BreederDataInfoPanel: React.FC<{
 
 const BreederChart: React.FC<BreederChartProps> = ({
   title,
+  kind,
   varieties,
   breederColor,
   breederName,
@@ -135,7 +143,9 @@ const BreederChart: React.FC<BreederChartProps> = ({
   const chartRef = React.useRef<HTMLDivElement>(null);
   const legendRef = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const { setActiveChart, closePanel, isChartActive, selectedData } = useChartPanel();
+  const isBrix = kind === 'brix';
 
   // Egyedi azonosító generálása minden chart példányhoz
   const chartId = useId();
@@ -226,7 +236,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
       if (varieties[i]?.variety === 'WALLER') {
         colors.push('#16a34a'); // Zöld szín a WALLER fajtának
       } else {
-        const factor = 0.3 + (i * 0.7) / Math.max(count - 1, 1);
+        // Egyetlen fajta (pl. Syngenta) a nemesítőház tiszta színét kapja, ne a legsötétebb árnyalatot
+        const factor = count === 1 ? 1 : 0.3 + (i * 0.7) / (count - 1);
         colors.push(adjustColorBrightness(baseColor, factor));
       }
     }
@@ -291,14 +302,14 @@ const BreederChart: React.FC<BreederChartProps> = ({
         color: themeColors.crosshairColor,
         dashStyle: 'Solid' as const
       },
-      plotBands: getSiteBands(categories).map((band, index) => ({
+      // Az 50 töves kísérletet a kártyafejléc jelzi, a sávon elég a helyszín neve
+      plotBands: getSiteBands(categories, { ...t.sites, 'L-50': t.sites['L'] }).map((band, index) => ({
         from: band.from,
         to: band.to,
         color: index % 2 === 0 ? themeColors.plotBandColor : themeColors.plotBandColorAlt,
         // A helyszínnév a diagram fő tagolása, ezért hangsúlyos
         label: {
-          // Az 50 töves kísérletet a kártyafejléc jelzi, a sávon elég a helyszín
-          text: band.name.replace(/ 50 töves$/, '').toUpperCase(),
+          text: band.name.toUpperCase(),
           style: {
             color: themeColors.titleColor,
             fontSize: '15px',
@@ -312,7 +323,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
     },
     yAxis: {
       title: {
-        text: title === 'Brix %' ? '%' : 't/ha',
+        text: isBrix ? '%' : t.common.unitTha,
         style: {
           color: themeColors.labelColor
         }
@@ -324,8 +335,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
       },
       gridLineColor: themeColors.gridLineColor,
       // Az 5%-os vonal fölött maradjon hely, különben a felirata lelóg a diagramról
-      softMax: title === 'Brix %' ? 5.5 : undefined,
-      plotLines: title === 'Brix %' ? [{
+      softMax: isBrix ? 5.5 : undefined,
+      plotLines: isBrix ? [{
         color: '#ef4444', // Piros szín
         width: 2,
         value: 5,
@@ -353,6 +364,8 @@ const BreederChart: React.FC<BreederChartProps> = ({
         borderRadius: 3,
         groupPadding: 0.1,
         pointPadding: 0.05,
+        // Kevés fajtánál (pl. egyetlen Syngenta-fajta) se nőjenek a helyszín teljes szélességére az oszlopok
+        maxPointWidth: 56,
         dataLabels: {
           enabled: false
         },
@@ -821,7 +834,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
               hoverData={hoverData}
               varieties={varieties}
               theme={theme}
-              decimals={title === 'Brix %' ? 2 : 1}
+              decimals={isBrix ? 2 : 1}
               onClose={closePanel}
             />
           </div>
@@ -864,6 +877,7 @@ const BreederChart: React.FC<BreederChartProps> = ({
           isOpen
           onClose={() => onCloseFullScreen?.()}
           title={title}
+          kind={kind}
           varieties={varieties}
           breederColor={breederColor}
           breederName={breederName}

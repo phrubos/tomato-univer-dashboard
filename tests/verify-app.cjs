@@ -94,10 +94,14 @@ async function main() {
   assert.deepEqual(await xLabels(0), ['Cs-I', 'Cs-II', 'L-I', 'L-II'], '2026 kategóriák');
   assert.equal(
     await evaluate(`[...document.querySelectorAll('.highcharts-plot-band-label')].map(t=>t.textContent).slice(0,2).join('|')`),
-    'Csabacsűd|Lakitelek',
+    'CSABACSŰD|LAKITELEK',
     '2026 helyszín-sávok'
   );
-  assert.ok(await evaluate(`document.body.innerText.includes('Heinz+Syngenta')`), '2026 nemesítőház');
+  assert.ok(await evaluate(`!document.body.innerText.includes('Heinz+Syngenta')`), 'nincs közös Heinz+Syngenta csoport');
+  assert.ok(
+    await evaluate(`['Heinz','Syngenta'].every(name=>[...document.querySelectorAll('h3')].some(h=>h.textContent.trim()===name))`),
+    '2026: külön Heinz és Syngenta kártya'
+  );
   assert.ok(await evaluate(`!document.body.innerText.includes('Mezőberény')`), '2026-ban nincs Mezőberény');
   assert.ok(await evaluate(`document.body.innerText.includes('Univer 2026 Dashboard')`), '2026 cím');
   await screenshot('app-2026-retention.png');
@@ -126,20 +130,19 @@ async function main() {
   await goto(`${ORIGIN}/dashboard/brix-diagram?year=2026`);
   await new Promise(r => setTimeout(r, 600));
   assert.ok(await evaluate(`!document.body.innerText.includes('Brix-adatai még nem érkeztek meg')`), '2026 Brix már nincs függőben');
-  assert.equal(await evaluate(`document.querySelectorAll('.highcharts-container').length`), 3, '2026 Brix diagram nemesítőházanként');
+  assert.equal(await evaluate(`document.querySelectorAll('.highcharts-container').length`), 7, '2026 Brix: 4 nemesítőház + 3 db 50 töves diagram');
   assert.deepEqual(await xLabels(0), ['Cs-I', 'Cs-II', 'L-I', 'L-II'], '2026 Brix kategóriák');
   assert.ok(await evaluate(`document.querySelector('.highcharts-container')?.querySelector('.highcharts-yaxis .highcharts-axis-title')?.textContent === '%'`), 'Brix tengelyfelirat');
   assert.ok(await evaluate(`[...document.querySelectorAll('.highcharts-container text')].some(t=>t.textContent.trim()==='5%')`), '5%-os referenciavonal');
   await screenshot('app-2026-brix.png');
   console.log('PASS 2026 Brix diagramok kategóriákkal és referenciavonallal');
 
-  // Lakitelek 50 töves Brix ugyanebben a szezonban
-  await evaluate(`[...document.querySelectorAll('button')].find(b=>b.textContent.includes('50 töves'))?.click()`);
-  for (let i = 0; i < 60; i++) {
-    if ((await xLabels(0)).length === 2) break;
-    await new Promise(r => setTimeout(r, 150));
-  }
-  assert.deepEqual(await xLabels(0), ['L-50-I', 'L-50-II'], '2026 Brix L-50 kategóriák');
+  // Lakitelek 50 töves Brix ugyanebben a szezonban: a nemesítőház kártyája alatti külön kártya
+  const l50Index = await evaluate(
+    `[...document.querySelectorAll('.highcharts-container')].findIndex(c=>c.closest('section')?.innerText.includes('50 töves kísérlet'))`
+  );
+  assert.ok(l50Index >= 0, '50 töves Brix kártya');
+  assert.deepEqual(await xLabels(l50Index), ['L-50-I', 'L-50-II'], '2026 Brix L-50 kategóriák');
   await screenshot('app-2026-brix-l50.png');
   console.log('PASS 2026 Brix L-50 nézet');
 
@@ -166,6 +169,62 @@ async function main() {
   assert.ok(await evaluate(`document.querySelectorAll('.highcharts-container').length > 0`), '2026 halmozott diagramok');
   await screenshot('app-2026-cumulative.png');
   console.log('PASS halmozott nézet: helyszínlista szezononként és váltásjelzés');
+
+  // --- Nyelvváltás: angol felület, majd vissza magyarra ---
+  await goto(`${ORIGIN}/dashboard?year=2026`);
+  await evaluate(`document.querySelector('[role=radio][lang=en]').click()`);
+  await settle();
+  assert.ok(await evaluate(`document.documentElement.lang==='en'`), 'html lang=en');
+  assert.equal(
+    await evaluate(`[...document.querySelectorAll('nav button')].map(b=>b.textContent.trim()).join('|')`),
+    'Cumulative Yield|Brix %|Field Storage',
+    'angol fülek'
+  );
+  assert.ok(
+    await evaluate(`document.body.innerText.includes('Ripe fruit yield (t/ha)') && document.body.innerText.includes('Field storage analysis by breeder')`),
+    'angol címek'
+  );
+  await screenshot('app-2026-retention-en.png');
+  await goto(`${ORIGIN}/dashboard/halmozott-termes?year=2026`);
+  await new Promise(r => setTimeout(r, 600));
+  assert.ok(
+    await evaluate(`document.body.innerText.includes('Cumulative yield chart') && document.body.innerText.includes('Csabacsűd – 2-row')`),
+    'a nyelv újratöltés után is megmarad'
+  );
+  await screenshot('app-2026-cumulative-en.png');
+  await evaluate(`document.querySelector('[role=radio][lang=hu]').click()`);
+  await settle();
+  assert.ok(
+    await evaluate(`document.documentElement.lang==='hu' && document.body.innerText.includes('Halmozott termés diagram')`),
+    'vissza magyarra'
+  );
+  console.log('PASS nyelvváltó: angol felület, megőrzés, visszaváltás');
+
+  // --- Syngenta hozzáférés: csak a saját adatai és csak a 2026-os szezon ---
+  await evaluate(`localStorage.setItem('univer_dashboard_access_level','syngenta');sessionStorage.clear()`);
+  await goto(`${ORIGIN}/dashboard?year=2025`);
+  assert.ok(await evaluate(`location.search.includes('year=2026')`), 'Syngenta: 2025 helyett 2026');
+  assert.deepEqual(
+    await evaluate(`[...document.querySelectorAll('[aria-label="Vizsgált év"] [role=radio]')].map(b=>b.textContent.trim())`),
+    ['2026'],
+    'Syngenta: csak 2026 választható'
+  );
+  assert.deepEqual(
+    await evaluate(`[...new Set([...document.querySelectorAll('h3')].map(h=>h.textContent.trim()))]`),
+    ['Syngenta'],
+    'Syngenta: csak saját kártyák'
+  );
+  assert.ok(await evaluate(`!document.body.innerText.includes('H2123') && document.body.innerText.includes('REDIX')`), 'Syngenta: Heinz-fajták nem látszanak');
+  assert.ok(await evaluate(`document.body.innerText.includes('szedés: aug. 11 – aug. 26.')`), 'Syngenta: saját szedési időszak');
+  await screenshot('app-2026-syngenta.png');
+  await goto(`${ORIGIN}/dashboard/halmozott-termes?year=2026`);
+  await new Promise(r => setTimeout(r, 600));
+  await screenshot('app-2026-syngenta-cumulative.png');
+
+  await evaluate(`localStorage.setItem('univer_dashboard_access_level','heinz');sessionStorage.clear()`);
+  await goto(`${ORIGIN}/dashboard?year=2026`);
+  assert.ok(await evaluate(`!document.body.innerText.includes('REDIX') && document.body.innerText.includes('H2123')`), 'Heinz: REDIX nem látszik');
+  console.log('PASS Syngenta/Heinz elkülönített hozzáférés');
 
   assert.deepEqual(exceptions.map(e => e.text), [], 'futásidejű hibák');
   console.log('PASS nincs futásidejű kivétel; képek:', SHOT_DIR);

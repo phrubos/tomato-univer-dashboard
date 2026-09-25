@@ -17,10 +17,12 @@ import {
 } from "@/utils/dataProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function BrixDiagram() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
   const { year } = useSeason();
+  const { t } = useLanguage();
   const router = useRouter();
 
   // Brix adatok feldolgozása a kiválasztott szezonra
@@ -58,13 +60,13 @@ export default function BrixDiagram() {
         data: brixGrouped[breederName] ?? [],
         isL50: false,
         title: breederName,
-        experiment: '2 és 4 soros kísérletek'
+        experiment: t.breederCard.experiments.base
       },
       {
         data: brixL50Grouped[l50Name] ?? [],
         isL50: true,
         title: l50Name,
-        experiment: 'Lakitelek 50 töves kísérlet'
+        experiment: t.breederCard.experiments.l50
       }
     ].filter(entry => entry.data.length > 0);
   };
@@ -72,7 +74,8 @@ export default function BrixDiagram() {
   const filteredBreeders = getBreeders(year, accessLevel);
 
   // A vezérlősávba kerülő rövid mérési információ
-  const harvestInfo = getHarvestPeriod(year, 'I. és II. szedés Brix %-a · aug. 14 – szept. 4.');
+  const period = getHarvestPeriod(year, accessLevel);
+  const harvestInfo = period ? t.harvest.period(period.first, period.last) : t.harvest.brixFallback;
   const visibleBreeders = filteredBreeders.map(breeder => breeder.name).join(', ') || '–';
 
   const handleLogout = () => {
@@ -82,23 +85,23 @@ export default function BrixDiagram() {
 
   return (
     <DashboardShell
-      subtitle="Brix % elemzés nemesítőházak szerint"
+      subtitle={t.brix.subtitle}
       info={harvestInfo}
       visibleBreeders={accessLevel !== 'total' ? visibleBreeders : undefined}
       onLogout={handleLogout}
     >
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-semibold text-foreground sm:text-2xl">Brix % értékek</h2>
+          <h2 className="text-xl font-semibold text-foreground sm:text-2xl">{t.brix.heading}</h2>
           <p className="mt-1 text-sm text-gray-600 dark:text-muted-foreground">
-            A bogyók cukortartalmának mérési eredményei az I. és II. szedés során
+            {t.brix.description}
           </p>
         </div>
 
         {!hasBrixMeasurements ? (
           <PendingDataNotice
-            title={`A ${year}-os szezon Brix-adatai még nem érkeztek meg`}
-            description="A cukortartalom-mérés a szedések lezárása után készül el. Amint a laboreredmények beérkeznek, a diagramok automatikusan megjelennek itt."
+            title={t.brix.pendingTitle(year)}
+            description={t.brix.pendingDescription}
           />
         ) : (
           <div className="space-y-6">
@@ -111,6 +114,7 @@ export default function BrixDiagram() {
                   title={breederData.title}
                   color={color}
                   metric="Brix %"
+                  kind="brix"
                   experiment={breederData.experiment}
                   varieties={breederData.data}
                   allVarietiesData={breederData.isL50 ? [...brixData, ...brixL50Processed] : brixData}

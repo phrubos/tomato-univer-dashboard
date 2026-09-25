@@ -18,6 +18,21 @@ A dashboard több kísérleti évet kezel; az aktuális szezont a fejlécben lé
 - A még el nem készült mérések nem nullaként jelennek meg: a **Nem vizsgált** (az adott fajtát ott nem vetették) és az **Adatra vár** (mérés folyamatban) állapotok külön jelölést kapnak. Nullát csak valódi nulla mérés jelent.
 - Ahol egy nézetnek még egyáltalán nincs adata (pl. a 2026-os Brix), üres állapot jelenik meg, és onnan egy kattintással át lehet lépni a mért szezonra.
 
+## 🌱 Nemesítőházak és hozzáférés
+
+2026-ban négy nemesítőház szerepel, mindegyik saját diagramokkal és saját jelszóval: **Unigen Seeds**, **BASF-Nunhems**, **Heinz** és **Syngenta** (a teljes hozzáférés mindet látja).
+
+- Az Excel-táblákban a Heinz és a Syngenta fajtái közös `Syngenta+Heinz` csoportban vannak. Az importáló ezt szétbontja: a **REDIX** a Syngentához kerül (`VARIETY_BREEDERS`), a többi fajta a Heinzhez (`BREEDER_RENAMES`).
+- A nemesítőházak színe és sorrendje a `src/utils/dataProcessor.ts` `BREEDER_COLORS` táblájában van (Syngenta: olajzöld márkaszín).
+- Korlátozott hozzáférésnél a szezonválasztó csak azokat az éveket kínálja, amelyekben a nemesítőháznak van adata (a Syngenta csak 2026-ban), a vezérlősáv szedési időszaka pedig a nemesítőház saját mintáinak szedési napjaiból áll elő.
+
+## 🌐 Nyelv
+
+A felület magyar (alapértelmezés) és angol nyelven érhető el; a nyelvválasztó zászlókkal a fejléc jobb felső sarkában és a belépő oldalon található. A választás a böngészőben megmarad.
+
+- Minden felirat a `src/i18n/translations.ts` fájlban van. A magyar szótár a forrás, az angolnak ugyanazt a szerkezetet kell teljesítenie, így egy hiányzó fordítás fordítási hibát okoz (és az `npm test` is ellenőrzi).
+- Terminológia: Tövön tarthatóság = *Field Storage*, Halmozott termés = *Cumulative Yield*, nemesítőház = *breeder*.
+
 ### Adatok frissítése
 
 Az összes szezon adata a `src/data/seasons.json` fájlból jön, amelyet az Excel-táblákból a projekt gyökerében lévő importáló állít elő:

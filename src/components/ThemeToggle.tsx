@@ -3,6 +3,7 @@
 import React from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 /**
  * Témaváltó. Semleges felületű ikongomb, hogy a kijelentkezéssel egy klasztert
@@ -10,7 +11,8 @@ import { useTheme } from './ThemeProvider';
  */
 export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();
-  const label = theme === 'dark' ? 'Váltás világos módra' : 'Váltás sötét módra';
+  const { t } = useLanguage();
+  const label = theme === 'dark' ? t.theme.toLight : t.theme.toDark;
 
   return (
     <button

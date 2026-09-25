@@ -2,14 +2,16 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useSeason } from '@/contexts/SeasonContext';
-import { SEASON_YEARS, type SeasonYear } from '@/utils/dataProcessor';
+import type { SeasonYear } from '@/utils/dataProcessor';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const TABS = [
-  { href: '/dashboard/halmozott-termes', label: 'Halmozott termés' },
-  { href: '/dashboard/brix-diagram', label: 'Brix %' },
-  { href: '/dashboard', label: 'Tövön tarthatóság' }
-];
+  { href: '/dashboard/halmozott-termes', key: 'cumulative' },
+  { href: '/dashboard/brix-diagram', key: 'brix' },
+  { href: '/dashboard', key: 'retention' }
+] as const;
 
 interface DashboardHeaderProps {
   /** A cím alatti egysoros leírás. */
@@ -32,7 +34,8 @@ export default function DashboardHeader({
   visibleBreeders,
   onLogout
 }: DashboardHeaderProps) {
-  const { year, setYear } = useSeason();
+  const { year, setYear, seasonYears } = useSeason();
+  const { t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -48,13 +51,14 @@ export default function DashboardHeader({
           </p>
           {visibleBreeders && (
             <p className="mt-1 text-sm font-medium text-gray-600 dark:text-muted-foreground">
-              Megjelenített nézet: {visibleBreeders}
+              {t.header.visibleBreeders} {visibleBreeders}
             </p>
           )}
         </div>
 
-        {/* A két munkamenet-vezérlő egy klaszterben, azonos formanyelven */}
+        {/* A munkamenet-vezérlők (nyelv, téma, kijelentkezés) egy klaszterben, azonos formanyelven */}
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
           <button
             type="button"
@@ -64,7 +68,7 @@ export default function DashboardHeader({
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            Kijelentkezés
+            {t.header.logout}
           </button>
         </div>
       </div>
@@ -73,15 +77,15 @@ export default function DashboardHeader({
       <div className="flex flex-wrap items-center gap-y-2 rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm dark:border-border/60 dark:bg-card">
         <div className="mr-3 flex items-center gap-2 border-r border-gray-200 pr-3 dark:border-muted">
           <span className="pl-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-gray-500 dark:text-muted-foreground">
-            Szezon
+            {t.header.season}
           </span>
           {/* Süllyesztett sáv, kiemelt aktív chip – adatszín nélkül is egyértelmű */}
           <div
             role="radiogroup"
-            aria-label="Vizsgált év"
+            aria-label={t.header.seasonGroup}
             className="flex items-center gap-1 rounded-lg bg-gray-100 p-1 dark:bg-gray-900"
           >
-            {SEASON_YEARS.map((value: SeasonYear) => {
+            {seasonYears.map((value: SeasonYear) => {
               const isActive = value === year;
               return (
                 <button
@@ -103,7 +107,7 @@ export default function DashboardHeader({
           </div>
         </div>
 
-        <nav className="flex flex-wrap gap-1" aria-label="Nézetek">
+        <nav className="flex flex-wrap gap-1" aria-label={t.header.views}>
           {TABS.map(tab => {
             const isActive = pathname === tab.href;
             return (
@@ -118,7 +122,7 @@ export default function DashboardHeader({
                     : 'font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                 }`}
               >
-                {tab.label}
+                {t.header.tabs[tab.key]}
               </button>
             );
           })}

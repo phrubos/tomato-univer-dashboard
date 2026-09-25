@@ -1779,8 +1779,30 @@
         }
       },
       {
+        "variety": "REDIX*",
+        "breeder": "Syngenta",
+        "ripe": {
+          "Cs-I": 111,
+          "Cs-II": 139,
+          "L-I": 96.7,
+          "L-II": 146
+        },
+        "rotten": {
+          "Cs-I": 4.2,
+          "Cs-II": 12,
+          "L-I": 4.38,
+          "L-II": 8.49
+        },
+        "brix": {
+          "Cs-I": 5.57,
+          "Cs-II": 5.51,
+          "L-I": 4.813750000000001,
+          "L-II": 4.80875
+        }
+      },
+      {
         "variety": "H2123*",
-        "breeder": "Heinz+Syngenta",
+        "breeder": "Heinz",
         "ripe": {
           "Cs-I": 113,
           "Cs-II": 132,
@@ -1802,7 +1824,7 @@
       },
       {
         "variety": "H2239",
-        "breeder": "Heinz+Syngenta",
+        "breeder": "Heinz",
         "ripe": {
           "Cs-I": 81.2,
           "Cs-II": 77.8,
@@ -1824,7 +1846,7 @@
       },
       {
         "variety": "H2249",
-        "breeder": "Heinz+Syngenta",
+        "breeder": "Heinz",
         "ripe": {
           "Cs-I": 83.5,
           "Cs-II": 110,
@@ -1846,7 +1868,7 @@
       },
       {
         "variety": "H2766*",
-        "breeder": "Heinz+Syngenta",
+        "breeder": "Heinz",
         "ripe": {
           "Cs-I": 85.9,
           "Cs-II": 77.7,
@@ -1868,7 +1890,7 @@
       },
       {
         "variety": "H2480*",
-        "breeder": "Heinz+Syngenta",
+        "breeder": "Heinz",
         "ripe": {
           "Cs-I": 97.8,
           "Cs-II": 66.7,
@@ -1890,7 +1912,7 @@
       },
       {
         "variety": "H2646",
-        "breeder": "Heinz+Syngenta",
+        "breeder": "Heinz",
         "ripe": {
           "Cs-I": 71.1,
           "Cs-II": 66.4,
@@ -1908,28 +1930,6 @@
           "Cs-II": 6.8,
           "L-I": null,
           "L-II": null
-        }
-      },
-      {
-        "variety": "REDIX*",
-        "breeder": "Heinz+Syngenta",
-        "ripe": {
-          "Cs-I": 111,
-          "Cs-II": 139,
-          "L-I": 96.7,
-          "L-II": 146
-        },
-        "rotten": {
-          "Cs-I": 4.2,
-          "Cs-II": 12,
-          "L-I": 4.38,
-          "L-II": 8.49
-        },
-        "brix": {
-          "Cs-I": 5.57,
-          "Cs-II": 5.51,
-          "L-I": 4.813750000000001,
-          "L-II": 4.80875
         }
       }
     ],
@@ -2177,7 +2177,7 @@
         },
         {
           "variety": "REDIX*-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Syngenta",
           "érett": 111,
           "sárga": 13.1,
           "zöld": 21.9,
@@ -2186,7 +2186,7 @@
         },
         {
           "variety": "REDIX*-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Syngenta",
           "érett": 139,
           "sárga": 9.22,
           "zöld": 10,
@@ -2195,7 +2195,7 @@
         },
         {
           "variety": "H2123*-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 113,
           "sárga": 16.3,
           "zöld": 20.2,
@@ -2204,7 +2204,7 @@
         },
         {
           "variety": "H2123*-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 132,
           "sárga": 4.55,
           "zöld": 4.55,
@@ -2213,7 +2213,7 @@
         },
         {
           "variety": "H2239-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 81.2,
           "sárga": 2.92,
           "zöld": 6.88,
@@ -2222,7 +2222,7 @@
         },
         {
           "variety": "H2239-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 77.8,
           "sárga": 1.4,
           "zöld": 1.4,
@@ -2231,7 +2231,7 @@
         },
         {
           "variety": "H2249-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 83.5,
           "sárga": 9.33,
           "zöld": 8.63,
@@ -2240,7 +2240,7 @@
         },
         {
           "variety": "H2249-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 110,
           "sárga": 3.15,
           "zöld": 4.78,
@@ -2249,7 +2249,7 @@
         },
         {
           "variety": "H2766*-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 85.9,
           "sárga": 6.07,
           "zöld": 11,
@@ -2258,7 +2258,7 @@
         },
         {
           "variety": "H2766*-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 77.7,
           "sárga": 5.25,
           "zöld": 3.73,
@@ -2267,7 +2267,7 @@
         },
         {
           "variety": "H2480*-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 97.8,
           "sárga": 4.9,
           "zöld": 7.12,
@@ -2276,7 +2276,7 @@
         },
         {
           "variety": "H2480*-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 66.7,
           "sárga": 1.63,
           "zöld": 1.87,
@@ -2285,7 +2285,7 @@
         },
         {
           "variety": "H2646-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 71.1,
           "sárga": 6.42,
           "zöld": 13.9,
@@ -2294,7 +2294,7 @@
         },
         {
           "variety": "H2646-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 66.4,
           "sárga": 2.45,
           "zöld": 2.57,
@@ -2431,7 +2431,7 @@
         },
         {
           "variety": "REDIX*-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Syngenta",
           "érett": 96.7,
           "sárga": 24.4,
           "zöld": 20.9,
@@ -2440,7 +2440,7 @@
         },
         {
           "variety": "REDIX*-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Syngenta",
           "érett": 146,
           "sárga": 6.21,
           "zöld": 3.85,
@@ -2449,7 +2449,7 @@
         },
         {
           "variety": "H2123*-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 108,
           "sárga": 12.9,
           "zöld": 23.1,
@@ -2458,7 +2458,7 @@
         },
         {
           "variety": "H2123*-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 131,
           "sárga": 8.93,
           "zöld": 10.5,
@@ -2467,7 +2467,7 @@
         },
         {
           "variety": "H2239-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 160,
           "sárga": 3.9,
           "zöld": 12.4,
@@ -2476,7 +2476,7 @@
         },
         {
           "variety": "H2239-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 162,
           "sárga": 4.55,
           "zöld": 3.24,
@@ -2485,7 +2485,7 @@
         },
         {
           "variety": "H2249-I",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 156,
           "sárga": 23.1,
           "zöld": 20,
@@ -2494,7 +2494,7 @@
         },
         {
           "variety": "H2249-II",
-          "breeder": "Heinz+Syngenta",
+          "breeder": "Heinz",
           "érett": 162,
           "sárga": 6.21,
           "zöld": 2.89,

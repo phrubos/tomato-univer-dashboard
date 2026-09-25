@@ -15,10 +15,12 @@ import {
 } from "@/utils/dataProcessor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSeason } from "@/contexts/SeasonContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Dashboard() {
   const { isAuthenticated, accessLevel, logout } = useAuth();
   const { year } = useSeason();
+  const { t } = useLanguage();
   const router = useRouter();
 
   // Adatok feldolgozása a kiválasztott szezonra
@@ -60,13 +62,13 @@ export default function Dashboard() {
         data: (chartType === 'érett' ? erettGrouped : romloGrouped)[breederName] ?? [],
         isL50: false,
         title: breederName,
-        experiment: '2 és 4 soros kísérletek'
+        experiment: t.breederCard.experiments.base
       },
       {
         data: l50Grouped[l50Name] ?? [],
         isL50: true,
         title: l50Name,
-        experiment: 'Lakitelek 50 töves kísérlet'
+        experiment: t.breederCard.experiments.l50
       }
     ].filter(entry => entry.data.length > 0);
   };
@@ -74,7 +76,8 @@ export default function Dashboard() {
   const filteredBreeders = getBreeders(year, accessLevel);
 
   // A vezérlősávba kerülő rövid szedési információ
-  const harvestInfo = getHarvestPeriod(year, 'I. és II. szedés · 8 nap eltéréssel · aug. 14 – szept. 4.');
+  const period = getHarvestPeriod(year, accessLevel);
+  const harvestInfo = period ? t.harvest.period(period.first, period.last) : t.harvest.fallback;
   const visibleBreeders = filteredBreeders.map(breeder => breeder.name).join(', ') || '–';
 
   const handleLogout = () => {
@@ -86,6 +89,7 @@ export default function Dashboard() {
   const renderColumn = (
     chartType: 'érett' | 'romló',
     heading: string,
+    metric: string,
     description: string,
     baseData: typeof erettData,
     l50Data: typeof l50ErettData
@@ -110,7 +114,8 @@ export default function Dashboard() {
               key={`${chartType}-${breeder.name}-${breederData.isL50 ? 'l50' : 'base'}`}
               title={breederData.title}
               color={color}
-              metric={heading.replace(' (t/ha)', '')}
+              metric={metric}
+              kind={chartType === 'érett' ? 'ripe' : 'rotten'}
               experiment={breederData.experiment}
               varieties={breederData.data}
               allVarietiesData={breederData.isL50 ? [...baseData, ...l50Data] : baseData}
@@ -125,7 +130,7 @@ export default function Dashboard() {
 
   return (
     <DashboardShell
-      subtitle="Tövön tarthatóság elemzés nemesítőházak szerint"
+      subtitle={t.retention.subtitle}
       info={harvestInfo}
       visibleBreeders={accessLevel !== 'total' ? visibleBreeders : undefined}
       onLogout={handleLogout}
@@ -133,15 +138,17 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {renderColumn(
           'érett',
-          'Érett bogyó mennyisége (t/ha)',
-          'Az ép, érett bogyó mennyisége az I. és II. szedés során',
+          t.retention.ripeHeading,
+          t.retention.ripeMetric,
+          t.retention.ripeDescription,
           erettData,
           l50ErettData
         )}
         {renderColumn(
           'romló',
-          'Romló bogyó mennyisége (t/ha)',
-          'A romló bogyó mennyisége az I. és II. szedés során',
+          t.retention.rottenHeading,
+          t.retention.rottenMetric,
+          t.retention.rottenDescription,
           romloData,
           l50RomloData
         )}

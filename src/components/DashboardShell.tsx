@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import DashboardHeader from '@/components/DashboardHeader';
 import { useSeason } from '@/contexts/SeasonContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DashboardShellProps {
   /** A cím alatti egysoros leírás. */
@@ -27,6 +28,7 @@ export default function DashboardShell({
   children
 }: DashboardShellProps) {
   const { year } = useSeason();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -42,7 +44,7 @@ export default function DashboardShell({
 
         <footer className="mt-12 border-t border-gray-200 pt-8 text-center dark:border-border">
           <p className="text-sm text-gray-600 dark:text-muted-foreground">
-            🍅 Paradicsom fajtakísérlet – {year} © Minden jog fenntartva
+            {t.footer(year)}
           </p>
         </footer>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface PasswordModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +27,7 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
     if (login(password)) {
       onClose();
     } else {
-      setError('Hibás jelszó! Kérjük próbálja újra.');
+      setError(t.login.error);
       setPassword('');
     }
 
@@ -54,7 +56,7 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
               🍅 Univer 2025 Dashboard
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Kérjük adja meg a jelszót a folytatáshoz
+              {t.login.prompt}
             </p>
           </div>
 
@@ -62,7 +64,7 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Jelszó
+                {t.login.passwordShortLabel}
               </label>
               <input
                 type="password"
@@ -71,7 +73,7 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                placeholder="Adja meg a jelszót..."
+                placeholder={t.login.placeholder}
                 disabled={isLoading}
                 autoFocus
               />
@@ -92,10 +94,10 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Bejelentkezés...
+                  {t.login.signingIn}
                 </div>
               ) : (
-                'Belépés'
+                t.login.submitShort
               )}
             </button>
           </form>
@@ -103,7 +105,7 @@ export default function PasswordModal({ isOpen, onClose }: PasswordModalProps) {
           {/* Footer */}
           <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              © 2025 Univer Dashboard - Bizalmas adatok
+              {t.login.footer}
             </p>
           </div>
         </div>
